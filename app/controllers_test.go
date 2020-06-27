@@ -1,6 +1,7 @@
 package app
 
 import (
+	"eight/config"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -10,12 +11,13 @@ import (
 
 func TestHandleIndex(t *testing.T) {
 	isTest := is.New(t)
-	srv := Server{
-		db: nil,
-	}
-	r := srv.RegisterRoutes()
-	req := httptest.NewRequest("GET", "/", nil)
+	c := config.AppConfig()
+	c.Testing = true
+	server := NewApp(c)
+	router := server.Router()
+
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	w := httptest.NewRecorder()
-	r.ServeHTTP(w, req)
+	router.ServeHTTP(w, req)
 	isTest.Equal(w.Code, http.StatusOK)
 }

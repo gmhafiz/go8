@@ -6,10 +6,12 @@ import (
 	"github.com/go-chi/chi"
 )
 
-func (s *Server) RegisterRoutes() http.Handler {
+func (s *Server) Router() http.Handler {
 	r := chi.NewRouter()
 
 	r.Get("/", s.handleIndex())
+	r.Get("/healthz/liveness", s.handleLive())
+	r.Get("/healthz/readiness", s.handleReady())
 
 	r.Route("/admin", func(r chi.Router) {
 		r.Use(s.AdminOnlyHandler)
@@ -19,10 +21,11 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	r.Route("/api", func(r chi.Router) {
 		r.Use(s.ContentTypeJsonHandler)
+		r.Use(s.AdminOnlyHandler)
 
 		r.Route("/v1", func(r chi.Router) {
-			r.Get("/", s.getAllContact())
-			r.Get("/something", s.handleSomething())
+			r.Get("/books", s.getAllBooks())
+			r.Get("/book/:id", s.getBook())
 		})
 	})
 

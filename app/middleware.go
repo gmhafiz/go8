@@ -16,7 +16,7 @@ func (s *Server) AdminOnlyHandler(next http.Handler) http.Handler {
 }
 
 // ContentTypeJsonHandler is a middleware to be used with chi Router
-func (s * Server) ContentTypeJsonHandler(next http.Handler) http.Handler {
+func (s *Server) ContentTypeJsonHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json;charset=utf8")
 		next.ServeHTTP(w, r)

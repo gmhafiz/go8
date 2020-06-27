@@ -13,6 +13,30 @@ type ErrorResponse struct {
 	Error string `json:"error"`
 }
 
+func (s *Server) handleLive() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte("."))
+	}
+}
+
+func (s *Server) handleReady() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte("."))
+	}
+}
+
+func (s *Server) getAllBooks() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("books"))
+	}
+}
+
+func (s *Server) getBook() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("book"))
+	}
+}
+
 func (s *Server) getAllContact() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		contacts := map[string]string{

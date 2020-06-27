@@ -1,15 +1,31 @@
 package app
 
 import (
-	"github.com/mattn/go-sqlite3"
+	"log"
+
+	"github.com/jinzhu/gorm"
+	_ "github.com/lib/pq"
+
+	"eight/config"
+	"eight/database"
 )
 
 type Server struct {
-	db     *sqlite3.SQLiteConn
+	config *config.Conf
+	db     *gorm.DB
 }
 
-func NewApp() *Server {
-	return &Server{
-		db: nil,
+func NewApp(c *config.Conf) *Server {
+	db, err := database.NewDatabase(c)
+	if err != nil {
+		log.Fatalln(err)
 	}
+	return &Server{
+		config: c,
+		db: db,
+	}
+}
+
+func (s *Server) GetConfig() *config.Conf {
+	return  s.config
 }

@@ -29,3 +29,7 @@ func NewApp(c *config.Conf) *Server {
 func (s *Server) GetConfig() *config.Conf {
 	return  s.config
 }
+
+func (s *Server) GetDB() *gorm.DB {
+	return  s.db
+}

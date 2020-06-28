@@ -1,4 +1,4 @@
-package main
+package api
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	"eight/config"
 )
 
-func main() {
+func Run() {
 	c := config.AppConfig()
 	newApp := app.NewApp(c)
 	router := newApp.Router()

@@ -40,7 +40,6 @@ type dbConf struct {
 }
 
 func AppConfig() *Conf {
-	_ = os.Chdir("../")
 	cwd, err := os.Getwd()
 	log.Println(cwd)
 	if err != nil {

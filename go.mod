@@ -9,5 +9,6 @@ require (
 	github.com/joho/godotenv v1.3.0
 	github.com/lib/pq v1.1.1
 	github.com/matryer/is v1.3.0
-	github.com/mattn/go-sqlite3 v1.14.0
+	github.com/pkg/errors v0.9.1 // indirect
+	github.com/pressly/goose v2.6.0+incompatible
 )

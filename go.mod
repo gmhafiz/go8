@@ -3,12 +3,16 @@ module eight
 go 1.14
 
 require (
+	github.com/Masterminds/squirrel v1.4.0
+	github.com/friendsofgo/errors v0.9.2
 	github.com/go-chi/chi v4.1.2+incompatible
-	github.com/jinzhu/gorm v1.9.14
-	github.com/joeshaw/envdecode v0.0.0-20200121155833-099f1fc765bd
-	github.com/joho/godotenv v1.3.0
-	github.com/lib/pq v1.1.1
-	github.com/matryer/is v1.3.0
-	github.com/pkg/errors v0.9.1 // indirect
-	github.com/pressly/goose v2.6.0+incompatible
+	github.com/go-chi/render v1.0.1
+	github.com/jackc/pgx/v4 v4.8.0
+	github.com/lib/pq v1.7.0
+	github.com/pkg/errors v0.9.1
+	github.com/stretchr/testify v1.6.1 // indirect
+	github.com/volatiletech/null/v8 v8.1.0
+	github.com/volatiletech/sqlboiler/v4 v4.2.0
+	github.com/volatiletech/strmangle v0.0.1
+	gopkg.in/yaml.v2 v2.3.0
 )

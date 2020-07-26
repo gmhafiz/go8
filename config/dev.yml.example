@@ -1,0 +1,12 @@
+Api:
+ HOST: "localhost"
+ PORT: "3080"
+
+Database:
+ DRIVER: "postgres"
+ HOST: ""
+ PORT: ""
+ USER: ""
+ PASS: ""
+ NAME: ""
+ SSL_MODE: ""

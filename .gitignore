@@ -1,4 +1,4 @@
 .idea
 .env
-*.yml
-*.toml
+config/*.yml
+sqlboiler.toml

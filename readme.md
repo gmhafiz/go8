@@ -37,6 +37,7 @@ This kit is composed of standard Go library together with well known libraries t
   - Request log
   - Cors
   - HTTP Integration Test
+  - Pagination
   - Yaml file for configuration
 
 It has few dependencies and replacing one library to another is easy as long as it adheres to

@@ -3,10 +3,13 @@ package books
 import (
 	"context"
 	"database/sql"
+
 	_ "github.com/lib/pq"
 	"github.com/pkg/errors"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
+	"eight/internal/middleware"
 	"eight/internal/models"
 )
 
@@ -23,7 +26,17 @@ type bookStore struct {
 }
 
 func (bs *bookStore) All(ctx context.Context) (models.BookSlice, error) {
-	bookSlice, err := models.Books().All(ctx, bs.db)
+	from := ctx.Value("pagination").(middleware.Pagination).Page
+	size := ctx.Value("pagination").(middleware.Pagination).Size
+
+	var err error
+	var bookSlice []*models.Book
+	if from != 0 && size != 0 {
+		bookSlice, err = models.Books(qm.Limit(size), qm.Offset(from)).All(ctx, bs.db)
+	} else {
+		bookSlice, err = models.Books().All(ctx, bs.db)
+	}
+
 	if err != nil {
 		return nil, err
 	}

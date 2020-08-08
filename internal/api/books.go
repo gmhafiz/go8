@@ -6,8 +6,7 @@ import (
 	"eight/internal/models"
 )
 
-func (a API) GetAllBooks() (models.BookSlice, error) {
-	ctx := context.Background()
+func (a API) GetAllBooks(ctx context.Context) (models.BookSlice, error) {
 	return a.books.AllBooks(ctx)
 }
 

@@ -1,7 +1,6 @@
 package api
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -14,8 +13,7 @@ import (
 
 func (a API) GetAllAuthors() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.Background()
-		authors, err := a.authors.AllAuthors(ctx)
+		authors, err := a.authors.AllAuthors(r.Context())
 		if err != nil {
 			render.Status(r, http.StatusBadRequest)
 			_ = render.Render(w, r, nil)
@@ -29,7 +27,6 @@ func (a API) GetAllAuthors() http.HandlerFunc {
 func (a API) CreateAuthor() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var authorRequest models.Author
-		ctx := context.Background()
 
 		author := &models.Author{
 			FirstName:  authorRequest.FirstName,
@@ -42,7 +39,7 @@ func (a API) CreateAuthor() http.HandlerFunc {
 			render.Status(r, http.StatusInternalServerError)
 			return
 		}
-		createdAuthor, err := a.authors.CreateAuthor(ctx, author)
+		createdAuthor, err := a.authors.CreateAuthor(r.Context(), author)
 		if err != nil {
 			render.Status(r, http.StatusInternalServerError)
 			return
@@ -55,11 +52,10 @@ func (a API) CreateAuthor() http.HandlerFunc {
 func (a API) GetAuthor() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		authorID := chi.URLParam(r, "authorID")
-		ctx := context.Background()
 
 		id, _ := strconv.ParseInt(authorID, 10, 64)
 
-		author, err := a.authors.GetAuthor(ctx, id)
+		author, err := a.authors.GetAuthor(r.Context(), id)
 		if err != nil {
 			render.Status(r, http.StatusBadRequest)
 			return

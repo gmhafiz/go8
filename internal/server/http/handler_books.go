@@ -1,7 +1,6 @@
 package http
 
 import (
-	"context"
 	"database/sql"
 	"encoding/json"
 	"net/http"
@@ -18,11 +17,7 @@ import (
 
 func (h *Handlers) GetAllBooks() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		//currentPageNumberInt := chi.URLParam(r, "page")
-		currentPageNumberInt := r.URL.Query().Get("page")
-		h.Logger.Info().Str("page", currentPageNumberInt).Msg("")
-
-		books, err := h.Api.GetAllBooks()
+		books, err := h.Api.GetAllBooks(r.Context())
 
 		if err != nil {
 			render.Status(r, http.StatusBadRequest)
@@ -36,8 +31,6 @@ func (h *Handlers) GetAllBooks() http.HandlerFunc {
 
 func (h *Handlers) CreateBook() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.Background()
-
 		type bookRequest struct {
 			Title         string      `json:"title"`
 			PublishedDate string      `json:"published_date"`
@@ -67,7 +60,7 @@ func (h *Handlers) CreateBook() http.HandlerFunc {
 			Description:   bookR.Description,
 		}
 
-		createdBook, err := h.Api.CreateBook(ctx, book)
+		createdBook, err := h.Api.CreateBook(r.Context(), book)
 		if err == nil {
 			h.Logger.Error().Err(err)
 			render.Status(r, http.StatusInternalServerError)
@@ -83,15 +76,13 @@ func (h *Handlers) CreateBook() http.HandlerFunc {
 func (h *Handlers) GetBook() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		bookID := chi.URLParam(r, "bookID")
-		ctx := context.Background()
 
 		id, _ := strconv.ParseInt(bookID, 10, 64)
 
-		book, err := h.Api.GetBook(ctx, id)
+		book, err := h.Api.GetBook(r.Context(), id)
 		if err != nil {
 
 			if errors.As(err, &sql.ErrNoRows) {
-				//h.Logger.Error("", zap.Error(err))
 				h.Logger.Error().Err(err)
 				render.JSON(w, r, "no book found")
 				render.Status(r, http.StatusBadRequest)
@@ -112,9 +103,7 @@ func (h *Handlers) Delete() http.HandlerFunc {
 		bookID := chi.URLParam(r, "bookID")
 		id, _ := strconv.ParseInt(bookID, 10, 64)
 
-		ctx := context.Background()
-
-		err := h.Api.Delete(ctx, id)
+		err := h.Api.Delete(r.Context(), id)
 		if err != nil {
 			render.Status(r, http.StatusInternalServerError)
 			return

@@ -44,3 +44,7 @@ func (b *HandlerBooks) GetBook(ctx context.Context, bookID int64) (*models.Book,
 func (b *HandlerBooks) Delete(ctx context.Context, bookID int64) error {
 	return b.store.Delete(ctx, bookID)
 }
+
+func (b *HandlerBooks) Ping() error {
+	return b.store.Ping()
+}

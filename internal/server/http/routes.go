@@ -13,8 +13,8 @@ func Router(h *Handlers) *chi.Mux {
 	r := chi.NewRouter()
 
 	//r.Get("/", h.HandleLive())
-	//r.Get("/healthz/liveness", h.HandleLive())
-	//r.Get("/healthz/readiness", h.HandleReady())
+	r.Get("/health/liveness", h.HandleLive())
+	r.Get("/health/readiness", h.HandleReady())
 
 	r.Route("/admin", func(r chi.Router) {
 		r.Use(middleware.AdminOnlyHandler)

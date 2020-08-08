@@ -10,3 +10,10 @@ Database:
  PASS: ""
  NAME: ""
  SSL_MODE: ""
+
+Redis:
+ HOST: "localhost"
+ PORT: "6379"
+ NAME: "rediscache"
+ USER: ""
+ PASS: ""

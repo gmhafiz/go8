@@ -5,8 +5,7 @@ import (
 	"database/sql"
 	"log"
 
-	"github.com/Masterminds/squirrel"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/go-redis/redis/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 
 	"eight/internal/models"
@@ -19,22 +18,19 @@ type store interface {
 }
 
 type authorStore struct {
-	qbuilder squirrel.StatementBuilderType
-	pqdriver *pgxpool.Pool
-	db       *sql.DB
+	db    *sql.DB
+	cache *redis.Client
 }
 
-func newStore(pqdriver *pgxpool.Pool, db *sql.DB) (*authorStore, error) {
+func newStore(db *sql.DB, rdb *redis.Client) (*authorStore, error) {
 	return &authorStore{
-		qbuilder: squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar),
-		pqdriver: pqdriver,
-		db:       db,
+		db:    db,
+		cache: rdb,
 	}, nil
 }
 
 func (as *authorStore) All(ctx context.Context) (models.AuthorSlice, error) {
 	authorSlice := models.AuthorSlice{}
-	boil.DebugMode = true
 
 	authorSlice, err := models.Authors().All(ctx, as.db)
 	if err != nil {
@@ -52,7 +48,6 @@ func (as *authorStore) CreateAuthor(ctx context.Context, author *models.Author) 
 }
 
 func (as *authorStore) GetAuthor(ctx context.Context, authorID int64) (*models.Author, error) {
-	boil.DebugMode = true
 	var author *models.Author
 
 	foundAuthor, err := models.Authors(models.AuthorWhere.AuthorID.EQ(authorID)).One(ctx, as.db)

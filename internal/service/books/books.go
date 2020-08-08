@@ -3,32 +3,41 @@ package books
 import (
 	"context"
 	"database/sql"
-
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/go-redis/redis/v8"
 
 	"eight/internal/models"
 )
 
 type HandlerBooks struct {
 	store store
+	cache bookCacheStore
 }
 
-func NewService(pqdriver *pgxpool.Pool, db *sql.DB) (*HandlerBooks, error) {
-	bookStore, err := newStore(pqdriver, db)
+func NewService(db *sql.DB, rdb *redis.Client) (*HandlerBooks, error) {
+	bookStore, err := newStore(db)
 	if err != nil {
 		return nil, err
 	}
 
+	cacheStore, err := newCacheStore(rdb)
+
 	return &HandlerBooks{
 		store: bookStore,
+		cache: cacheStore,
 	}, nil
 }
 
 func (b *HandlerBooks) AllBooks(ctx context.Context) (models.BookSlice, error) {
+	booksRedis, err := b.cache.GetBooks(ctx)
+	if err == nil {
+		return booksRedis, nil
+	}
 	books, err := b.store.All(ctx)
 	if err != nil {
 		return nil, err
 	}
+
+	_ = b.cache.SetBooks(ctx, &books)
 
 	return books, nil
 }

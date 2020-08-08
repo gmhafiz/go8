@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/go-chi/render"
 	"net/http"
 
 	"eight/internal/service/authors"
@@ -29,6 +30,11 @@ func (a API) HandleLive() http.HandlerFunc {
 
 func (a API) HandleReady() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		_, _ = w.Write([]byte("."))
+		err := a.books.Ping()
+		if err != nil {
+			render.Status(r, http.StatusInternalServerError)
+			render.JSON(w, r, map[string]string{"error": err.Error()})
+		}
+		//_, _ = w.Write([]byte("."))
 	}
 }

@@ -3,8 +3,7 @@ package authors
 import (
 	"context"
 	"database/sql"
-
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/go-redis/redis/v8"
 
 	"eight/internal/models"
 )
@@ -13,8 +12,8 @@ type HandlerAuthors struct {
 	store store
 }
 
-func NewService(pqdriver *pgxpool.Pool, db *sql.DB) (*HandlerAuthors, error) {
-	authorStore, err := newStore(pqdriver, db)
+func NewService(db *sql.DB, rdb *redis.Client) (*HandlerAuthors, error) {
+	authorStore, err := newStore(db, rdb)
 	if err != nil {
 		return nil, err
 	}

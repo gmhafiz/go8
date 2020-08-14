@@ -22,17 +22,21 @@ type store interface {
 }
 
 type bookStore struct {
-	db    *sql.DB
+	db *sql.DB
 }
 
 func (bs *bookStore) All(ctx context.Context) (models.BookSlice, error) {
-	from := ctx.Value("pagination").(middleware.Pagination).Page
+	page := ctx.Value("pagination").(middleware.Pagination).Page
 	size := ctx.Value("pagination").(middleware.Pagination).Size
 
 	var err error
 	var bookSlice []*models.Book
-	if from != 0 && size != 0 {
-		bookSlice, err = models.Books(qm.Limit(size), qm.Offset(from)).All(ctx, bs.db)
+	if page != 0 && size != 0 {
+		bookSlice, err = models.Books(
+			qm.OrderBy(`created_at DESC`),
+			qm.Limit(size),
+			qm.Offset(page-1)).
+			All(ctx, bs.db)
 	} else {
 		bookSlice, err = models.Books().All(ctx, bs.db)
 	}
@@ -83,6 +87,6 @@ func (bs *bookStore) Ping() error {
 
 func newStore(db *sql.DB) (*bookStore, error) {
 	return &bookStore{
-		db:    db,
+		db: db,
 	}, nil
 }

@@ -2,13 +2,14 @@ package books
 
 import (
 	"context"
-	"eight/internal/middleware"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/vmihailenco/msgpack/v4"
 
+	"eight/internal/middleware"
 	"eight/internal/models"
 )
 
@@ -68,5 +69,5 @@ func (cache *bookCache) SetBooks(ctx context.Context, books *models.BookSlice) e
 		return err
 	}
 
-	return cache.cache.Set(ctx, key, b, 0).Err()
+	return cache.cache.Set(ctx, key, b, time.Minute * 1).Err()
 }

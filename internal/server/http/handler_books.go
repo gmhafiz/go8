@@ -135,7 +135,6 @@ func (h *Handlers) GetBook() http.HandlerFunc {
 // @Produce json
 // @Param id path int true "book ID"
 // @Success 200 "Ok"
-// @Failure 400 "Bad request"
 // @Failure 500 "Internal Server error"
 // @Router /book/{bookID} [delete]
 func (h *Handlers) Delete() http.HandlerFunc {
@@ -147,9 +146,6 @@ func (h *Handlers) Delete() http.HandlerFunc {
 
 		if errors.As(err, &sql.ErrNoRows) {
 			render.JSON(w, r, map[string]string{"error": err.Error()})
-			render.Status(r, http.StatusBadRequest)
-		} else {
-			render.JSON(w, r, map[string]string{"error": "internal server error"})
 			render.Status(r, http.StatusInternalServerError)
 		}
 

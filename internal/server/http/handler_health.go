@@ -13,4 +13,3 @@ func (h *Handlers) HandleReady() http.HandlerFunc {
 		h.Api.HandleReady()
 	}
 }
-

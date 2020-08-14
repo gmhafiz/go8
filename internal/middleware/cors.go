@@ -18,7 +18,7 @@ func Cors(next http.Handler) http.Handler {
 			AllowCredentials: false,
 			MaxAge:           300, // Maximum value not ignored by any of major browsers
 		})
-	
+
 		next.ServeHTTP(w, r)
 	})
 }

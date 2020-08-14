@@ -20,17 +20,16 @@ type bookCacheStore interface {
 }
 
 type bookCache struct {
-	cache *redis.Client
+	cache  *redis.Client
 	logger zerolog.Logger
 }
 
 func newCacheStore(cache *redis.Client, logger zerolog.Logger) (*bookCache, error) {
 	return &bookCache{
-		cache: cache,
+		cache:  cache,
 		logger: logger,
 	}, nil
 }
-
 
 func (cache *bookCache) GetBooks(ctx context.Context) (books models.BookSlice, err error) {
 	from := ctx.Value("pagination").(middleware.Pagination).Page
@@ -75,5 +74,5 @@ func (cache *bookCache) SetBooks(ctx context.Context, books *models.BookSlice) e
 		return err
 	}
 
-	return cache.cache.Set(ctx, key, b, time.Minute * 1).Err()
+	return cache.cache.Set(ctx, key, b, time.Minute*1).Err()
 }

@@ -23,7 +23,7 @@ type store interface {
 }
 
 type bookStore struct {
-	db *sql.DB
+	db     *sql.DB
 	logger zerolog.Logger
 }
 
@@ -76,9 +76,10 @@ func (bs *bookStore) GetBook(ctx context.Context, bookID int64) (*models.Book, e
 func (bs *bookStore) Delete(ctx context.Context, bookID int64) error {
 	book, err := models.FindBook(ctx, bs.db, bookID)
 	if err != nil {
+		bs.logger.Error().Msg(err.Error())
 		return err
 	}
-	_, err = book.Delete(ctx, bs.db)
+	_, err = book.Delete(ctx, bs.db, false)
 	if err != nil {
 		bs.logger.Error().Msg(err.Error())
 		return err
@@ -93,7 +94,7 @@ func (bs *bookStore) Ping() error {
 
 func newStore(db *sql.DB, logger zerolog.Logger) (*bookStore, error) {
 	return &bookStore{
-		db: db,
+		db:     db,
 		logger: logger,
 	}, nil
 }

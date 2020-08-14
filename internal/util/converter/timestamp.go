@@ -20,5 +20,4 @@ func StringToTime(timeInput string) (time.Time, error) {
 	}
 
 	return parsed, nil
-
 }

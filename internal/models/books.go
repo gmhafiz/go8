@@ -468,6 +468,7 @@ func (bookL) LoadAuthors(ctx context.Context, e boil.ContextExecutor, singular b
 		qm.From("\"authors\""),
 		qm.InnerJoin("\"book_authors\" as \"a\" on \"authors\".\"author_id\" = \"a\".\"author_id\""),
 		qm.WhereIn("\"a\".\"books_id\" in ?", args...),
+		qmhelper.WhereIsNull("\"authors\".\"deleted_at\""),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -681,7 +682,7 @@ func removeAuthorsFromBooksSlice(o *Book, related []*Author) {
 
 // Books retrieves all the records using an executor.
 func Books(mods ...qm.QueryMod) bookQuery {
-	mods = append(mods, qm.From("\"books\""))
+	mods = append(mods, qm.From("\"books\""), qmhelper.WhereIsNull("\"books\".\"deleted_at\""))
 	return bookQuery{NewQuery(mods...)}
 }
 
@@ -695,7 +696,7 @@ func FindBook(ctx context.Context, exec boil.ContextExecutor, bookID int64, sele
 		sel = strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, selectCols), ",")
 	}
 	query := fmt.Sprintf(
-		"select %s from \"books\" where \"book_id\"=$1", sel,
+		"select %s from \"books\" where \"book_id\"=$1 and \"deleted_at\" is null", sel,
 	)
 
 	q := queries.Raw(query, bookID)
@@ -1059,7 +1060,7 @@ func (o *Book) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnCo
 
 // Delete deletes a single Book record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *Book) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o *Book) Delete(ctx context.Context, exec boil.ContextExecutor, hardDelete bool) (int64, error) {
 	if o == nil {
 		return 0, errors.New("models: no Book provided for delete")
 	}
@@ -1068,8 +1069,26 @@ func (o *Book) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, er
 		return 0, err
 	}
 
-	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), bookPrimaryKeyMapping)
-	sql := "DELETE FROM \"books\" WHERE \"book_id\"=$1"
+	var (
+		sql  string
+		args []interface{}
+	)
+	if hardDelete {
+		args = queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), bookPrimaryKeyMapping)
+		sql = "DELETE FROM \"books\" WHERE \"book_id\"=$1"
+	} else {
+		currTime := time.Now().In(boil.GetLocation())
+		o.DeletedAt = null.TimeFrom(currTime)
+		wl := []string{"deleted_at"}
+		sql = fmt.Sprintf("UPDATE \"books\" SET %s WHERE \"book_id\"=$2",
+			strmangle.SetParamNames("\"", "\"", 1, wl),
+		)
+		valueMapping, err := queries.BindMapping(bookType, bookMapping, append(wl, bookPrimaryKeyColumns...))
+		if err != nil {
+			return 0, err
+		}
+		args = queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), valueMapping)
+	}
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1094,12 +1113,17 @@ func (o *Book) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, er
 }
 
 // DeleteAll deletes all matching rows.
-func (q bookQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (q bookQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor, hardDelete bool) (int64, error) {
 	if q.Query == nil {
 		return 0, errors.New("models: no bookQuery provided for delete all")
 	}
 
-	queries.SetDelete(q.Query)
+	if hardDelete {
+		queries.SetDelete(q.Query)
+	} else {
+		currTime := time.Now().In(boil.GetLocation())
+		queries.SetUpdate(q.Query, M{"deleted_at": currTime})
+	}
 
 	result, err := q.Query.ExecContext(ctx, exec)
 	if err != nil {
@@ -1115,7 +1139,7 @@ func (q bookQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (in
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o BookSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (int64, error) {
+func (o BookSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor, hardDelete bool) (int64, error) {
 	if len(o) == 0 {
 		return 0, nil
 	}
@@ -1128,14 +1152,31 @@ func (o BookSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (in
 		}
 	}
 
-	var args []interface{}
-	for _, obj := range o {
-		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), bookPrimaryKeyMapping)
-		args = append(args, pkeyArgs...)
+	var (
+		sql  string
+		args []interface{}
+	)
+	if hardDelete {
+		for _, obj := range o {
+			pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), bookPrimaryKeyMapping)
+			args = append(args, pkeyArgs...)
+		}
+		sql = "DELETE FROM \"books\" WHERE " +
+			strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, bookPrimaryKeyColumns, len(o))
+	} else {
+		currTime := time.Now().In(boil.GetLocation())
+		for _, obj := range o {
+			pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), bookPrimaryKeyMapping)
+			args = append(args, pkeyArgs...)
+			obj.DeletedAt = null.TimeFrom(currTime)
+		}
+		wl := []string{"deleted_at"}
+		sql = fmt.Sprintf("UPDATE \"books\" SET %s WHERE "+
+			strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 2, bookPrimaryKeyColumns, len(o)),
+			strmangle.SetParamNames("\"", "\"", 1, wl),
+		)
+		args = append([]interface{}{currTime}, args...)
 	}
-
-	sql := "DELETE FROM \"books\" WHERE " +
-		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, bookPrimaryKeyColumns, len(o))
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1190,7 +1231,8 @@ func (o *BookSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) er
 	}
 
 	sql := "SELECT \"books\".* FROM \"books\" WHERE " +
-		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, bookPrimaryKeyColumns, len(*o))
+		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, bookPrimaryKeyColumns, len(*o)) +
+		"and \"deleted_at\" is null"
 
 	q := queries.Raw(sql, args...)
 
@@ -1207,7 +1249,7 @@ func (o *BookSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) er
 // BookExists checks if the Book row exists.
 func BookExists(ctx context.Context, exec boil.ContextExecutor, bookID int64) (bool, error) {
 	var exists bool
-	sql := "select exists(select 1 from \"books\" where \"book_id\"=$1 limit 1)"
+	sql := "select exists(select 1 from \"books\" where \"book_id\"=$1 and \"deleted_at\" is null limit 1)"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)

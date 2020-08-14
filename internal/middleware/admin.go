@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"net/http"
-	
+
 	"github.com/go-chi/render"
 )
 

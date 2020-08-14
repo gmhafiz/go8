@@ -27,14 +27,13 @@ var flagConfig = flag.String("config", "./config/dev.yml", "path to the config f
 // @contact.url http://www.gmhafiz.com/contact
 // @contact.email gmhafiz@gmail.com
 
-
 // @host localhost:3080
 // @BasePath /api/v1
 func main() {
 	logger := httplog.NewLogger("go8", httplog.Options{
-		JSON: true, // switch to false for a human readable log format
+		JSON:    true, // switch to false for a human readable log format
 		Concise: true,
-		Tags: map[string]string{"version": Version},
+		Tags:    map[string]string{"version": Version},
 	})
 	logger = logger.With().Caller().Logger()
 

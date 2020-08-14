@@ -15,8 +15,8 @@ import (
 
 // Handlers struct has all the dependencies required for HTTP handlers
 type Handlers struct {
-	Api *api.API
-	Logger zerolog.Logger
+	Api        *api.API
+	Logger     zerolog.Logger
 	Validation *validator.Validate
 }
 
@@ -37,21 +37,12 @@ type Config struct {
 }
 
 func (h *HTTP) Start(logger zerolog.Logger) {
-	//logger.Info("starting at port ", zap.String("host", h.cfg.Host) , zap.String("port", h.cfg.Port) )
-	//logger.Info().Msgf("starting at port ", zap.String("host", h.cfg.Host) , zap.String("port",h.cfg.Port))
-
 	logger.Info().Msgf("starting at %s:%s", h.cfg.Host, h.cfg.Port)
-
-	//logger.Infof("starting at port %s:%s", h.cfg.Host, h.cfg.Port)
-	//log.Printf("starting at port %s:%s", h.cfg.Host, h.cfg.Port)
-
-	//logz.Info("starting at", zap.String("host", h.cfg.Host) , zap.String("port",h.cfg.Port))
 
 	PrintAllRegisteredRoutes(h.router, logger)
 
 	if err := h.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		logger.Err(err)
-		//logger.Error().Err(err)
 		os.Exit(-1)
 	}
 }
@@ -62,8 +53,8 @@ func (h *HTTP) GetServer() *chi.Mux {
 
 func NewService(cfg *Config, a *api.API, log zerolog.Logger, validation *validator.Validate) (*HTTP, error) {
 	h := &Handlers{
-		Api: a,
-		Logger: log,
+		Api:        a,
+		Logger:     log,
 		Validation: validation,
 	}
 

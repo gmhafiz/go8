@@ -142,6 +142,35 @@ Both Postgres and redis ports are mapped to local machine. To allow `api` contai
  database and redis.
 
 
+# Swagger docs
+
+Install with
+
+     go get -u github.com/swaggo/swag/cmd/swag
+     
+Edit `cmd/go8/go8.go` `main()` function host and BasePath  
+
+    // @host localhost:3080
+    // @BasePath /api/v1
+
+   
+Generate with
+
+    swag init -g cmd/go8/go8.go
+    
+Access at
+
+    http://localhost:3080/swagger
+
+The command `swag init` scans the whole directory and looks for [swagger's declarative comments](https://github.com/swaggo/swag#declarative-comments-format)
+ format.
+
+Custom theme is obtained from [https://github.com/ostranme/swagger-ui-themes](https://github.com/ostranme/swagger-ui-themes)
+
+
+# Cache
+
+Redis cache is by default one minute. It is set by the `Set()` method in `store.go` file.
 
 # Structure
     

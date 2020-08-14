@@ -19,9 +19,20 @@ const Version = "v0.1.0"
 
 var flagConfig = flag.String("config", "./config/dev.yml", "path to the config file")
 
+// @title Go8
+// @version 0.1.0
+// @description Go + Postgres + Chi Router + SqlBoiler starter kit for API development.
+
+// @contact.name Hafiz Shafruddin
+// @contact.url http://www.gmhafiz.com/contact
+// @contact.email gmhafiz@gmail.com
+
+
+// @host localhost:3080
+// @BasePath /api/v1
 func main() {
 	logger := httplog.NewLogger("go8", httplog.Options{
-		JSON: true, // false
+		JSON: false, // false
 		Concise: true,
 		Tags: map[string]string{"version": Version},
 	})

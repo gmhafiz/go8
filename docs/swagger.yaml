@@ -1,0 +1,131 @@
+basePath: /api/v1
+definitions:
+  http.bookRequest:
+    properties:
+      description:
+        type: string
+      image_url:
+        type: string
+      published_date:
+        type: string
+      title:
+        type: string
+    required:
+    - description
+    - published_date
+    - title
+    type: object
+  models.Book:
+    properties:
+      book_id:
+        type: integer
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      description:
+        type: string
+      image_url:
+        type: string
+      published_date:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+    type: object
+host: localhost:3080
+info:
+  contact:
+    email: gmhafiz@gmail.com
+    name: Hafiz Shafruddin
+    url: http://www.gmhafiz.com/contact
+  description: Go + Postgres + Chi Router + SqlBoiler starter kit for API development.
+  license: {}
+  title: Go8
+  version: 0.1.0
+paths:
+  /book:
+    post:
+      consumes:
+      - application/json
+      description: Get a book with JSON payload
+      parameters:
+      - description: Book Request
+        in: body
+        name: Book
+        required: true
+        schema:
+          $ref: '#/definitions/http.bookRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Book'
+      summary: Create a Book
+  /book/{bookID}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a book by its id.
+      parameters:
+      - description: book ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Ok
+        "400":
+          description: Bad request
+        "500":
+          description: Internal Server error
+      summary: Delete a Book
+    get:
+      consumes:
+      - application/json
+      description: Get a book by its id.
+      parameters:
+      - description: book ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Book'
+      summary: Get a Book
+  /books:
+    get:
+      consumes:
+      - application/json
+      description: Get all books. By default it gets first page with 10 items.
+      parameters:
+      - description: page number
+        in: query
+        name: page
+        type: string
+      - description: size
+        in: query
+        name: size
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Book'
+            type: array
+      summary: Show all books
+swagger: "2.0"

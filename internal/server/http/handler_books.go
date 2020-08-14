@@ -86,7 +86,6 @@ func (h *Handlers) CreateBook() http.HandlerFunc {
 		})
 
 		if err != nil {
-			h.Logger.Error().Err(err)
 			render.Status(r, http.StatusInternalServerError)
 			render.JSON(w, r, map[string]string{"error": "StatusInternalServerError"})
 			return
@@ -115,8 +114,6 @@ func (h *Handlers) GetBook() http.HandlerFunc {
 		if err != nil {
 
 			if errors.As(err, &sql.ErrNoRows) {
-				//h.Logger.With().Caller().Logger()
-				h.Logger.Error().Msg(err.Error())
 				render.Status(r, http.StatusBadRequest)
 				render.JSON(w, r, map[string]string{"error": err.Error()})
 			} else {
@@ -149,7 +146,6 @@ func (h *Handlers) Delete() http.HandlerFunc {
 		err := h.Api.Delete(r.Context(), id)
 
 		if errors.As(err, &sql.ErrNoRows) {
-			h.Logger.Error().Err(err)
 			render.JSON(w, r, map[string]string{"error": err.Error()})
 			render.Status(r, http.StatusBadRequest)
 		} else {

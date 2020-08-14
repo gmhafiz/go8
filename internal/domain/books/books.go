@@ -5,6 +5,7 @@ import (
 	"database/sql"
 
 	"github.com/go-redis/redis/v8"
+	"github.com/rs/zerolog"
 
 	"eight/internal/models"
 )
@@ -14,13 +15,13 @@ type HandlerBooks struct {
 	cache bookCacheStore
 }
 
-func NewService(db *sql.DB, rdb *redis.Client) (*HandlerBooks, error) {
-	bookStore, err := newStore(db)
+func NewService(db *sql.DB, logger zerolog.Logger, rdb *redis.Client) (*HandlerBooks, error) {
+	bookStore, err := newStore(db, logger)
 	if err != nil {
 		return nil, err
 	}
 
-	cacheStore, err := newCacheStore(rdb)
+	cacheStore, err := newCacheStore(rdb, logger)
 
 	return &HandlerBooks{
 		store: bookStore,

@@ -6,6 +6,7 @@ import (
 
 	_ "github.com/lib/pq"
 	"github.com/pkg/errors"
+	"github.com/rs/zerolog"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
@@ -23,6 +24,7 @@ type store interface {
 
 type bookStore struct {
 	db *sql.DB
+	logger zerolog.Logger
 }
 
 func (bs *bookStore) All(ctx context.Context) (models.BookSlice, error) {
@@ -42,6 +44,7 @@ func (bs *bookStore) All(ctx context.Context) (models.BookSlice, error) {
 	}
 
 	if err != nil {
+		bs.logger.Error().Msg(err.Error())
 		return nil, err
 	}
 
@@ -52,6 +55,7 @@ func (bs *bookStore) CreateBook(ctx context.Context, book *models.Book) (*models
 	//boil.DebugMode = true
 	err := book.Insert(ctx, bs.db, boil.Infer())
 	if err != nil {
+		bs.logger.Error().Msg(err.Error())
 		return book, err
 	}
 	return book, nil
@@ -62,7 +66,8 @@ func (bs *bookStore) GetBook(ctx context.Context, bookID int64) (*models.Book, e
 
 	book, err := models.Books(models.BookWhere.BookID.EQ(bookID)).One(ctx, bs.db)
 	if err != nil {
-		return b, errors.Wrap(err, "book not found")
+		bs.logger.Error().Msg(err.Error())
+		return b, errors.Wrap(err, err.Error())
 	}
 
 	return book, nil
@@ -75,6 +80,7 @@ func (bs *bookStore) Delete(ctx context.Context, bookID int64) error {
 	}
 	_, err = book.Delete(ctx, bs.db)
 	if err != nil {
+		bs.logger.Error().Msg(err.Error())
 		return err
 	}
 
@@ -85,8 +91,9 @@ func (bs *bookStore) Ping() error {
 	return bs.db.Ping()
 }
 
-func newStore(db *sql.DB) (*bookStore, error) {
+func newStore(db *sql.DB, logger zerolog.Logger) (*bookStore, error) {
 	return &bookStore{
 		db: db,
+		logger: logger,
 	}, nil
 }

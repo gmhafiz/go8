@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v8"
+	"github.com/rs/zerolog"
 	"github.com/vmihailenco/msgpack/v4"
 
 	"eight/internal/middleware"
@@ -20,11 +21,13 @@ type bookCacheStore interface {
 
 type bookCache struct {
 	cache *redis.Client
+	logger zerolog.Logger
 }
 
-func newCacheStore(cache *redis.Client) (*bookCache, error) {
+func newCacheStore(cache *redis.Client, logger zerolog.Logger) (*bookCache, error) {
 	return &bookCache{
 		cache: cache,
+		logger: logger,
 	}, nil
 }
 
@@ -42,11 +45,13 @@ func (cache *bookCache) GetBooks(ctx context.Context) (books models.BookSlice, e
 
 	b, err := cache.cache.Get(ctx, key).Bytes()
 	if err != nil {
+		cache.logger.Error().Msg(err.Error())
 		return nil, err
 	}
 
 	err = msgpack.Unmarshal(b, &books)
 	if err != nil {
+		cache.logger.Error().Msg(err.Error())
 		return nil, err
 	}
 
@@ -66,6 +71,7 @@ func (cache *bookCache) SetBooks(ctx context.Context, books *models.BookSlice) e
 
 	b, err := msgpack.Marshal(books)
 	if err != nil {
+		cache.logger.Error().Msg(err.Error())
 		return err
 	}
 

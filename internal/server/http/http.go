@@ -2,13 +2,13 @@ package http
 
 import (
 	"fmt"
-	"github.com/jinzhu/now"
-	"github.com/rs/zerolog"
 	"net/http"
 	"os"
 	"time"
 
 	"github.com/go-chi/chi"
+	"github.com/go-playground/validator/v10"
+	"github.com/rs/zerolog"
 
 	"eight/internal/api"
 )
@@ -17,7 +17,7 @@ import (
 type Handlers struct {
 	Api *api.API
 	Logger zerolog.Logger
-	TimeConverter now.Config
+	Validation *validator.Validate
 }
 
 // HTTP struct holds all the dependencies required for starting HTTP server
@@ -60,11 +60,11 @@ func (h *HTTP) GetServer() *chi.Mux {
 	return h.router
 }
 
-func NewService(cfg *Config, a *api.API, log zerolog.Logger, timeConverter now.Config) (*HTTP, error) {
+func NewService(cfg *Config, a *api.API, log zerolog.Logger, validation *validator.Validate) (*HTTP, error) {
 	h := &Handlers{
 		Api: a,
 		Logger: log,
-		TimeConverter: timeConverter,
+		Validation: validation,
 	}
 
 	serverHandler := Router(h, log)

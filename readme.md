@@ -34,6 +34,8 @@ This kit is composed of standard Go library together with well known libraries t
   - [Sqlboiler ORM](https://github.com/volatiletech/sqlboiler/)
   - Database migration with [golang-migrate](https://github.com/golang-migrate/migrate/)
   - Cache result with [Redis](https://redis.io) using [msgpack](https://msgpack.org) 
+  - Input [validation](https://github.com/go-playground/validator) that return multiple error
+   strings
   - Request log
   - Cors
   - HTTP Integration Test
@@ -155,7 +157,6 @@ under this folder. Note: all `.yml` and `.toml` files are ignored by version con
 # TODO
 
  - Complete HTTP integration test
- - Input validation
  - Use sqlboiler as a library and make an executable under folder `cmd/sqlboiler` to have a single
   `yml` config file.
  - Use golang-migrate as a library and make an executable under folder `cmd/migrate`

@@ -13,7 +13,15 @@ import (
 
 	"eight/internal/models"
 	"eight/internal/util/converter"
+	"eight/pkg/validation"
 )
+
+type bookRequest struct {
+	Title         string      `json:"title" validate:"required"`
+	PublishedDate string      `json:"published_date" validate:"required"`
+	ImageURL      null.String `json:"image_url" validate:"url"`
+	Description   null.String `json:"description" validate:"required"`
+}
 
 func (h *Handlers) GetAllBooks() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -21,7 +29,6 @@ func (h *Handlers) GetAllBooks() http.HandlerFunc {
 
 		if err != nil {
 			render.Status(r, http.StatusBadRequest)
-			_ = render.Render(w, r, nil)
 			return
 		}
 
@@ -31,12 +38,6 @@ func (h *Handlers) GetAllBooks() http.HandlerFunc {
 
 func (h *Handlers) CreateBook() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		type bookRequest struct {
-			Title         string      `json:"title"`
-			PublishedDate string      `json:"published_date"`
-			ImageURL      null.String `json:"image_url"`
-			Description   null.String `json:"description"`
-		}
 		var bookR bookRequest
 
 		err := json.NewDecoder(r.Body).Decode(&bookR)
@@ -45,7 +46,13 @@ func (h *Handlers) CreateBook() http.HandlerFunc {
 			return
 		}
 
-		time, err := converter.StringToTime(h.TimeConverter, bookR.PublishedDate)
+		validationErrors := validation.Validate(h.Validation, bookR)
+		if validationErrors != nil {
+			render.JSON(w, r, map[string][]string{"error": validationErrors})
+			return
+		}
+
+		time, err := converter.StringToTime(bookR.PublishedDate)
 		if err != nil {
 			render.Status(r, http.StatusBadRequest)
 			render.JSON(w, r, map[string]string{
@@ -53,15 +60,15 @@ func (h *Handlers) CreateBook() http.HandlerFunc {
 			})
 			return
 		}
-		book := &models.Book{
+
+		createdBook, err := h.Api.CreateBook(r.Context(), &models.Book{
 			Title:         bookR.Title,
 			PublishedDate: time,
 			ImageURL:      bookR.ImageURL,
 			Description:   bookR.Description,
-		}
+		})
 
-		createdBook, err := h.Api.CreateBook(r.Context(), book)
-		if err == nil {
+		if err != nil {
 			h.Logger.Error().Err(err)
 			render.Status(r, http.StatusInternalServerError)
 			render.JSON(w, r, map[string]string{"error": "StatusInternalServerError"})
@@ -93,8 +100,8 @@ func (h *Handlers) GetBook() http.HandlerFunc {
 			return
 		}
 
-		h.Logger.Info().Msgf("here")
 		render.JSON(w, r, book)
+		return
 	}
 }
 
@@ -110,5 +117,6 @@ func (h *Handlers) Delete() http.HandlerFunc {
 		}
 
 		render.Status(r, http.StatusOK)
+		return
 	}
 }

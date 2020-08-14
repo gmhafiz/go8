@@ -8,10 +8,11 @@ import (
 	"eight/internal/api"
 	"eight/internal/configs"
 	"eight/internal/datastore"
+	"eight/internal/domain/authors"
+	"eight/internal/domain/books"
 	"eight/internal/server/http"
-	"eight/internal/service/authors"
-	"eight/internal/service/books"
 	"eight/pkg/redis"
+	"eight/pkg/validation"
 )
 
 const Version = "v0.1.0"
@@ -82,7 +83,9 @@ func main() {
 		return
 	}
 
-	h, err := http.NewService(httpCfg, a, logger, cfg.Time)
+	val := validation.New()
+
+	h, err := http.NewService(httpCfg, a, logger, val)
 	if err != nil {
 		logger.Error().Err(err)
 		return

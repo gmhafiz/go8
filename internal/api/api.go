@@ -1,11 +1,12 @@
 package api
 
 import (
-	"github.com/go-chi/render"
 	"net/http"
 
-	"eight/internal/service/authors"
-	"eight/internal/service/books"
+	"github.com/go-chi/render"
+
+	"eight/internal/domain/authors"
+	"eight/internal/domain/books"
 )
 
 // API holds all the dependencies required to expose APIs. And each API is a function with *API as its receiver
@@ -34,7 +35,7 @@ func (a API) HandleReady() http.HandlerFunc {
 		if err != nil {
 			render.Status(r, http.StatusInternalServerError)
 			render.JSON(w, r, map[string]string{"error": err.Error()})
+			return
 		}
-		//_, _ = w.Write([]byte("."))
 	}
 }

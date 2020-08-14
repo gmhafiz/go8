@@ -18,14 +18,14 @@ import (
 	"eight/internal/api"
 	"eight/internal/configs"
 	"eight/internal/datastore"
+	"eight/internal/domain/books"
 	"eight/internal/models"
 	"eight/internal/server/http"
-	"eight/internal/service/books"
 )
 
 //func (suite *TestSuite) setupTest() (*chi.Mux, *http.Handlers, *sql.DB) {
 func setupTest() (*chi.Mux, *http.Handlers, *sql.DB) {
-	cfg, err := configs.NewService("test", )
+	cfg, err := configs.NewService("test")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -38,7 +38,7 @@ func setupTest() (*chi.Mux, *http.Handlers, *sql.DB) {
 	if err != nil {
 		log.Panic(err)
 	}
-	bookService, err := books.NewService(db, nil, nil)
+	bookService, err := books.NewService(db, nil)
 	if err != nil {
 		log.Panic(err)
 	}

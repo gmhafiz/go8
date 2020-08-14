@@ -4,6 +4,7 @@ import (
 	"context"
 	"eight/internal/middleware"
 	"fmt"
+	"strconv"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/vmihailenco/msgpack/v4"
@@ -33,9 +34,9 @@ func (cache *bookCache) GetBooks(ctx context.Context) (books models.BookSlice, e
 
 	var key string
 	if from != 0 && size != 0 {
-		key = fmt.Sprintf("booksAll-%s-%s", string(from), string(size))
+		key = fmt.Sprintf("booksAll-%s-%s", strconv.Itoa(from), strconv.Itoa(size))
 	} else {
-		key = "booksALl"
+		key = "booksAll"
 	}
 
 	b, err := cache.cache.Get(ctx, key).Bytes()
@@ -57,7 +58,7 @@ func (cache *bookCache) SetBooks(ctx context.Context, books *models.BookSlice) e
 
 	var key string
 	if from != 0 && size != 0 {
-		key = fmt.Sprintf("booksAll-%s-%s", string(from), string(size))
+		key = fmt.Sprintf("booksAll-%s-%s", strconv.Itoa(from), strconv.Itoa(size))
 	} else {
 		key = "booksAll"
 	}

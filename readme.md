@@ -36,7 +36,9 @@ This kit is composed of standard Go library together with well known libraries t
   - Cache result with [Redis](https://redis.io) using [msgpack](https://msgpack.org) 
   - Input [validation](https://github.com/go-playground/validator) that return multiple error
    strings
-  - Request log
+  - Scans and auto-generate [Swagger](https://github.com/swaggo/swag) docs using a declarative
+   comments format 
+  - Request log that logs each user uniquely based on host address
   - Cors
   - HTTP Integration Test
   - Pagination
@@ -189,7 +191,6 @@ under this folder. Note: all `.yml` and `.toml` files are ignored by version con
  - Use sqlboiler as a library and make an executable under folder `cmd/sqlboiler` to have a single
   `yml` config file.
  - Use golang-migrate as a library and make an executable under folder `cmd/migrate`
- - Swagger documentation
  - use [xID](https://github.com/rs/xid) for table ID primary key
  - consider using [mage](https://github.com/magefile/mage) to simplify build process
 

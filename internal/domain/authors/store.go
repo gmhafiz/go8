@@ -3,13 +3,13 @@ package authors
 import (
 	"context"
 	"database/sql"
-	"eight/internal/middleware"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
-	"log"
+	"fmt"
 
 	"github.com/rs/zerolog"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
+	"eight/internal/middleware"
 	"eight/internal/models"
 )
 
@@ -56,6 +56,7 @@ func (as *authorStore) All(ctx context.Context) (models.AuthorSlice, error) {
 func (as *authorStore) CreateAuthor(ctx context.Context, author *models.Author) (*models.Author, error) {
 	err := author.Insert(ctx, as.db, boil.Infer())
 	if err != nil {
+		as.logger.Error().Msg(err.Error())
 		return author, err
 	}
 	return author, nil
@@ -64,11 +65,18 @@ func (as *authorStore) CreateAuthor(ctx context.Context, author *models.Author) 
 func (as *authorStore) GetAuthor(ctx context.Context, authorID int64) (*models.Author, error) {
 	var author *models.Author
 
-	foundAuthor, err := models.Authors(models.AuthorWhere.AuthorID.EQ(authorID)).One(ctx, as.db)
-	log.Println(foundAuthor)
+	authorz, _ := models.FindAuthor(ctx, as.db, authorID)
+	books, err := authorz.Books().All(ctx, as.db)
+	fmt.Println(books)
+
+	authorz, _ = models.Authors(qm.Load(models.AuthorRels.Books),
+		qm.Where("author_id=$1", authorID)).One(ctx, as.db)
+
+	_, err = models.Authors(models.AuthorWhere.AuthorID.EQ(authorID)).One(ctx, as.db)
 	if err != nil {
+		as.logger.Error().Msg(err.Error())
 		return author, err
 	}
 
-	return foundAuthor, nil
+	return authorz, nil
 }

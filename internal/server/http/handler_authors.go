@@ -1,14 +1,18 @@
 package http
 
 import (
-	"eight/internal/models"
-	"eight/pkg/validation"
 	"encoding/json"
+	"net/http"
+	"strconv"
+	"time"
+
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
 	"github.com/volatiletech/null/v8"
-	"net/http"
-	"strconv"
+
+	"eight/internal/models"
+	"eight/internal/util/converter"
+	"eight/pkg/validation"
 )
 
 type authorRequest struct {
@@ -49,7 +53,7 @@ func (h *Handlers) CreateAuthor() http.HandlerFunc {
 			render.JSON(w, r, map[string][]string{"error": validationErrors})
 			return
 		}
-		
+
 		createdAuthor, err := h.Api.CreateAuthor(r.Context(), &models.Author{
 			FirstName: authorRequest.FirstName,
 			MiddleName: null.String{
@@ -70,6 +74,22 @@ func (h *Handlers) CreateAuthor() http.HandlerFunc {
 	}
 }
 
+type AuthorResponse struct {
+	AuthorID   int64       `json:"author_id"`
+	FirstName  string      `json:"first_name"`
+	MiddleName null.String `json:"middle_name"`
+	LastName   string      `json:"last_name"`
+	Rel        interface{} `json:"|rel|"`
+}
+
+type Book struct {
+	BookID        int64       `json:"book_id"`
+	Title         string      `json:"title"`
+	PublishedDate time.Time   `json:"published_date"`
+	ImageURL      null.String `json:"image_url"`
+	Description   null.String `json:"description"`
+}
+
 func (h *Handlers) GetAuthor() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		authorID := chi.URLParam(r, "authorID")
@@ -85,7 +105,25 @@ func (h *Handlers) GetAuthor() http.HandlerFunc {
 			return
 		}
 
-		render.JSON(w, r, author)
+		books, err := converter.DeepCopy(author.R)
+		if err != nil {
+			h.Logger.Error().Msg(err.Error())
+			render.Status(r, http.StatusInternalServerError)
+			render.JSON(w, r, map[string]string{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		resp := &AuthorResponse{
+			AuthorID:   author.AuthorID,
+			FirstName:  author.FirstName,
+			MiddleName: author.MiddleName,
+			LastName:   author.LastName,
+			Rel:        books,
+		}
+
+		render.JSON(w, r, resp)
 		return
 	}
 }

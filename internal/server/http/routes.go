@@ -16,7 +16,6 @@ func Router(h *Handlers, logger zerolog.Logger) *chi.Mux {
 	r := chi.NewRouter()
 
 	r.Use(httplog.RequestLogger(logger))
-
 	r.Use(middleware.Cors)
 
 	r.Get("/health/liveness", h.HandleLive())
@@ -31,15 +30,16 @@ func Router(h *Handlers, logger zerolog.Logger) *chi.Mux {
 			r.Get("/book/{bookID}", h.GetBook())
 			r.Delete("/book/{bookID}", h.Delete())
 
-			//r.Get("/authors", a.GetAllAuthors())
-			//r.Post("/author", a.CreateAuthor())
-			//r.Get("/author/{id}", a.GetAuthor())
+			r.With(middleware.Paginate).Get("/authors", h.GetAllAuthors())
+			r.Post("/author", h.CreateAuthor())
+			r.Get("/author/{authorID}", h.GetAuthor())
 		})
 	})
 
 	return r
 }
 
+// PrintAllRegisteredRoutes prints all possible routes available
 func PrintAllRegisteredRoutes(router *chi.Mux, logger zerolog.Logger) {
 	walkFunc := func(method string, path string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
 		logger.

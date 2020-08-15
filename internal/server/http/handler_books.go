@@ -38,6 +38,9 @@ func (h *Handlers) GetAllBooks() http.HandlerFunc {
 
 		if err != nil {
 			render.Status(r, http.StatusBadRequest)
+			render.JSON(w, r, map[string]string{
+				"error": err.Error(),
+			})
 			return
 		}
 
@@ -112,7 +115,6 @@ func (h *Handlers) GetBook() http.HandlerFunc {
 
 		book, err := h.Api.GetBook(r.Context(), id)
 		if err != nil {
-
 			if errors.As(err, &sql.ErrNoRows) {
 				render.Status(r, http.StatusBadRequest)
 				render.JSON(w, r, map[string]string{"error": err.Error()})
@@ -145,8 +147,8 @@ func (h *Handlers) Delete() http.HandlerFunc {
 		err := h.Api.Delete(r.Context(), id)
 
 		if errors.As(err, &sql.ErrNoRows) {
-			render.JSON(w, r, map[string]string{"error": err.Error()})
 			render.Status(r, http.StatusInternalServerError)
+			render.JSON(w, r, map[string]string{"error": err.Error()})
 		}
 
 		render.Status(r, http.StatusOK)

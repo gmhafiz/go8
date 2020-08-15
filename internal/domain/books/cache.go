@@ -50,7 +50,6 @@ func (cache *bookCache) GetBooks(ctx context.Context) (books models.BookSlice, e
 
 	err = msgpack.Unmarshal(b, &books)
 	if err != nil {
-		cache.logger.Error().Msg(err.Error())
 		return nil, err
 	}
 

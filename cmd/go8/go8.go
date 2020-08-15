@@ -31,7 +31,7 @@ var flagConfig = flag.String("config", "./config/dev.yml", "path to the config f
 // @BasePath /api/v1
 func main() {
 	logger := httplog.NewLogger("go8", httplog.Options{
-		JSON:    true, // switch to false for a human readable log format
+		JSON:    false, // switch to false for a human readable log format
 		Concise: true,
 		Tags:    map[string]string{"version": Version},
 	})
@@ -74,7 +74,7 @@ func main() {
 		return
 	}
 
-	authorService, err := authors.NewService(db, rdb)
+	authorService, err := authors.NewService(db, logger, rdb)
 	if err != nil {
 		logger.Error().Err(err)
 		return

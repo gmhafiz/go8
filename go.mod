@@ -13,8 +13,10 @@ require (
 	github.com/go-openapi/swag v0.19.9 // indirect
 	github.com/go-playground/validator/v10 v10.3.0
 	github.com/go-redis/redis/v8 v8.0.0-beta.7
+	github.com/golang-migrate/migrate/v4 v4.12.2
 	github.com/golang/protobuf v1.4.2
 	github.com/lib/pq v1.7.0
+	github.com/magefile/mage v1.10.0
 	github.com/mailru/easyjson v0.7.3 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/rs/zerolog v1.18.1-0.20200514152719-663cbb4c8469

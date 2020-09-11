@@ -1,0 +1,68 @@
+version: '3'
+
+dotenv: ['.env']
+
+tasks:
+
+  init:
+    desc: Copies example configuration files to your own. The copied files are ignored with .gitignore file
+    cmds:
+      - cp config/prod.yml.example config/prod.yml
+      - cp sqlboiler.toml.example sqlboiler.toml
+      - cp .env.example .env
+
+  install-tools:
+    desc: Installs tools including golang-migrate, sqlboiler, testify and swag
+    cmds:
+      - curl -L https://github.com/golang-migrate/migrate/releases/download/v4.11.0/migrate.linux-amd64.tar.gz | tar xvz
+      - mv migrate.linux-amd64 ~/.local/bin/migrate
+      - source ~/.bashrc
+      - GO111MODULE=off go get -u -t github.com/volatiletech/sqlboiler
+      - GO111MODULE=off go get github.com/volatiletech/sqlboiler/drivers/sqlboiler-psql
+      - go get github.com/stretchr/testify
+      - go get -u github.com/swaggo/swag/cmd/swag
+
+  migrate-create:
+    desc: Creates .sql migration files
+    cmds:
+      - migrate create -ext sql -dir database/migrations -format unix "{{.NAME}}"
+
+  migrate:
+    desc: Migrates UP the database
+    cmds:
+      - migrate -database "$DB_DRIVER://$DB_HOST/$DB_NAME?sslmode=$DB_SSL_MODE&user=$DB_USER&password=$DB_PASS" -path database/migrations up
+
+  gen-orm:
+    desc: Reads your current database schema and creates models as well as orm.
+    cmds:
+      - sqlboiler --wipe --add-soft-deletes psql
+
+  run:
+    desc: Runs the app
+    cmds:
+      - go run cmd/go8/go8.go
+
+  build:
+    desc: Creates a compiled binary and copy configuration files
+    cmds:
+      - go build -v -i cmd/go8/go8.go
+      - mkdir -p build
+      - mv go8 build/
+      - mkdir build/config
+      - cp config/*.yml build/config
+
+  swagger:
+    desc: Generates Swagger page for API reference
+    cmds:
+      - swag init -g cmd/go8/go8.go
+
+
+  docker-build:
+    desc: Builds a Docker image
+    cmds:
+      - docker build -t go8 -f docker/Dockerfile .
+
+  docker-run:
+    desc: Runs the app Docker image as a Docker container
+    cmds:
+      - docker run -p 3080:3080 --rm -it --net=host --name go8container go8

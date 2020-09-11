@@ -49,61 +49,71 @@ It has few dependencies and replacing one library to another is easy as long as 
 
 # Setup
 
-  - Have an empty Postgres database ready
-  - Copy configuration files and fill in database and api details 
-    - `cp config/dev.yml.example config/dev.yml`
-    - `cp sqlboiler.toml.example sqlboiler.toml`
-  - Install the following tools. Instructions are in the next sections.
-    - [golang-migrate](https://github.com/golang-migrate/migrate/)
-    - [Sqlboiler ORM](https://github.com/volatiletech/sqlboiler/)
+A. Have both a postgres database and a redis instance ready.
+
+B. This project uses [Task](https://github.com/go-task/task) to handle various tasks such as
+ migration, generate swagger docs, build and run the app. Only requirement is to download the
+  binary and append to your `PATH` variable
+  - Install task runner binary bash script:
+
+    
+    scripts/install-task.sh
+
+  - And put this binary in your path if not exists
+  
+    
+    echo 'PATH=$PATH:$HOME/.local/bin' >> ~/.bashrc
+    source ~/.bashrc        
+
+Once `Task` is installed, setup can be initiated:
+
+    task init
+    
+This copies example configurations for the app, `sqlboiler` and `Task` to its respective .yml files
+Then open the files at `config/dev.yml`, `sqlboiler.toml`, `.env` and fill in your own configurations
+
+A list of tasks available can be viewed with:
+
+    task -l
+
+
+
+C. This project uses [golang-migrate](https://github.com/golang-migrate/migrate/) to handle
+ database migrations and [Sqlboiler ORM](https://github.com/volatiletech/sqlboiler/) to handle
+  database queries. These tools can be installed with:
+  
+
+    task install-tools
+  
 
 ## Migration
 
 Migration is a good step towards having a versioned database and makes publishing to a production
  server a safe process.
- 
- While there are many ways to [install](https://github.com/golang-migrate/migrate/tree/master/cmd/migrate)
- `golang-migrate`, simplest way to get migration going is to download its binary. Latest releases
-  are at its [releases page](https://github.com/golang-migrate/migrate/releases).
-
-Download binary
-
-    curl -L https://github.com/golang-migrate/migrate/releases/download/v4.11.0/migrate.linux-amd64.tar.gz | tar xvz
-
-Add the binary to your $PATH
-
-    mkdir -p ~/.local/bin
-    mv migrate.linux-amd64 ~/.local/bin/migrate
-    source ~/.bashrc
     
 ### Create Migration
 
-    migrate create -ext sql -dir database/migrations -format unix create_books_table
-    migrate create -ext sql -dir database/migrations -format unix create_authors_table
-    migrate create -ext sql -dir database/migrations -format unix create_book_authors_table
+Using `Task`, creating a migration file is done by the following command. Name the file after
+ `NAME=`. 
 
+    task migrate-create NAME=create_a_table
 
 ### Migrate up
 
-    migrate -database "postgres://127.0.0.1/db?sslmode=disable&user=user&password=pass" -path database/migrations up
+After you are satisfied with your `.sql` files, run the following command to migrate your database.
+
+    task migrate
     
 
 ## Database Generate Models and ORMs
 
 SqlBoiler treats your database as source of truth. It connects to your database, read its schema
  and generate appropriate models and query builder helpers written in Go. Utilizing a type-safe
-  query building allows runtime error checks. 
-
-### Install
-
-    GO111MODULE=off go get -u -t github.com/volatiletech/sqlboiler
-    GO111MODULE=off go get github.com/volatiletech/sqlboiler/drivers/sqlboiler-psql
-         
-Fill in settings in `sqlboiler.toml` file
+  query building allows compile-time error checks. 
 
 Generate ORM with:    
     
-    sqlboiler --wipe --add-soft-deletes psql
+    task gen-orm
 
 Generated files are as defined in the `sqlboiler.toml` file. This command needs to be run after
  every migration changes are done.
@@ -120,23 +130,31 @@ Install testify testing framework with
 
 Conventionally, all apps are placed inside the `cmd` folder.
 
+Using `Task`:
+
+    task run
+
+Without `Task`
+    
     go run cmd/go8/go8.go 
     
 ## Docker
 
-You can build a docker image with the app with its config files.
+You can build a docker image with the app with its config files. Docker needs to be installed
+ beforehand.
 
-     docker build -t go8 -f docker/Dockerfile .
+     task docker-build
 
 Run the following command to build a container from this image. `--net=host` tells the container
  to use local's network so that it can access local's database.
 
-    docker run -p 3080:3080 --rm -it --net=host go8
+    task docker-run
 
 
 ## Docker Compose
 
-If you have `docker-compose` installed, you may run the app with the following command. 
+If you have `docker-compose` installed, you may run the app with the following command. Docker
+-compose binary must be installed beforehand. 
 
     docker-compose up -d
 
@@ -145,10 +163,6 @@ Both Postgres and redis ports are mapped to local machine. To allow `api` contai
 
 
 # Swagger docs
-
-Install with
-
-     go get -u github.com/swaggo/swag/cmd/swag
      
 Edit `cmd/go8/go8.go` `main()` function host and BasePath  
 
@@ -158,7 +172,7 @@ Edit `cmd/go8/go8.go` `main()` function host and BasePath
    
 Generate with
 
-    swag init -g cmd/go8/go8.go
+    task swagger
     
 Access at
 
@@ -179,7 +193,7 @@ Redis cache is by default one minute. It is set by the `Set()` method in `store.
 1. Entry point is at `cmd/go8/go8./go`
 2. Api Routes are defined by `chi` router in `internal/server/http/routes.go`
 3. Handlers are defined under `internal/server/http` folder
-4. Each entity (`book` and `author`) is in their own microservice in `internal/service` folders. 
+4. Each entity (`book` and `author`) is in their own microservice in `internal/domain` folders. 
 This makes the layout confusing but allows dependency injection for integration testing purpose.
 5. Migration `.sql` files goes under `database/migrations` folder.
 6. Config `.yml` files goes under `config` folder. You can place `dev.yml`, `test.yml`, `prod.yml` 
@@ -188,9 +202,4 @@ under this folder. Note: all `.yml` and `.toml` files are ignored by version con
 # TODO
 
  - Complete HTTP integration test
- - Use sqlboiler as a library and make an executable under folder `cmd/sqlboiler` to have a single
-  `yml` config file.
- - Use golang-migrate as a library and make an executable under folder `cmd/migrate`
  - use [xID](https://github.com/rs/xid) for table ID primary key
- - consider using [mage](https://github.com/magefile/mage) to simplify build process
-

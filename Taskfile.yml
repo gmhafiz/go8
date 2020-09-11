@@ -23,7 +23,7 @@ tasks:
       - go get -u github.com/swaggo/swag/cmd/swag
 
   migrate-create:
-    desc: Creates .sql migration files
+    desc: Creates .sql migration files (Up and Down). Set name by appending with 'NAME={{name_of_file}}'
     cmds:
       - migrate create -ext sql -dir database/migrations -format unix "{{.NAME}}"
 

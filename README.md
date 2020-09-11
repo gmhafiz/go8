@@ -47,13 +47,23 @@ This kit is composed of standard Go library together with well known libraries t
 It has few dependencies and replacing one library to another is easy as long as it adheres to
  standard Go library interface.
 
+
+# Getting It
+
+    git clone https://github.com/gmhafiz/go8
+    cd go8
+
 # Setup
 
 A. Have both a postgres database and a redis instance ready.
 
+If not, you can run the following command if you have `docker-compose` installed:
+ 
+    docker-compose up -d postgres redis
+
 B. This project uses [Task](https://github.com/go-task/task) to handle various tasks such as
- migration, generate swagger docs, build and run the app. Only requirement is to download the
-  binary and append to your `PATH` variable
+ migration, generate swagger docs, build and run the app. It is essentially a [sh interpreter
+ ](https://github.com/mvdan/sh). Only requirement is to download the binary and append to your `PATH` variable.
   - Install task runner binary bash script:
 
     

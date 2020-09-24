@@ -28,7 +28,7 @@ type Book struct {
 	Title         string      `boil:"title" json:"title" toml:"title" yaml:"title"`
 	PublishedDate time.Time   `boil:"published_date" json:"published_date" toml:"published_date" yaml:"published_date"`
 	ImageURL      null.String `boil:"image_url" json:"image_url,omitempty" toml:"image_url" yaml:"image_url,omitempty"`
-	Description   null.String `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
+	Description   string      `boil:"description" json:"description" toml:"description" yaml:"description"`
 	CreatedAt     null.Time   `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
 	UpdatedAt     null.Time   `boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
 	DeletedAt     null.Time   `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
@@ -85,7 +85,7 @@ var BookWhere = struct {
 	Title         whereHelperstring
 	PublishedDate whereHelpertime_Time
 	ImageURL      whereHelpernull_String
-	Description   whereHelpernull_String
+	Description   whereHelperstring
 	CreatedAt     whereHelpernull_Time
 	UpdatedAt     whereHelpernull_Time
 	DeletedAt     whereHelpernull_Time
@@ -94,7 +94,7 @@ var BookWhere = struct {
 	Title:         whereHelperstring{field: "\"books\".\"title\""},
 	PublishedDate: whereHelpertime_Time{field: "\"books\".\"published_date\""},
 	ImageURL:      whereHelpernull_String{field: "\"books\".\"image_url\""},
-	Description:   whereHelpernull_String{field: "\"books\".\"description\""},
+	Description:   whereHelperstring{field: "\"books\".\"description\""},
 	CreatedAt:     whereHelpernull_Time{field: "\"books\".\"created_at\""},
 	UpdatedAt:     whereHelpernull_Time{field: "\"books\".\"updated_at\""},
 	DeletedAt:     whereHelpernull_Time{field: "\"books\".\"deleted_at\""},

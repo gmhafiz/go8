@@ -75,17 +75,21 @@ B. This project uses [Task](https://github.com/go-task/task) to handle various t
     echo 'PATH=$PATH:$HOME/.local/bin' >> ~/.bashrc
     source ~/.bashrc        
 
-Once `Task` is installed, setup can be initiated:
+`Tasl` tasks are defined inside `Taskfile.yml` file. A list of tasks available can be viewed with:
+                                                     
+    task -l   # or
+    task list # which maps to `task -l`
+
+Once `Task` is installed, setup can be
+ initiated by the
+ following
+ command:
 
     task init
     
-This copies example configurations for the app, `sqlboiler` and `Task` to its respective .yml files
+This copies example configurations for the app, `sqlboiler` and `Task` to its respective .yml
+ files as well as syncs dependencies
 Then open the files at `config/dev.yml`, `sqlboiler.toml`, `.env` and fill in your own configurations
-
-A list of tasks available can be viewed with:
-
-    task -l
-
 
 
 C. This project uses [golang-migrate](https://github.com/golang-migrate/migrate/) to handle
@@ -159,6 +163,20 @@ Run the following command to build a container from this image. `--net=host` tel
  to use local's network so that it can access local's database.
 
     task docker-run
+
+In terminal you will see the API runs at port 3080 and a log of available paths
+
+    2020-09-25T09:43:37+10:00 INF internal/server/http/http.go:40 > starting at :3080 service=go8
+    2020-09-25T09:43:37+10:00 INF internal/server/http/routes.go:50 >  routes={"method":"POST","path":"/api/v1/author"} service=go8
+    2020-09-25T09:43:37+10:00 INF internal/server/http/routes.go:50 >  routes={"method":"GET","path":"/api/v1/author/{authorID}"} service=go8
+    2020-09-25T09:43:37+10:00 INF internal/server/http/routes.go:50 >  routes={"method":"GET","path":"/api/v1/authors"} service=go8
+    2020-09-25T09:43:37+10:00 INF internal/server/http/routes.go:50 >  routes={"method":"POST","path":"/api/v1/book"} service=go8
+    2020-09-25T09:43:37+10:00 INF internal/server/http/routes.go:50 >  routes={"method":"GET","path":"/api/v1/book/{bookID}"} service=go8
+    2020-09-25T09:43:37+10:00 INF internal/server/http/routes.go:50 >  routes={"method":"DELETE","path":"/api/v1/book/{bookID}"} service=go8
+    2020-09-25T09:43:37+10:00 INF internal/server/http/routes.go:50 >  routes={"method":"GET","path":"/api/v1/books"} service=go8
+    2020-09-25T09:43:37+10:00 INF internal/server/http/routes.go:50 >  routes={"method":"GET","path":"/health/liveness"} service=go8
+    2020-09-25T09:43:37+10:00 INF internal/server/http/routes.go:50 >  routes={"method":"GET","path":"/health/readiness"} service=go8
+    2020-09-25T09:43:37+10:00 INF internal/server/http/routes.go:50 >  routes={"method":"GET","path":"/*"} service=go8
 
 
 ## Docker Compose

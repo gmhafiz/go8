@@ -16,13 +16,6 @@ import (
 	"eight/pkg/validation"
 )
 
-type bookRequest struct {
-	Title         string      `json:"title" validate:"required"`
-	PublishedDate string      `json:"published_date" validate:"required"`
-	ImageURL      null.String `json:"image_url" validate:"url"`
-	Description   null.String `json:"description" validate:"required"`
-}
-
 // GetAllBooks godoc
 // @Summary Show all books
 // @Description Get all books. By default it gets first page with 10 items.
@@ -57,12 +50,19 @@ func (h *Handlers) GetAllBooks() http.HandlerFunc {
 // @Success 201 {object} models.Book
 // @Router /book [post]
 func (h *Handlers) CreateBook() http.HandlerFunc {
+	type bookRequest struct {
+		Title         string      `json:"title" validate:"required"`
+		PublishedDate string      `json:"published_date" validate:"required"`
+		ImageURL      null.String `json:"image_url" validate:"url"`
+		Description   string      `json:"description" validate:"required"`
+	}
 	return func(w http.ResponseWriter, r *http.Request) {
 		var bookR bookRequest
 
 		err := json.NewDecoder(r.Body).Decode(&bookR)
 		if err != nil {
-			render.Status(r, http.StatusInternalServerError)
+			render.Status(r, http.StatusBadRequest)
+			render.JSON(w, r, map[string]string{"error": "malformed request"})
 			return
 		}
 

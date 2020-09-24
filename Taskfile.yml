@@ -3,13 +3,17 @@ version: '3'
 dotenv: ['.env']
 
 tasks:
-
+  list:
+    desc: Lists available commands
+    cmds:
+      - task -l
   init:
-    desc: Copies example configuration files to your own. The copied files are ignored with .gitignore file
+    desc: Copies example configuration files to your own. The copied files are ignored with .gitignore file as well as sync dependencies.
     cmds:
       - cp config/prod.yml.example config/prod.yml
       - cp sqlboiler.toml.example sqlboiler.toml
       - cp .env.example .env
+      - go mod tidy
 
   install-tools:
     desc: Installs tools including golang-migrate, sqlboiler, testify and swag

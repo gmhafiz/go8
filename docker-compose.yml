@@ -35,5 +35,22 @@ services:
     ports:
       - '6379:6379'
 
+  elasticsearch:
+    image: elasticsearch:7.9.1
+    container_name: elasticsearch7
+    environment:
+#      - cluster.initial_master_nodes=es01
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+
 volumes:
   postgres12go8db:
+  elasticsearch-data:

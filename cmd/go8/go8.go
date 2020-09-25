@@ -1,8 +1,9 @@
 package main
 
 import (
+	"context"
+	"eight/pkg/elasticsearch"
 	"flag"
-
 	"github.com/go-chi/httplog"
 
 	"eight/internal/api"
@@ -95,7 +96,28 @@ func main() {
 
 	val := validation.New()
 
-	h, err := http.NewService(httpCfg, a, logger, val)
+	es, err := elasticsearch.New(cfg.Elasticsearch)
+	if err != nil {
+		logger.Error().Err(err)
+		return
+	}
+
+	err = es.CreateIndices()
+	if err != nil {
+		logger.Error().Err(err)
+		return
+	}
+
+	info, code, err := es.Client.Ping(cfg.Elasticsearch.Address).Do(context.Background())
+	if err != nil {
+		logger.Error().Err(err)
+		return
+	}
+	logger.Info().Msgf("Name: %s, ClusterName: %s, Version: %s, TagLine: %s", info.Name,
+		info.ClusterName, info.Version, info.TagLine)
+	logger.Info().Msgf("%d", code)
+
+	h, err := http.NewService(httpCfg, a, logger, val, es.Client)
 	if err != nil {
 		logger.Error().Err(err)
 		return

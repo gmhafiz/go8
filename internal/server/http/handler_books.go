@@ -1,7 +1,9 @@
 package http
 
 import (
+	"context"
 	"database/sql"
+	"eight/pkg/validation"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -13,7 +15,6 @@ import (
 
 	"eight/internal/models"
 	"eight/internal/util/converter"
-	"eight/pkg/validation"
 )
 
 // GetAllBooks godoc
@@ -93,6 +94,15 @@ func (h *Handlers) CreateBook() http.HandlerFunc {
 			render.JSON(w, r, map[string]string{"error": "StatusInternalServerError"})
 			return
 		}
+
+		put1, err := h.Elasticsearch.Index().Index("go8-books").BodyJson(bookR).
+			Do(context.Background())
+		if err != nil {
+			render.Status(r, http.StatusInternalServerError)
+			render.JSON(w, r, map[string]string{"error": "StatusInternalServerError"})
+			return
+		}
+		h.Logger.Info().Msgf("added to Elasticsearch. Index: %s, ID: %s", put1.Index, put1.Id)
 
 		render.Status(r, http.StatusCreated)
 		render.JSON(w, r, createdBook)

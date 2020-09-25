@@ -49,5 +49,6 @@ func NewClient(cfg *Config) (*redis.Client, error) {
 		return nil, err
 	}
 
+	// todo: return struct
 	return rdb, nil
 }

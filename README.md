@@ -55,25 +55,34 @@ It has few dependencies and replacing one library to another is easy as long as 
 
 # Setup
 
-A. Have both a postgres database and a redis instance ready.
+A. Have a postgres database, a redis instance and elasticsearch ready. For Elasticsearch, you may
+ need to increase `max_map_count` either temporarily by `sudo sysctl -w vm.max_map_count=262144
+ ` or permanently by editinf `/etc/sysctl`
+ 
+    vim /etc/sysctl.conf
+    vm.max_map_count=262144
+
+Then reboot or run `sudo sysctl -w vm.max_map_count=262144`
 
 If not, you can run the following command if you have `docker-compose` installed:
  
-    docker-compose up -d postgres redis
+    docker-compose up -d postgres redis elasticsearch
 
 B. This project uses [Task](https://github.com/go-task/task) to handle various tasks such as
  migration, generate swagger docs, build and run the app. It is essentially a [sh interpreter
  ](https://github.com/mvdan/sh). Only requirement is to download the binary and append to your `PATH` variable.
   - Install task runner binary bash script:
 
-    
+
     scripts/install-task.sh
 
+
   - And put this binary in your path if not exists
-  
-    
+
+
     echo 'PATH=$PATH:$HOME/.local/bin' >> ~/.bashrc
     source ~/.bashrc        
+
 
 `Tasl` tasks are defined inside `Taskfile.yml` file. A list of tasks available can be viewed with:
                                                      

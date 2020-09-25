@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/go-playground/validator/v10"
+	"github.com/olivere/elastic/v7"
 	"github.com/rs/zerolog"
 
 	"eight/internal/api"
@@ -15,9 +16,10 @@ import (
 
 // Handlers struct has all the dependencies required for HTTP handlers
 type Handlers struct {
-	Api        *api.API
-	Logger     zerolog.Logger
-	Validation *validator.Validate
+	Api           *api.API
+	Logger        zerolog.Logger
+	Validation    *validator.Validate
+	Elasticsearch *elastic.Client
 }
 
 // HTTP struct holds all the dependencies required for starting HTTP server
@@ -51,11 +53,12 @@ func (h *HTTP) GetServer() *chi.Mux {
 	return h.router
 }
 
-func NewService(cfg *Config, a *api.API, log zerolog.Logger, validation *validator.Validate) (*HTTP, error) {
+func NewService(cfg *Config, a *api.API, log zerolog.Logger, validation *validator.Validate, es *elastic.Client) (*HTTP, error) {
 	h := &Handlers{
-		Api:        a,
-		Logger:     log,
-		Validation: validation,
+		Api:           a,
+		Logger:        log,
+		Validation:    validation,
+		Elasticsearch: es,
 	}
 
 	serverHandler := Router(h, log)

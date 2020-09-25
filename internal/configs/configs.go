@@ -1,6 +1,7 @@
 package configs
 
 import (
+	"eight/pkg/elasticsearch"
 	"io/ioutil"
 	"time"
 
@@ -12,9 +13,10 @@ import (
 )
 
 type Configs struct {
-	Api      http.Config        `yaml:"Api"`
-	Database datastore.Database `yaml:"Database"`
-	Cache    redis.Config       `yaml:"Redis"`
+	Api           http.Config          `yaml:"Api"`
+	Database      datastore.Database   `yaml:"Database"`
+	Cache         redis.Config         `yaml:"Redis"`
+	Elasticsearch elasticsearch.Config `yaml:"Elasticsearch"`
 }
 
 // HTTP returns the configuration required for HTTP package

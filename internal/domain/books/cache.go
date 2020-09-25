@@ -3,6 +3,7 @@ package books
 import (
 	"context"
 	"fmt"
+	p "github.com/gomodule/redigo/redis"
 	"strconv"
 	"time"
 
@@ -22,11 +23,13 @@ type bookCacheStore interface {
 type bookCache struct {
 	cache  *redis.Client
 	logger zerolog.Logger
+	conn   p.Conn
 }
 
-func newCacheStore(cache *redis.Client, logger zerolog.Logger) (*bookCache, error) {
+func newCacheStore(cache *redis.Client, conn p.Conn, logger zerolog.Logger) (*bookCache, error) {
 	return &bookCache{
 		cache:  cache,
+		conn:   conn,
 		logger: logger,
 	}, nil
 }
@@ -43,8 +46,7 @@ func (cache *bookCache) GetBooks(ctx context.Context) (books models.BookSlice, e
 	}
 
 	b, err := cache.cache.Get(ctx, key).Bytes()
-	if err != nil {
-		cache.logger.Error().Msg(err.Error())
+	if b == nil {
 		return nil, err
 	}
 
@@ -69,9 +71,9 @@ func (cache *bookCache) SetBooks(ctx context.Context, books *models.BookSlice) e
 
 	b, err := msgpack.Marshal(books)
 	if err != nil {
-		cache.logger.Error().Msg(err.Error())
 		return err
 	}
 
+	//_, err = cache.conn.Do("HMSET", p.Args{}.Add(key).Add(b))
 	return cache.cache.Set(ctx, key, b, time.Minute*1).Err()
 }

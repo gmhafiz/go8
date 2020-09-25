@@ -8,14 +8,16 @@ import (
 	"github.com/rs/zerolog"
 
 	"eight/internal/models"
+	"eight/pkg/jobs"
 )
 
 type HandlerAuthors struct {
 	store store
 	cache authorCacheStore
+	pool  *jobs.Jobs
 }
 
-func NewService(db *sql.DB, logger zerolog.Logger, rdb *redis.Client) (*HandlerAuthors, error) {
+func NewService(db *sql.DB, logger zerolog.Logger, rdb *redis.Client, pool *jobs.Jobs) (*HandlerAuthors, error) {
 	authorStore, err := newStore(db, logger)
 	if err != nil {
 		return nil, err
@@ -26,28 +28,29 @@ func NewService(db *sql.DB, logger zerolog.Logger, rdb *redis.Client) (*HandlerA
 	return &HandlerAuthors{
 		store: authorStore,
 		cache: cacheStore,
+		pool: pool,
 	}, nil
 }
 
-func (a *HandlerAuthors) AllAuthors(ctx context.Context) (models.AuthorSlice, error) {
-	authorRedis, err := a.cache.GetAuthors(ctx)
+func (h *HandlerAuthors) AllAuthors(ctx context.Context) (models.AuthorSlice, error) {
+	authorRedis, err := h.cache.GetAuthors(ctx)
 	if err == nil {
 		return authorRedis, nil
 	}
-	authors, err := a.store.All(ctx)
+	authors, err := h.store.All(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	_ = a.cache.SetAuthors(ctx, &authors)
+	_ = h.cache.SetAuthors(ctx, &authors)
 
 	return authors, nil
 }
 
-func (a *HandlerAuthors) CreateAuthor(ctx context.Context, author *models.Author) (*models.Author, error) {
-	return a.store.CreateAuthor(ctx, author)
+func (h *HandlerAuthors) CreateAuthor(ctx context.Context, author *models.Author) (*models.Author, error) {
+	return h.store.CreateAuthor(ctx, author)
 }
 
-func (a *HandlerAuthors) GetAuthor(ctx context.Context, authorID int64) (*models.Author, error) {
-	return a.store.GetAuthor(ctx, authorID)
+func (h *HandlerAuthors) GetAuthor(ctx context.Context, authorID int64) (*models.Author, error) {
+	return h.store.GetAuthor(ctx, authorID)
 }

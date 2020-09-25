@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/go-redis/redis/v8"
+	p "github.com/gomodule/redigo/redis"
 )
 
 type Config struct {
@@ -13,6 +14,12 @@ type Config struct {
 	Name     string `yaml:"NAME"`
 	Username string `yaml:"USER"`
 	Password string `yaml:"PASS"`
+}
+
+type RedisClient struct {
+	Config *Config
+	Pool   *p.Pool
+	Conn   p.Conn
 }
 
 func NewClient(cfg *Config) (*redis.Client, error) {
@@ -50,4 +57,24 @@ func NewClient(cfg *Config) (*redis.Client, error) {
 	}
 
 	return rdb, nil
+}
+
+func New(cfg *Config) *RedisClient {
+	redisPool := &p.Pool{
+		MaxActive: 5,
+		MaxIdle:   5,
+		Wait:      true,
+		Dial: func() (p.Conn, error) {
+			return p.Dial("tcp", ":6379")
+		},
+	}
+
+	conn, _ := p.Dial("tcp", ":6379")
+
+
+	return &RedisClient{
+		Config: nil,
+		Pool:   redisPool,
+		Conn:   conn,
+	}
 }

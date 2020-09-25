@@ -1,7 +1,10 @@
 package main
 
 import (
+	"eight/pkg/jobs"
 	"flag"
+	"os"
+	"os/signal"
 
 	"github.com/go-chi/httplog"
 
@@ -16,6 +19,7 @@ import (
 )
 
 const Version = "v0.1.0"
+const ServiceName = "go8"
 
 var flagConfig = flag.String("config", "./config/dev.yml", "path to the config file")
 
@@ -30,14 +34,13 @@ var flagConfig = flag.String("config", "./config/dev.yml", "path to the config f
 // @host localhost:3080
 // @BasePath /api/v1
 func main() {
-	logger := httplog.NewLogger("go8", httplog.Options{
+	logger := httplog.NewLogger(ServiceName, httplog.Options{
 		JSON:    false, // switch to false for a human readable log format
 		Concise: true,
 		Tags:    map[string]string{"version": Version},
 	})
 	logger = logger.With().Caller().Logger()
 
-	//cfg, err := configs.NewService("dev")
 	cfg, err := configs.NewService(*flagConfig)
 	if err != nil {
 		logger.Error().Err(err)
@@ -67,14 +70,19 @@ func main() {
 		logger.Error().Err(err)
 		return
 	}
+	redisClient := redis.New(cacheCfg)
 
-	bookService, err := books.NewService(db, logger, rdb)
+	jobsWork := jobs.New(redisClient.Pool, &logger)
+
+	enqueuer := jobsWork.NewQueuer(redisClient.Pool)
+
+	bookService, err := books.NewService(db, logger, rdb, redisClient.Conn, jobsWork, enqueuer)
 	if err != nil {
 		logger.Error().Err(err)
 		return
 	}
 
-	authorService, err := authors.NewService(db, logger, rdb)
+	authorService, err := authors.NewService(db, logger, rdb, jobsWork)
 	if err != nil {
 		logger.Error().Err(err)
 		return
@@ -102,4 +110,12 @@ func main() {
 	}
 
 	h.Start(logger)
+
+	// Wait for a signal to quit:
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, os.Interrupt, os.Kill)
+	<-signalChan
+
+	// Stop the jobsWork
+	jobsWork.WorkerPool.Stop()
 }

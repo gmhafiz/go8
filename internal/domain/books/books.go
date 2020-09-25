@@ -22,6 +22,9 @@ func NewService(db *sql.DB, logger zerolog.Logger, rdb *redis.Client) (*HandlerB
 	}
 
 	cacheStore, err := newCacheStore(rdb, logger)
+	if err != nil {
+		return nil, err
+	}
 
 	return &HandlerBooks{
 		store: bookStore,

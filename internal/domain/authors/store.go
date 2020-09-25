@@ -35,7 +35,7 @@ func (as *authorStore) All(ctx context.Context) (models.AuthorSlice, error) {
 	page := ctx.Value("pagination").(middleware.Pagination).Page
 	size := ctx.Value("pagination").(middleware.Pagination).Size
 
-	authorSlice := models.AuthorSlice{}
+	var authorSlice models.AuthorSlice
 
 	var err error
 	if page != 0 && size != 0 {
@@ -67,6 +67,9 @@ func (as *authorStore) GetAuthor(ctx context.Context, authorID int64) (*models.A
 
 	authorz, _ := models.FindAuthor(ctx, as.db, authorID)
 	books, err := authorz.Books().All(ctx, as.db)
+	if err != nil {
+		return nil, err
+	}
 	fmt.Println(books)
 
 	authorz, _ = models.Authors(qm.Load(models.AuthorRels.Books),

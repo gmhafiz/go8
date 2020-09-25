@@ -214,7 +214,20 @@ Custom theme is obtained from [https://github.com/ostranme/swagger-ui-themes](ht
 
 # Cache
 
-Redis cache is by default one minute. It is set by the `Set()` method in `store.go` file.
+Redis cache is by default 5 seconds. It is set by the `Set()` method in `store.go` file.
+
+# Tooling
+
+Various tooling are included within the `Task` runner
+
+  * `task fmt`
+    * Runs `go fmt ./...` to lint Go code
+  * `task tidy`
+    * Runs `go mod tidy` to sync dependencies
+  * `task vet`
+    * Quickly catches compile error
+  * `task golint`
+    * Runs an opinionated code linter from https://golangci-lint.run/
 
 # Structure
     

@@ -124,6 +124,5 @@ func (h *Handlers) GetAuthor() http.HandlerFunc {
 		}
 
 		render.JSON(w, r, resp)
-		return
 	}
 }

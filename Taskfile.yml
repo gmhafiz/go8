@@ -25,6 +25,7 @@ tasks:
       - GO111MODULE=off go get github.com/volatiletech/sqlboiler/drivers/sqlboiler-psql
       - go get github.com/stretchr/testify
       - go get -u github.com/swaggo/swag/cmd/swag
+      - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.31.0
 
   migrate-create:
     desc: Creates .sql migration files (Up and Down). Set name by appending with 'NAME={{name_of_file}}'
@@ -70,3 +71,23 @@ tasks:
     desc: Runs the app Docker image as a Docker container
     cmds:
       - docker run -p 3080:3080 --rm -it --net=host --name go8container go8
+
+  fmt:
+    desc: Lint code
+    cmds:
+      - go fmt ./...
+
+  tidy:
+    desc: Downloads dependencies and removes unused ones
+    cmds:
+      - go mod tidy
+
+  vet:
+    desc: Vets code
+    cmds:
+      - go vet ./...
+
+  golint:
+    desc: Uses golangci-lint
+    cmds:
+      - golangci-lint run

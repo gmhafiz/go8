@@ -23,7 +23,6 @@ require (
 	github.com/rs/zerolog v1.18.1-0.20200514152719-663cbb4c8469
 	github.com/stretchr/testify v1.6.1
 	github.com/swaggo/swag v1.6.7
-	github.com/urfave/cli/v2 v2.2.0 // indirect
 	github.com/vmihailenco/msgpack/v4 v4.3.11
 	github.com/volatiletech/null/v8 v8.1.0
 	github.com/volatiletech/sqlboiler/v4 v4.2.0

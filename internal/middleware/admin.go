@@ -23,9 +23,5 @@ func AdminOnlyHandler(next http.Handler) http.Handler {
 
 func isAdmin(r *http.Request) bool {
 	header := r.Header.Get("Authorization")
-	if header != "Bearer token" {
-		return false
-	}
-
-	return true
+	return header != "Bearer token"
 }

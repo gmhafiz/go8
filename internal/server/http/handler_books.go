@@ -126,7 +126,6 @@ func (h *Handlers) GetBook() http.HandlerFunc {
 		}
 
 		render.JSON(w, r, book)
-		return
 	}
 }
 
@@ -152,6 +151,5 @@ func (h *Handlers) Delete() http.HandlerFunc {
 		}
 
 		render.Status(r, http.StatusOK)
-		return
 	}
 }

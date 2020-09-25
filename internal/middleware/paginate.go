@@ -12,6 +12,11 @@ type Pagination struct {
 	Size  int `json:"size"`
 }
 
+type key string
+const (
+	paginationKey key = ""
+)
+
 func Paginate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var pagination Pagination
@@ -36,7 +41,7 @@ func Paginate(next http.Handler) http.Handler {
 			pagination.Size = 10
 		}
 
-		ctx := context.WithValue(r.Context(), "pagination", pagination)
+		ctx := context.WithValue(r.Context(), paginationKey, pagination)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

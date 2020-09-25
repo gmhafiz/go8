@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"eight/pkg/validation"
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -42,7 +43,7 @@ func (h *Handlers) GetAllBooks() http.HandlerFunc {
 	}
 }
 
-// GetBook godoc
+// CreateBook godoc
 // @Summary Create a Book
 // @Description Get a book with JSON payload
 // @Accept json
@@ -140,7 +141,7 @@ func (h *Handlers) GetBook() http.HandlerFunc {
 	}
 }
 
-// GetBook godoc
+// Delete godoc
 // @Summary Delete a Book
 // @Description Delete a book by its id.
 // @Accept json
@@ -162,6 +163,28 @@ func (h *Handlers) Delete() http.HandlerFunc {
 		}
 
 		render.Status(r, http.StatusOK)
+		return
+	}
+}
+
+func (h *Handlers) SearchBook() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		searchQuery, ok := r.URL.Query()["query"]
+		if !ok {
+			render.Status(r, http.StatusBadRequest)
+			render.JSON(w, r, map[string]string{"error": "malformed request"})
+		}
+
+		res, err := h.Api.Search(r.Context(), searchQuery[0])
+		log.Println(res)
+
+		if err != nil {
+			render.Status(r, http.StatusInternalServerError)
+			render.JSON(w, r, map[string]string{"error": err.Error()})
+		}
+
+		render.Status(r, http.StatusOK)
+		render.JSON(w, r, res)
 		return
 	}
 }

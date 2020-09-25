@@ -42,7 +42,7 @@ func (es *Es) CreateIndices() error {
 				"mappings":{
 					"properties":{
 						"title":{
-							"type":"completion"
+							"type":"text"
 						},
 						"published_date":{
 							"type":"text"
@@ -76,7 +76,7 @@ func (es *Es) CreateIndices() error {
 							"type":"text"
 						},
 						"last_name":{
-							"type":"completion"
+							"type":"text"
 						}
 					}
 				}

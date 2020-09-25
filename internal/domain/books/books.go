@@ -3,7 +3,7 @@ package books
 import (
 	"context"
 	"database/sql"
-
+	"eight/pkg/elasticsearch"
 	"github.com/go-redis/redis/v8"
 	"github.com/rs/zerolog"
 
@@ -13,10 +13,11 @@ import (
 type HandlerBooks struct {
 	store store
 	cache bookCacheStore
+	es    *elasticsearch.Es
 }
 
-func NewService(db *sql.DB, logger zerolog.Logger, rdb *redis.Client) (*HandlerBooks, error) {
-	bookStore, err := newStore(db, logger)
+func NewService(db *sql.DB, logger zerolog.Logger, rdb *redis.Client, es *elasticsearch.Es) (*HandlerBooks, error) {
+	bookStore, err := newStore(db, logger, es)
 	if err != nil {
 		return nil, err
 	}
@@ -26,6 +27,7 @@ func NewService(db *sql.DB, logger zerolog.Logger, rdb *redis.Client) (*HandlerB
 	return &HandlerBooks{
 		store: bookStore,
 		cache: cacheStore,
+		es: es,
 	}, nil
 }
 
@@ -54,6 +56,11 @@ func (b *HandlerBooks) GetBook(ctx context.Context, bookID int64) (*models.Book,
 
 func (b *HandlerBooks) Delete(ctx context.Context, bookID int64) error {
 	return b.store.Delete(ctx, bookID)
+}
+
+func (b *HandlerBooks) Search(ctx context.Context, searchQuery string) ([]models.Book,
+	error) {
+	return b.store.Search(ctx, searchQuery)
 }
 
 func (b *HandlerBooks) Ping() error {

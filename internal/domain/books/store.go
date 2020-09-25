@@ -3,12 +3,14 @@ package books
 import (
 	"context"
 	"database/sql"
-
+	"eight/pkg/elasticsearch"
 	_ "github.com/lib/pq"
+	"github.com/olivere/elastic/v7"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+	"reflect"
 
 	"eight/internal/middleware"
 	"eight/internal/models"
@@ -19,12 +21,14 @@ type store interface {
 	CreateBook(ctx context.Context, bookID *models.Book) (*models.Book, error)
 	GetBook(context.Context, int64) (*models.Book, error)
 	Delete(ctx context.Context, bookID int64) error
+	Search(ctx context.Context, searchQuery string) ([]models.Book, error)
 	Ping() error
 }
 
 type bookStore struct {
 	db     *sql.DB
 	logger zerolog.Logger
+	es     *elasticsearch.Es
 }
 
 func (bs *bookStore) All(ctx context.Context) (models.BookSlice, error) {
@@ -88,13 +92,31 @@ func (bs *bookStore) Delete(ctx context.Context, bookID int64) error {
 	return nil
 }
 
+func (bs *bookStore) Search(ctx context.Context, searchQuery string) ([]models.Book, error) {
+	termQuery := elastic.NewFuzzyQuery("title", searchQuery)
+	searchResult, err := bs.es.Client.Search().Index("go8-books").Query(termQuery).Pretty(true).Do(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var book models.Book
+	var books []models.Book
+	for _, item := range searchResult.Each(reflect.TypeOf(book)) {
+		t := item.(models.Book)
+		books = append(books, t)
+	}
+
+	return books, nil
+}
+
 func (bs *bookStore) Ping() error {
 	return bs.db.Ping()
 }
 
-func newStore(db *sql.DB, logger zerolog.Logger) (*bookStore, error) {
+func newStore(db *sql.DB, logger zerolog.Logger, es *elasticsearch.Es) (*bookStore, error) {
 	return &bookStore{
 		db:     db,
 		logger: logger,
+		es: es,
 	}, nil
 }

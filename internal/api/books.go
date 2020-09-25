@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-
 	"eight/internal/models"
 )
 
@@ -20,4 +19,8 @@ func (a API) GetBook(ctx context.Context, bookID int64) (*models.Book, error) {
 
 func (a API) Delete(ctx context.Context, bookID int64) error {
 	return a.books.Delete(ctx, bookID)
+}
+
+func (a API) Search(ctx context.Context, searchQuery string) ([]models.Book, error) {
+	return a.books.Search(ctx, searchQuery)
 }

@@ -29,6 +29,7 @@ func Router(h *Handlers, logger zerolog.Logger) *chi.Mux {
 			r.Post("/book", h.CreateBook())
 			r.Get("/book/{bookID}", h.GetBook())
 			r.With(middleware.Index).Delete("/book/{bookID}", h.Delete())
+			r.Get("/book/search", h.SearchBook())
 
 			r.With(middleware.Paginate).Get("/authors", h.GetAllAuthors())
 			r.Post("/author", h.CreateAuthor())

@@ -63,39 +63,6 @@ func main() {
 		return
 	}
 
-	rdb, err := redis.NewClient(cacheCfg)
-	if err != nil {
-		logger.Error().Err(err)
-		return
-	}
-
-	bookService, err := books.NewService(db, logger, rdb)
-	if err != nil {
-		logger.Error().Err(err)
-		return
-	}
-
-	authorService, err := authors.NewService(db, logger, rdb)
-	if err != nil {
-		logger.Error().Err(err)
-		return
-	}
-
-	// additional microservice added here
-	a, err := api.NewService(bookService, authorService)
-	if err != nil {
-		logger.Error().Err(err)
-		return
-	}
-
-	httpCfg, err := cfg.HTTP()
-	if err != nil {
-		logger.Error().Err(err)
-		return
-	}
-
-	val := validation.New()
-
 	es, err := elasticsearch.New(cfg.Elasticsearch)
 	if err != nil {
 		logger.Error().Err(err)
@@ -116,6 +83,39 @@ func main() {
 	logger.Info().Msgf("Name: %s, ClusterName: %s, Version: %s, TagLine: %s", info.Name,
 		info.ClusterName, info.Version, info.TagLine)
 	logger.Info().Msgf("%d", code)
+
+	rdb, err := redis.NewClient(cacheCfg)
+	if err != nil {
+		logger.Error().Err(err)
+		return
+	}
+
+	bookService, err := books.NewService(db, logger, rdb, es)
+	if err != nil {
+		logger.Error().Err(err)
+		return
+	}
+
+	authorService, err := authors.NewService(db, logger, rdb, es)
+	if err != nil {
+		logger.Error().Err(err)
+		return
+	}
+
+	// additional microservice added here
+	a, err := api.NewService(bookService, authorService)
+	if err != nil {
+		logger.Error().Err(err)
+		return
+	}
+
+	httpCfg, err := cfg.HTTP()
+	if err != nil {
+		logger.Error().Err(err)
+		return
+	}
+
+	val := validation.New()
 
 	h, err := http.NewService(httpCfg, a, logger, val, es.Client)
 	if err != nil {

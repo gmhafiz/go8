@@ -3,6 +3,7 @@ package authors
 import (
 	"context"
 	"database/sql"
+	"eight/pkg/elasticsearch"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/rs/zerolog"
@@ -13,9 +14,10 @@ import (
 type HandlerAuthors struct {
 	store store
 	cache authorCacheStore
+	es    *elasticsearch.Es
 }
 
-func NewService(db *sql.DB, logger zerolog.Logger, rdb *redis.Client) (*HandlerAuthors, error) {
+func NewService(db *sql.DB, logger zerolog.Logger, rdb *redis.Client, es *elasticsearch.Es) (*HandlerAuthors, error) {
 	authorStore, err := newStore(db, logger)
 	if err != nil {
 		return nil, err
@@ -26,6 +28,7 @@ func NewService(db *sql.DB, logger zerolog.Logger, rdb *redis.Client) (*HandlerA
 	return &HandlerAuthors{
 		store: authorStore,
 		cache: cacheStore,
+		es: es,
 	}, nil
 }
 

@@ -12,9 +12,8 @@ type Pagination struct {
 	Size  int `json:"size"`
 }
 
-type key string
 const (
-	paginationKey key = ""
+	paginationKey string = "paginate"
 )
 
 func Paginate(next http.Handler) http.Handler {

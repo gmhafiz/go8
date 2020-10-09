@@ -75,12 +75,12 @@ B. This project uses [Task](https://github.com/go-task/task) to handle various t
  ](https://github.com/mvdan/sh). Only requirement is to download the binary and append to your `PATH` variable.
   - Install task runner binary bash script:
 
-    
+
     scripts/install-task.sh
 
   - And put this binary in your path if not exists
   
-    
+
     echo 'PATH=$PATH:$HOME/.local/bin' >> ~/.bashrc
     source ~/.bashrc        
 

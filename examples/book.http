@@ -1,0 +1,52 @@
+# Examples of using this book API
+# for vscode users, install `REST Client` to use these example.
+
+### Get All books, by default gets the first 10 books when ordered desc
+# curl --location --request GET 'http://localhost:3080/api/v1/books'
+GET http://localhost:3080/api/v1/books
+Accept: application/json
+
+###
+
+
+### Get paginated books
+# curl --location --request GET 'http://localhost:3080/api/v1/books?page=2&size=10'
+GET http://localhost:3080/api/v1/books?page=2&size=10
+Accept: application/json
+
+
+### Create a new book
+# curl --location --request POST 'http://localhost:3080/api/v1/books' --header 'Authorization: Bearer {{jwt}}' --header 'Content-Type: application/json' --data-raw '{"title": "dsgs","image_url": "http://example.com","published_date": "2020-07-31T15:04:05.123499999Z","description": "test descr"}'
+POST http://localhost:3080/api/v1/books
+Content-Type: application/json
+
+{
+  "title": "dsgs",
+  "image_url": "http://example.com",
+  "published_date": "2020-07-31T15:04:05.123499999Z",
+  "description": "test descr"
+}
+
+
+### Get one book
+# curl --location --request POST 'http://localhost:3080/api/v1/books/1
+GET http://localhost:3080/api/v1/books/1
+Accept: application/json
+
+
+### Updates a new book
+# curl --location --request PUT 'http://localhost:3080/api/v1/books' --header 'Authorization: Bearer {{jwt}}' --header 'Content-Type: application/json' --data-raw '{"title": "dsgs","image_url": "http://example.com","published_date": "2020-07-31T15:04:05.123499999Z","description": "test descr updated"}'
+PUT  http://localhost:3080/api/v1/books/1
+Content-Type: application/json
+
+{
+  "title": "dsgs",
+  "image_url": "http://example.com",
+  "published_date": "2020-07-31T15:04:05.123499999Z",
+  "description": "test descr updated"
+}
+
+### Delete a book
+# curl --location --request DELETE 'http://localhost:3080/api/v1/books/1
+DELETE http://localhost:3080/api/v1/books/1
+Accept: application/json

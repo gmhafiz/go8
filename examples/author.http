@@ -1,0 +1,35 @@
+### Get All books, by default gets the first 10 books when ordered desc
+GET http://localhost:3080/api/v1/authors
+Accept: application/json
+
+
+### Get paginated authors
+GET http://localhost:3080/api/v1/authors?page=2&size=10
+Accept: application/json
+
+
+### Create a new author
+POST  http://localhost:3080/api/v1/authors
+Content-Type: application/json
+
+{
+  "first_name": "Hafiz",
+  "last_name": "Shafruddin"
+}
+
+### Get one author
+GET http://localhost:3080/api/v1/authors/1
+Accept: application/json
+
+### Updates a new author
+PUT  http://localhost:3080/api/v1/authors/1
+Content-Type: application/json
+
+{
+  "first_name": "gmhafiz",
+  "last_name": "Shafruddin"
+}
+
+### Delete a author
+DELETE http://localhost:3080/api/v1/authors/1
+Accept: application/json

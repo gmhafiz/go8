@@ -46,7 +46,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/http.bookRequest"
+                            "$ref": "#/definitions/books.bookRequest"
                         }
                     }
                 ],
@@ -88,6 +88,35 @@ var doc = `{
                     }
                 }
             },
+            "put": {
+                "description": "Update a book by its model.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update a Book",
+                "parameters": [
+                    {
+                        "description": "Book Request",
+                        "name": "Book",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/books.bookRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ok"
+                    },
+                    "500": {
+                        "description": "Internal Server error"
+                    }
+                }
+            },
             "delete": {
                 "description": "Delete a book by its id.",
                 "consumes": [
@@ -109,9 +138,6 @@ var doc = `{
                 "responses": {
                     "200": {
                         "description": "Ok"
-                    },
-                    "400": {
-                        "description": "Bad request"
                     },
                     "500": {
                         "description": "Internal Server error"
@@ -158,7 +184,7 @@ var doc = `{
         }
     },
     "definitions": {
-        "http.bookRequest": {
+        "books.bookRequest": {
             "type": "object",
             "required": [
                 "description",
@@ -223,7 +249,7 @@ type swaggerInfo struct {
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = swaggerInfo{
-	Version:     "0.1.0",
+	Version:     "0.2.0",
 	Host:        "localhost:3080",
 	BasePath:    "/api/v1",
 	Schemes:     []string{},

@@ -9,7 +9,7 @@
             "email": "gmhafiz@gmail.com"
         },
         "license": {},
-        "version": "0.1.0"
+        "version": "0.2.0"
     },
     "host": "localhost:3080",
     "basePath": "/api/v1",
@@ -31,7 +31,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/http.bookRequest"
+                            "$ref": "#/definitions/books.bookRequest"
                         }
                     }
                 ],
@@ -73,6 +73,35 @@
                     }
                 }
             },
+            "put": {
+                "description": "Update a book by its model.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update a Book",
+                "parameters": [
+                    {
+                        "description": "Book Request",
+                        "name": "Book",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/books.bookRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ok"
+                    },
+                    "500": {
+                        "description": "Internal Server error"
+                    }
+                }
+            },
             "delete": {
                 "description": "Delete a book by its id.",
                 "consumes": [
@@ -94,9 +123,6 @@
                 "responses": {
                     "200": {
                         "description": "Ok"
-                    },
-                    "400": {
-                        "description": "Bad request"
                     },
                     "500": {
                         "description": "Internal Server error"
@@ -143,7 +169,7 @@
         }
     },
     "definitions": {
-        "http.bookRequest": {
+        "books.bookRequest": {
             "type": "object",
             "required": [
                 "description",

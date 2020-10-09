@@ -4,6 +4,13 @@ import (
 	"context"
 	"net/http"
 	"strconv"
+
+	"github.com/go-chi/chi"
+)
+
+const (
+	paginationKey string = "pagination"
+	idKey         string = "id"
 )
 
 type Pagination struct {
@@ -12,9 +19,9 @@ type Pagination struct {
 	Size  int `json:"size"`
 }
 
-const (
-	paginationKey string = "paginate"
-)
+type ID struct {
+	Id int64 `json:"id"`
+}
 
 func Paginate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -27,7 +34,7 @@ func Paginate(next http.Handler) http.Handler {
 			}
 			pagination.Page = p
 		} else {
-			pagination.Page = 0
+			pagination.Page = 1
 		}
 
 		if limit := r.URL.Query().Get("size"); limit != "" {
@@ -41,6 +48,16 @@ func Paginate(next http.Handler) http.Handler {
 		}
 
 		ctx := context.WithValue(r.Context(), paginationKey, pagination)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+func IDParam(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		bookID := chi.URLParam(r, "id")
+		idInt64, _ := strconv.ParseInt(bookID, 10, 64)
+
+		ctx := context.WithValue(r.Context(), idKey, idInt64)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

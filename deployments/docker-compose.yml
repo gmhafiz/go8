@@ -1,0 +1,39 @@
+version: '3'
+services:
+  api:
+    build:
+      context: ../build
+      dockerfile: build/Dockerfile
+    volumes:
+      - /tmp/app:/var/log/app
+    ports:
+      - "${API_PORT}:${API_PORT}"
+    depends_on:
+      - postgres
+      - redis
+    command: ["./wait-for-it.sh", "db:5432"]
+
+  postgres:
+    image: "postgres:12"
+    restart: always
+    container_name: "go8_postgres"
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASS}
+      - POSTGRES_DB=${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres12go8db:/var/lib/postgresql/data
+
+  redis:
+    image: redis:5
+    restart: always
+    container_name: rediscache
+    expose:
+      - 6379
+    ports:
+      - '6379:6379'
+
+volumes:
+  postgres12go8db:

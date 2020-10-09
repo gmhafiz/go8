@@ -1,28 +1,40 @@
-# Introduction
+# Introduction                                        
+            .,*/(#####(/*,.                               .,*((###(/*.          
+        .*(%%%%%%%%%%%%%%#/.                           .*#%%%%####%%%%#/.       
+      ./#%%%%#(/,,...,,***.           .......          *#%%%#*.   ,(%%%#/.      
+     .(#%%%#/.                    .*(#%%%%%%%##/,.     ,(%%%#*    ,(%%%#*.      
+    .*#%%%#/.    ..........     .*#%%%%#(/((#%%%%(,     ,/#%%%#(/#%%%#(,        
+    ./#%%%(*    ,#%%%%%%%%(*   .*#%%%#*     .*#%%%#,      *(%%%%%%%#(,.         
+    ./#%%%#*    ,(((##%%%%(*   ,/%%%%/.      .(%%%#/   .*#%%%#(*/(#%%%#/,       
+     ,#%%%#(.        ,#%%%(*   ,/%%%%/.      .(%%%#/  ,/%%%#/.    .*#%%%(,      
+      *#%%%%(*.      ,#%%%(*   .*#%%%#*     ./#%%%#,  ,(%%%#*      .(%%%#*      
+       ,(#%%%%%##(((##%%%%(*    .*#%%%%#(((##%%%%(,   .*#%%%##(///(#%%%#/.      
+         .*/###%%%%%%%###(/,      .,/##%%%%%##(/,.      .*(##%%%%%%##(*,        
+              .........                ......                .......             
+                               
+A starter kit for Go API development. Inspired by [How I write HTTP services after eight years](https://pace.dev/blog/2018/05/09/how-I-write-http-services-after-eight-years.html).
+ However I wanted to use [chi router](https://github.com/go-chi/chi) which is more common in the
+  community, [sqlboiler](https://github.com/volatiletech/sqlboiler/) to solve database operations
+   and design towards more like [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html).
 
-A starter kit for Go API development. Heavily based on [goapp](https://github.com/bnkamalesh/goapp)
-that does an excellent job of organizing things together as well inspired by [How I write HTTP
- services after eight years](https://pace.dev/blog/2018/05/09/how-I-write-http-services-after-eight-years.html).
- However I wanted to use [chi router](https://github.com/go-chi/chi) and [sqlboiler](https://github.com/volatiletech/sqlboiler/)
- which are more common in the Go community.
+This kit tries to follow the [Standard Go Project Layout](https://github.com/golang-standards/project-layout) to make project structure familiar to a Go developer.
 
-Just like the project it is based on, this kit tries to follow the [Standard Go Project Layout
-](https://github.com/golang-standards/project-layout) to make project structure familiar to a Go
- developer.
-
-It is still in early stages and I do not consider it is completed until all integration test and
- input validation are done.
+It is still in early stages and I do not consider it is completed until all integration tests are
+ done.
 
 In short, this kit is a Go + Postgres + Chi Router + SqlBoiler starter kit for API development.
 
 # Motivation
 
-On the topic of API development, the Go community is split between recommending a framework (like
+On the topic of API development, there are two opposing camps between a framework (like
  [echo](https://github.com/labstack/echo), [gin](https://github.com/gin-gonic/gin), 
-   [buffalo](http://gobuffalo.io/) and using standard Go library plus other libraries you need. 
-   However, starting small and sticking to built in `net/http` library plus a few other
-    well known libraries give a lot more flexibility to designing an API since you can always
-     plug and play any functionality you want. 
+   [buffalo](http://gobuffalo.io/) and starting small and only add features you need. However
+   , starting small and adding features aren;t that straightforward. Also, you will want to
+    structure your project in such a way that there are clear separation of functionalities for
+     different files. This is the idea behind [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html). This way, it is easy to switch whichever library to another of your choice.
+   
+   This project serves as a starting point. Further integrations such as elasticsearch, jobs,
+   and authentication are in separate branches.
 
 # Features
 
@@ -30,22 +42,19 @@ This kit is composed of standard Go library together with well known libraries t
  manage things like router, database query and migration support. Technically it supports 
  [other databases](https://github.com/volatiletech/sqlboiler#supported-databases) as well. 
 
-  - [Chi Router](https://github.com/go-chi/chi) 
-  - [Sqlboiler ORM](https://github.com/volatiletech/sqlboiler/)
+  - Router/Mux with [Chi Router](https://github.com/go-chi/chi) 
+  - Database Operations with [Sqlboiler ORM](https://github.com/volatiletech/sqlboiler/)
   - Database migration with [golang-migrate](https://github.com/golang-migrate/migrate/)
-  - Cache result with [Redis](https://redis.io) using [msgpack](https://msgpack.org) 
+  - Cache result with [Redis](https://redis.io) stored with [msgpack](https://msgpack.org) encoding 
   - Input [validation](https://github.com/go-playground/validator) that return multiple error
    strings
   - Scans and auto-generate [Swagger](https://github.com/swaggo/swag) docs using a declarative
    comments format 
   - Request log that logs each user uniquely based on host address
   - Cors
-  - HTTP Integration Test
-  - Pagination
-  - Yaml file for configuration
+  - Pagination through middleware
 
-It has few dependencies and replacing one library to another is easy as long as it adheres to
- standard Go library interface.
+It has few dependencies and replacing one library to another is easy.
 
 
 # Getting It
@@ -53,16 +62,16 @@ It has few dependencies and replacing one library to another is easy as long as 
     git clone https://github.com/gmhafiz/go8
     cd go8
 
-# Setup
+# Quickstart
 
-A. Have both a postgres database and a redis instance ready.
+A. Have both a postgres database and a redis(optional) instance ready.
 
 If not, you can run the following command if you have `docker-compose` installed:
  
     docker-compose up -d postgres redis
 
 B. This project uses [Task](https://github.com/go-task/task) to handle various tasks such as
- migration, generate swagger docs, build and run the app. It is essentially a [sh interpreter
+ migration, generation of swagger docs, build and run the app. It is essentially a [sh interpreter
  ](https://github.com/mvdan/sh). Only requirement is to download the binary and append to your `PATH` variable.
   - Install task runner binary bash script:
 
@@ -75,29 +84,38 @@ B. This project uses [Task](https://github.com/go-task/task) to handle various t
     echo 'PATH=$PATH:$HOME/.local/bin' >> ~/.bashrc
     source ~/.bashrc        
 
-`Tasl` tasks are defined inside `Taskfile.yml` file. A list of tasks available can be viewed with:
+`Task` tasks are defined inside `Taskfile.yml` file. A list of tasks available can be viewed with:
                                                      
     task -l   # or
-    task list # which maps to `task -l`
+    task list
 
-Once `Task` is installed, setup can be
- initiated by the
- following
- command:
+Once `Task` is installed, setup can be initiated by the following command:
 
     task init
     
 This copies example configurations for the app, `sqlboiler` and `Task` to its respective .yml
- files as well as syncs dependencies
-Then open the files at `config/dev.yml`, `sqlboiler.toml`, `.env` and fill in your own configurations
+ files as well as syncs dependencies. Check your `.env` and `sqlboiler.toml` files.
 
+C. Finally, to run,
 
-C. This project uses [golang-migrate](https://github.com/golang-migrate/migrate/) to handle
- database migrations and [Sqlboiler ORM](https://github.com/volatiletech/sqlboiler/) to handle
-  database queries. These tools can be installed with:
+    task run
+    
+And you'll get the following log messages
+
+    task: go run cmd/go8/main.go
+    2020-10-09T11:44:50+11:00 INF internal/server/rest/server.go:26 > starting at 0.0.0.0:3080 service=go8
+    2020-10-09T11:44:50+11:00 INF internal/server/rest/server.go:86 >  routes={"method":"GET","path":"/api/v1/authors/"} service=go8
+    2020-10-09T11:44:50+11:00 INF internal/server/rest/server.go:86 >  routes={"method":"GET","path":"/api/v1/books/"} service=go8
+    2020-10-09T11:44:50+11:00 INF internal/server/rest/server.go:86 >  routes={"method":"POST","path":"/api/v1/books/"} service=go8
+    2020-10-09T11:44:50+11:00 INF internal/server/rest/server.go:86 >  routes={"method":"GET","path":"/api/v1/books/{id}"} service=go8
+    2020-10-09T11:44:50+11:00 INF internal/server/rest/server.go:86 >  routes={"method":"PUT","path":"/api/v1/books/{id}"} service=go8
+    2020-10-09T11:44:50+11:00 INF internal/server/rest/server.go:86 >  routes={"method":"DELETE","path":"/api/v1/books/{id}"} service=go8
+    2020-10-09T11:44:50+11:00 INF internal/server/rest/server.go:86 >  routes={"method":"GET","path":"/swagger"} service=go8
+    
   
+To use, follow examples in the `examples/` folder
 
-    task install-tools
+    curl --location --request GET 'http://localhost:3080/api/v1/books'
   
 
 ## Migration
@@ -110,7 +128,7 @@ Migration is a good step towards having a versioned database and makes publishin
 Using `Task`, creating a migration file is done by the following command. Name the file after
  `NAME=`. 
 
-    task migrate-create NAME=create_a_table
+    task migrate-create NAME=create_a_tablename
 
 ### Migrate up
 
@@ -118,6 +136,7 @@ After you are satisfied with your `.sql` files, run the following command to mig
 
     task migrate
     
+Further `golang-migrate` commands are available in its [documentation (postgres)](https://github.com/golang-migrate/migrate/blob/master/database/postgres/TUTORIAL.md)
 
 ## Database Generate Models and ORMs
 
@@ -130,7 +149,7 @@ Generate ORM with:
     task gen-orm
 
 Generated files are as defined in the `sqlboiler.toml` file. This command needs to be run after
- every migration changes are done.
+ every migration changes are done. Generated files are located in `internal/model`
 
 # Test
 
@@ -164,20 +183,6 @@ Run the following command to build a container from this image. `--net=host` tel
 
     task docker-run
 
-In terminal you will see the API runs at port 3080 and a log of available paths
-
-    2020-09-25T09:43:37+10:00 INF internal/server/http/http.go:40 > starting at :3080 service=go8
-    2020-09-25T09:43:37+10:00 INF internal/server/http/routes.go:50 >  routes={"method":"POST","path":"/api/v1/author"} service=go8
-    2020-09-25T09:43:37+10:00 INF internal/server/http/routes.go:50 >  routes={"method":"GET","path":"/api/v1/author/{authorID}"} service=go8
-    2020-09-25T09:43:37+10:00 INF internal/server/http/routes.go:50 >  routes={"method":"GET","path":"/api/v1/authors"} service=go8
-    2020-09-25T09:43:37+10:00 INF internal/server/http/routes.go:50 >  routes={"method":"POST","path":"/api/v1/book"} service=go8
-    2020-09-25T09:43:37+10:00 INF internal/server/http/routes.go:50 >  routes={"method":"GET","path":"/api/v1/book/{bookID}"} service=go8
-    2020-09-25T09:43:37+10:00 INF internal/server/http/routes.go:50 >  routes={"method":"DELETE","path":"/api/v1/book/{bookID}"} service=go8
-    2020-09-25T09:43:37+10:00 INF internal/server/http/routes.go:50 >  routes={"method":"GET","path":"/api/v1/books"} service=go8
-    2020-09-25T09:43:37+10:00 INF internal/server/http/routes.go:50 >  routes={"method":"GET","path":"/health/liveness"} service=go8
-    2020-09-25T09:43:37+10:00 INF internal/server/http/routes.go:50 >  routes={"method":"GET","path":"/health/readiness"} service=go8
-    2020-09-25T09:43:37+10:00 INF internal/server/http/routes.go:50 >  routes={"method":"GET","path":"/*"} service=go8
-
 
 ## Docker Compose
 
@@ -191,6 +196,10 @@ Both Postgres and redis ports are mapped to local machine. To allow `api` contai
 
 
 # Swagger docs
+
+Swagger UI allows you to play with the API from a browser
+
+![swagger UI](assets/swagger.png)
      
 Edit `cmd/go8/go8.go` `main()` function host and BasePath  
 
@@ -212,35 +221,64 @@ The command `swag init` scans the whole directory and looks for [swagger's decla
 Custom theme is obtained from [https://github.com/ostranme/swagger-ui-themes](https://github.com/ostranme/swagger-ui-themes)
 
 
-# Cache
-
-Redis cache is by default 5 seconds. It is set by the `Set()` method in `store.go` file.
-
 # Tooling
 
 Various tooling are included within the `Task` runner
 
   * `task fmt`
     * Runs `go fmt ./...` to lint Go code
+    * `go fmt` is part of official Go toolchain that formats your code into an opinionated format. 
   * `task tidy`
-    * Runs `go mod tidy` to sync dependencies
+    * Runs `go mod tidy` to sync dependencies.
   * `task vet`
-    * Quickly catches compile error
+    * Quickly catches compile error.
   * `task golint`
     * Runs an opinionated code linter from https://golangci-lint.run/
 
 # Structure
-    
-1. Entry point is at `cmd/go8/go8./go`
-2. Api Routes are defined by `chi` router in `internal/server/http/routes.go`
-3. Handlers are defined under `internal/server/http` folder
-4. Each entity (`book` and `author`) is in their own microservice in `internal/domain` folders. 
-This makes the layout confusing but allows dependency injection for integration testing purpose.
-5. Migration `.sql` files goes under `database/migrations` folder.
-6. Config `.yml` files goes under `config` folder. You can place `dev.yml`, `test.yml`, `prod.yml` 
-under this folder. Note: all `.yml` and `.toml` files are ignored by version control.
+
+This project mostly follows the structure documented at [Standard Go Project Layout](https://github.com/golang-standards/project-layout). 
+
+In addition, this project also tries to follow [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) where each functionality are separated into  different files.
+ 
+## Starting Point 
+Starting point of project is at `cmd/go8/main.go`
+
+![main](assets/main.png)
+
+Purpose of this is to initialize all dependencies (logger, read .env, validation, database, redis) and
+ passes it on to the `rest` package. After all domains are initialized, the rest server can be
+  started.
+ 
+## Domain 
+Looking at the `internal/domain/books` folder:                                                      
+![book-domain](assets/domain-book.png)
+
+  * `handler.go` handles request coming in to perform input validation, calls usecase, and
+    formats the output.
+  * `routes.go` defines available routes for `books`.
+  * `usecase.go` receives request from handler, perform business logic, and call repository if
+   needed.
+  * `repository.go` handles database operations. Also may queries redis cache.
+  * `cache.go` performs redis queries.
+ 
+## Configurations
+![configs](assets/configs.png)
+
+All environment variables are read into specific structs initialized in `configs/configs.go`.  
+
+## Database
+
+Migrations are stored in `database/migrations` folder
+
+## Libraries
+
+Initialization of external libraries are located in `internal/library` 
+
+![library](assets/library.png)
 
 # TODO
 
  - Complete HTTP integration test
  - use [xID](https://github.com/rs/xid) for table ID primary key
+ - better control of json output formatting

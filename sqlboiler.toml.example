@@ -1,13 +1,14 @@
 output   = "internal/models"
 wipe     = true
 no-tests = true
+debug    = false
 
 [psql]
-  dbname = ""
-  host   = "localhost"
-  port   = 5432
-  user   = ""
-  pass   = ""
-  sslmode = "disable"
-  schema = "public"
-  blacklist = ["migrations", "other", "goose_db_version", "schema_migrations"]
+dbname = ""
+host   = "localhost"
+port   = 5432
+user   = ""
+pass   = ""
+sslmode = "disable"
+schema = "public"
+blacklist = ["migrations", "schema_migrations"]

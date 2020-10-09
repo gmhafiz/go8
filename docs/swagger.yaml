@@ -1,6 +1,6 @@
 basePath: /api/v1
 definitions:
-  http.bookRequest:
+  books.bookRequest:
     properties:
       description:
         type: string
@@ -43,7 +43,7 @@ info:
   description: Go + Postgres + Chi Router + SqlBoiler starter kit for API development.
   license: {}
   title: Go8
-  version: 0.1.0
+  version: 0.2.0
 paths:
   /book:
     post:
@@ -56,7 +56,7 @@ paths:
         name: Book
         required: true
         schema:
-          $ref: '#/definitions/http.bookRequest'
+          $ref: '#/definitions/books.bookRequest'
       produces:
       - application/json
       responses:
@@ -81,8 +81,6 @@ paths:
       responses:
         "200":
           description: Ok
-        "400":
-          description: Bad request
         "500":
           description: Internal Server error
       summary: Delete a Book
@@ -104,6 +102,25 @@ paths:
           schema:
             $ref: '#/definitions/models.Book'
       summary: Get a Book
+    put:
+      consumes:
+      - application/json
+      description: Update a book by its model.
+      parameters:
+      - description: Book Request
+        in: body
+        name: Book
+        required: true
+        schema:
+          $ref: '#/definitions/books.bookRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Ok
+        "500":
+          description: Internal Server error
+      summary: Update a Book
   /books:
     get:
       consumes:

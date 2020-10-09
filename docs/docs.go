@@ -29,96 +29,6 @@ var doc = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/book": {
-            "post": {
-                "description": "Get a book with JSON payload",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Create a Book",
-                "parameters": [
-                    {
-                        "description": "Book Request",
-                        "name": "Book",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/http.bookRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/models.Book"
-                        }
-                    }
-                }
-            }
-        },
-        "/book/{bookID}": {
-            "get": {
-                "description": "Get a book by its id.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Get a Book",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "book ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.Book"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete a book by its id.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Delete a Book",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "book ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Ok"
-                    },
-                    "400": {
-                        "description": "Bad request"
-                    },
-                    "500": {
-                        "description": "Internal Server error"
-                    }
-                }
-            }
-        },
         "/books": {
             "get": {
                 "description": "Get all books. By default it gets first page with 10 items.",
@@ -149,16 +59,162 @@ var doc = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.Book"
+                                "$ref": "#/definitions/model.Book"
                             }
                         }
+                    }
+                }
+            },
+            "post": {
+                "description": "Get a book with JSON payload",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a Book",
+                "parameters": [
+                    {
+                        "description": "Book Request",
+                        "name": "Book",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/books.bookRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/model.Book"
+                        }
+                    }
+                }
+            }
+        },
+        "/books/search": {
+            "get": {
+                "description": "Search a book by its title.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Search a Book",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "search term",
+                        "name": "query",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Book"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/books/{bookID}": {
+            "get": {
+                "description": "Get a book by its id.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get a Book",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "book ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Book"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update a book by its model.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update a Book",
+                "parameters": [
+                    {
+                        "description": "Book Request",
+                        "name": "Book",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/books.bookRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ok"
+                    },
+                    "500": {
+                        "description": "Internal Server error"
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a book by its id.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete a Book",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "book ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ok"
+                    },
+                    "500": {
+                        "description": "Internal Server error"
                     }
                 }
             }
         }
     },
     "definitions": {
-        "http.bookRequest": {
+        "books.bookRequest": {
             "type": "object",
             "required": [
                 "description",
@@ -180,7 +236,7 @@ var doc = `{
                 }
             }
         },
-        "models.Book": {
+        "model.Book": {
             "type": "object",
             "properties": {
                 "book_id": {
@@ -223,7 +279,7 @@ type swaggerInfo struct {
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = swaggerInfo{
-	Version:     "0.1.0",
+	Version:     "0.2.0",
 	Host:        "localhost:3080",
 	BasePath:    "/api/v1",
 	Schemes:     []string{},

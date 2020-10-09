@@ -1,10 +1,12 @@
 package configs
 
 import (
-	"database/sql"
 	"fmt"
-	"github.com/rs/zerolog"
 	"os"
+
+	"database/sql"
+	_ "github.com/lib/pq"
+	"github.com/rs/zerolog"
 )
 
 type Database struct {

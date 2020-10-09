@@ -3,7 +3,6 @@ package books
 import (
 	"context"
 	"fmt"
-	p "github.com/gomodule/redigo/redis"
 	"strconv"
 	"time"
 
@@ -11,43 +10,39 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/vmihailenco/msgpack/v4"
 
-	"eight/internal/middleware"
-	"eight/internal/models"
+	"go8ddd/internal/model"
 )
 
-type bookCacheStore interface {
-	GetBooks(ctx context.Context) (books models.BookSlice, err error)
-	SetBooks(ctx context.Context, books *models.BookSlice) error
+type Store interface {
+	All(context.Context, int, int) (books model.BookSlice, err error)
+	Set(context.Context, int, int, *model.BookSlice) error
 }
 
-type bookCache struct {
+type cache struct {
 	cache  *redis.Client
 	logger zerolog.Logger
-	conn   p.Conn
 }
 
-func newCacheStore(cache *redis.Client, conn p.Conn, logger zerolog.Logger) (*bookCache, error) {
-	return &bookCache{
-		cache:  cache,
-		conn:   conn,
+func newCacheStore(redis *redis.Client, logger zerolog.Logger) (*cache, error) {
+	return &cache{
+		cache:  redis,
 		logger: logger,
 	}, nil
 }
 
-func (cache *bookCache) GetBooks(ctx context.Context) (books models.BookSlice, err error) {
-	from := ctx.Value("pagination").(middleware.Pagination).Page
-	size := ctx.Value("pagination").(middleware.Pagination).Size
-
+func (c *cache) All(ctx context.Context, page int, size int) (books model.BookSlice,
+	err error) {
 	var key string
-	if from != 0 && size != 0 {
-		key = fmt.Sprintf("booksAll-%s-%s", strconv.Itoa(from), strconv.Itoa(size))
+	if page != 0 && size != 0 {
+		key = fmt.Sprintf("booksAll-%s-%s", strconv.Itoa(page), strconv.Itoa(size))
 	} else {
 		key = "booksAll"
 	}
 
-	b, err := cache.cache.Get(ctx, key).Bytes()
-	if b == nil {
-		return nil, err
+	b, err := c.cache.Get(ctx, key).Bytes()
+	if err != nil {
+		c.logger.Warn().Msg(err.Error())
+		return books, err
 	}
 
 	err = msgpack.Unmarshal(b, &books)
@@ -58,22 +53,19 @@ func (cache *bookCache) GetBooks(ctx context.Context) (books models.BookSlice, e
 	return books, nil
 }
 
-func (cache *bookCache) SetBooks(ctx context.Context, books *models.BookSlice) error {
-	from := ctx.Value("pagination").(middleware.Pagination).Page
-	size := ctx.Value("pagination").(middleware.Pagination).Size
-
+func (c *cache) Set(ctx context.Context, page, size int, books *model.BookSlice) error {
 	var key string
-	if from != 0 && size != 0 {
-		key = fmt.Sprintf("booksAll-%s-%s", strconv.Itoa(from), strconv.Itoa(size))
+	if page != 0 && size != 0 {
+		key = fmt.Sprintf("booksAll-%s-%s", strconv.Itoa(page), strconv.Itoa(size))
 	} else {
 		key = "booksAll"
 	}
 
 	b, err := msgpack.Marshal(books)
 	if err != nil {
+		c.logger.Error().Msg(err.Error())
 		return err
 	}
 
-	//_, err = cache.conn.Do("HMSET", p.Args{}.Add(key).Add(b))
-	return cache.cache.Set(ctx, key, b, time.Minute*1).Err()
+	return c.cache.Set(ctx, key, b, time.Minute*1).Err()
 }

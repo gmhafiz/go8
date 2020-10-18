@@ -3,7 +3,9 @@ package main
 import (
 	"database/sql"
 	"github.com/go-redis/redis/v8"
-	"go8ddd/internal/library/cache"
+	"go8ddd/internal/domain/health"
+	"go8ddd/third_party/cache"
+	"go8ddd/third_party/database"
 
 	"github.com/go-chi/chi"
 	"github.com/go-playground/validator/v10"
@@ -12,9 +14,9 @@ import (
 	"go8ddd/configs"
 	"go8ddd/internal/domain/authors"
 	"go8ddd/internal/domain/books"
-	"go8ddd/internal/library/logger"
-	"go8ddd/internal/library/validation"
 	"go8ddd/internal/server/rest"
+	"go8ddd/third_party/logger"
+	"go8ddd/third_party/validation"
 )
 
 const Version = "v0.2.0"
@@ -33,17 +35,22 @@ func main() {
 	log := logger.New(Version)
 	cfg := configs.New(log)
 	val := validation.New()
-	db := configs.NewDatabase(log, cfg)
-	c, _ := cache.New(cfg)
+	db := database.New(log, cfg)
+	c := cache.New(cfg)
 	s := rest.New(log, cfg, db)
 
 	initializeBookDomain(s.GetRouter(), log, val, db, c)
 	initializeAuthorDomain(s.GetRouter(), log, val, db)
+	initializeHealthDomain(s.GetRouter(), log, db)
 
 	err := s.Start(log, cfg)
 	if err != nil {
 		log.Fatal().Msg(err.Error())
 	}
+}
+
+func initializeHealthDomain(router *chi.Mux, log zerolog.Logger, db *sql.DB) {
+	health.New(router, log, db)
 }
 
 func initializeBookDomain(router *chi.Mux, log zerolog.Logger, validate *validator.Validate,

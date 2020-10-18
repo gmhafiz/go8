@@ -21,36 +21,33 @@ type BookRepository interface {
 	HardDelete(ctx context.Context, bookID int64) error
 }
 
-type bookRepo struct {
+type repo struct {
 	log   zerolog.Logger
 	db    *sql.DB
 	cache Store
 }
 
-func NewRepository(log zerolog.Logger, db *sql.DB, cache *redis.Client) *bookRepo {
+func NewRepository(log zerolog.Logger, db *sql.DB, cache *redis.Client) *repo {
 	cacheStore, err := newCacheStore(cache, log)
 	if err != nil {
 		log.Fatal()
 	}
 
-	return &bookRepo{
+	return &repo{
 		log:   log,
 		db:    db,
 		cache: cacheStore,
 	}
 }
 
-func (r bookRepo) All(ctx context.Context) (model.BookSlice, error) {
+func (r repo) All(ctx context.Context) (model.BookSlice, error) {
 	page := ctx.Value("pagination").(middleware.Pagination).Page
 	size := ctx.Value("pagination").(middleware.Pagination).Size
 
 	var err error
 	var books model.BookSlice
 
-	books, err = r.cache.All(ctx, page, size)
-	if err != nil {
-		r.log.Error().Msg(err.Error())
-	}
+	books = r.cache.All(ctx, page, size)
 
 	if len(books) > 0 {
 		return books, nil
@@ -76,7 +73,7 @@ func (r bookRepo) All(ctx context.Context) (model.BookSlice, error) {
 	return books, nil
 }
 
-func (r bookRepo) Create(ctx context.Context, book *model.Book) (*model.Book, error) {
+func (r repo) Create(ctx context.Context, book *model.Book) (*model.Book, error) {
 	err := book.Insert(ctx, r.db, boil.Infer())
 	if err != nil {
 		r.log.Error().Msg(err.Error())
@@ -85,7 +82,7 @@ func (r bookRepo) Create(ctx context.Context, book *model.Book) (*model.Book, er
 	return book, nil
 }
 
-func (r bookRepo) Get(ctx context.Context, bookID int64) (*model.Book, error) {
+func (r repo) Get(ctx context.Context, bookID int64) (*model.Book, error) {
 	book, err := model.FindBook(ctx, r.db, bookID)
 	if err != nil {
 		r.log.Error().Msg(err.Error())
@@ -94,7 +91,7 @@ func (r bookRepo) Get(ctx context.Context, bookID int64) (*model.Book, error) {
 	return book, nil
 }
 
-func (r bookRepo) Update(ctx context.Context, book *model.Book) (*model.Book, error) {
+func (r repo) Update(ctx context.Context, book *model.Book) (*model.Book, error) {
 	id := ctx.Value("id").(int64)
 
 	bookDB, err := model.FindBook(ctx, r.db, id)
@@ -112,7 +109,7 @@ func (r bookRepo) Update(ctx context.Context, book *model.Book) (*model.Book, er
 	return bookDB, nil
 }
 
-func (r bookRepo) Delete(ctx context.Context, bookID int64) error {
+func (r repo) Delete(ctx context.Context, bookID int64) error {
 	book, err := model.FindBook(ctx, r.db, bookID)
 	if err != nil {
 		r.log.Error().Msg(err.Error())
@@ -126,7 +123,7 @@ func (r bookRepo) Delete(ctx context.Context, bookID int64) error {
 	return nil
 }
 
-func (r bookRepo) HardDelete(ctx context.Context, bookID int64) error {
+func (r repo) HardDelete(ctx context.Context, bookID int64) error {
 	book, err := model.FindBook(ctx, r.db, bookID)
 	if err != nil {
 		r.log.Error().Msg(err.Error())

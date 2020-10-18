@@ -10,11 +10,11 @@ type AuthorUseCase interface {
 	All(ctx context.Context) (model.AuthorSlice, error)
 }
 
-type authorUseCase struct {
+type useCase struct {
 	authorRepo AuthorRepository
 }
 
-func (u *authorUseCase) All(ctx context.Context) (model.AuthorSlice, error) {
+func (u *useCase) All(ctx context.Context) (model.AuthorSlice, error) {
 	list, err := u.authorRepo.All(ctx)
 	if err != nil {
 		return nil, err
@@ -23,7 +23,7 @@ func (u *authorUseCase) All(ctx context.Context) (model.AuthorSlice, error) {
 }
 
 func NewUseCase(repo AuthorRepository) AuthorUseCase {
-	return &authorUseCase{
+	return &useCase{
 		authorRepo: repo,
 	}
 }

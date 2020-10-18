@@ -8,14 +8,14 @@ import (
 	"net/http"
 )
 
-type AuthorHandler struct {
+type Handler struct {
 	AuthorUseCase AuthorUseCase
 	Validator     *validator.Validate
 	Router        *chi.Mux
 }
 
 func NewHandler(router *chi.Mux, validate *validator.Validate, useCase AuthorUseCase) {
-	handler := &AuthorHandler{
+	handler := &Handler{
 		AuthorUseCase: useCase,
 		Validator:     validate,
 		Router:        router,
@@ -24,9 +24,9 @@ func NewHandler(router *chi.Mux, validate *validator.Validate, useCase AuthorUse
 }
 
 // FetchArticle will fetch the article based on given params
-func (handler *AuthorHandler) All() http.HandlerFunc {
+func (h *Handler) All() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		list, err := handler.AuthorUseCase.All(r.Context())
+		list, err := h.AuthorUseCase.All(r.Context())
 		if err != nil {
 			render.Status(r, errorsUtil.GetStatusCode(err))
 			render.JSON(w, r, errorsUtil.ResponseError{Error: err.Error()})

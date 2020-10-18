@@ -15,19 +15,19 @@ type AuthorRepository interface {
 	All(ctx context.Context) (model.AuthorSlice, error)
 }
 
-type authorRepo struct {
+type repo struct {
 	log zerolog.Logger
 	db  *sql.DB
 }
 
 func NewRepository(log zerolog.Logger, db *sql.DB) AuthorRepository {
-	return &authorRepo{
+	return &repo{
 		log: log,
 		db:  db,
 	}
 }
 
-func (r authorRepo) All(ctx context.Context) (model.AuthorSlice, error) {
+func (r repo) All(ctx context.Context) (model.AuthorSlice, error) {
 	page := ctx.Value("pagination").(middleware.Pagination).Page
 	size := ctx.Value("pagination").(middleware.Pagination).Size
 

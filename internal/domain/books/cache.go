@@ -14,7 +14,7 @@ import (
 )
 
 type Store interface {
-	All(context.Context, int, int) (books model.BookSlice, err error)
+	All(context.Context, int, int) (books model.BookSlice)
 	Set(context.Context, int, int, *model.BookSlice) error
 }
 
@@ -30,8 +30,7 @@ func newCacheStore(redis *redis.Client, logger zerolog.Logger) (*cache, error) {
 	}, nil
 }
 
-func (c *cache) All(ctx context.Context, page int, size int) (books model.BookSlice,
-	err error) {
+func (c *cache) All(ctx context.Context, page int, size int) (books model.BookSlice) {
 	var key string
 	if page != 0 && size != 0 {
 		key = fmt.Sprintf("booksAll-%s-%s", strconv.Itoa(page), strconv.Itoa(size))
@@ -41,16 +40,16 @@ func (c *cache) All(ctx context.Context, page int, size int) (books model.BookSl
 
 	b, err := c.cache.Get(ctx, key).Bytes()
 	if err != nil {
-		c.logger.Error().Msg(err.Error())
-		return nil, err
+		c.logger.Warn().Msg(err.Error())
+		return nil
 	}
 
 	err = msgpack.Unmarshal(b, &books)
 	if err != nil {
-		return nil, err
+		return nil
 	}
 
-	return books, nil
+	return books
 }
 
 func (c *cache) Set(ctx context.Context, page, size int, books *model.BookSlice) error {

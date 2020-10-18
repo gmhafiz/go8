@@ -20,7 +20,7 @@ import (
 	"go8ddd/internal/utility/success"
 )
 
-type BookHandler struct {
+type Handler struct {
 	BookUseCase BookUseCase
 	Validator   *validator.Validate
 	Router      *chi.Mux
@@ -34,7 +34,7 @@ type bookRequest struct {
 }
 
 func NewHandler(router *chi.Mux, validate *validator.Validate, bu BookUseCase) {
-	handler := &BookHandler{
+	handler := &Handler{
 		BookUseCase: bu,
 		Validator:   validate,
 		Router:      router,
@@ -52,7 +52,7 @@ func NewHandler(router *chi.Mux, validate *validator.Validate, bu BookUseCase) {
 // @Param size query string false "size"
 // @Success 200 {object} []models.Book
 // @Router /books [get]
-func (handler *BookHandler) All() http.HandlerFunc {
+func (handler *Handler) All() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		resp, err := handler.BookUseCase.All(r.Context())
 		if err != nil {
@@ -78,7 +78,7 @@ func (handler *BookHandler) All() http.HandlerFunc {
 // @Param Book body bookRequest true "Book Request"
 // @Success 201 {object} models.Book
 // @Router /book [post]
-func (handler *BookHandler) Create() http.HandlerFunc {
+func (handler *Handler) Create() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var bookRequest bookRequest
 		err := json.NewDecoder(r.Body).Decode(&bookRequest)
@@ -137,7 +137,7 @@ func (handler *BookHandler) Create() http.HandlerFunc {
 // @Param id path int true "book ID"
 // @Success 200 {object} models.Book
 // @Router /book/{bookID} [get]
-func (handler *BookHandler) Get() http.HandlerFunc {
+func (handler *Handler) Get() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.Context().Value("id").(int64)
 
@@ -168,7 +168,7 @@ func (handler *BookHandler) Get() http.HandlerFunc {
 // @Success 200 "Ok"
 // @Failure 500 "Internal Server error"
 // @Router /book/{bookID} [put]
-func (handler *BookHandler) Update() http.HandlerFunc {
+func (handler *Handler) Update() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var bookRequest *model.Book
 		err := json.NewDecoder(r.Body).Decode(&bookRequest)
@@ -197,7 +197,7 @@ func (handler *BookHandler) Update() http.HandlerFunc {
 // @Success 200 "Ok"
 // @Failure 500 "Internal Server error"
 // @Router /book/{bookID} [delete]
-func (handler *BookHandler) Delete() http.HandlerFunc {
+func (handler *Handler) Delete() http.HandlerFunc {
 	type deleteType struct {
 		HardDelete bool `json:"hard_delete,omitempty"`
 	}

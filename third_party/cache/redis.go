@@ -9,7 +9,7 @@ import (
 	"go8ddd/configs"
 )
 
-func New(cfg *configs.Configs) (*redis.Client, error) {
+func New(cfg *configs.Configs) *redis.Client {
 	rdb := redis.NewClient(&redis.Options{
 		//Network:            "",
 		Addr:      fmt.Sprintf("%s:%s", cfg.Cache.Host, cfg.Cache.Port),
@@ -36,8 +36,8 @@ func New(cfg *configs.Configs) (*redis.Client, error) {
 
 	_, err := rdb.Ping(context.Background()).Result()
 	if err != nil {
-		return nil, err
+		return nil
 	}
 
-	return rdb, nil
+	return rdb
 }

@@ -3,13 +3,13 @@ package rest
 import (
 	"database/sql"
 	"fmt"
+	"github.com/go-chi/httplog"
 	"net/http"
 	"os"
 	"time"
 
 	"github.com/go-chi/chi"
 	chiMiddleware "github.com/go-chi/chi/middleware"
-	"github.com/go-chi/httplog"
 	"github.com/rs/zerolog"
 
 	"go8ddd/configs"
@@ -40,7 +40,9 @@ func (s Server) GetRouter() *chi.Mux {
 func New(log zerolog.Logger, cfg *configs.Configs, db *sql.DB) *Server {
 	router := chi.NewRouter()
 
-	router.Use(httplog.RequestLogger(log))
+	if cfg.Api.RequestLog {
+		router.Use(httplog.RequestLogger(log))
+	}
 	router.Use(middleware.Cors)
 	router.Use(chiMiddleware.Recoverer)
 

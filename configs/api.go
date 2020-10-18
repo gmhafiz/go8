@@ -13,6 +13,7 @@ type Api struct {
 	ApiReadHeaderTimeout time.Duration
 	ApiWriteTimeout      time.Duration
 	ApiIdleTimeout       time.Duration
+	RequestLog           bool
 }
 
 func API() *Api {
@@ -20,6 +21,7 @@ func API() *Api {
 	apiReadHeaderTimeout, _ := strconv.Atoi(os.Getenv("API_READ_HEADER_TIMEOUT"))
 	apiWriteTimeout, _ := strconv.Atoi(os.Getenv("API_WRITE_TIMEOUT"))
 	apiIdleTimeout, _ := strconv.Atoi(os.Getenv("API_IDLE_TIMEOUT"))
+	requestLog, _ := strconv.ParseBool(os.Getenv("API_REQUEST_LOG"))
 
 	return &Api{
 		Host:                 os.Getenv("API_HOST"),
@@ -28,5 +30,6 @@ func API() *Api {
 		ApiReadHeaderTimeout: time.Duration(apiReadHeaderTimeout),
 		ApiWriteTimeout:      time.Duration(apiWriteTimeout),
 		ApiIdleTimeout:       time.Duration(apiIdleTimeout),
+		RequestLog:           requestLog,
 	}
 }

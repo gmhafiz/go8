@@ -70,7 +70,7 @@ func (handler *Handler) All() http.HandlerFunc {
 	}
 }
 
-// Create creates a new bookr ecord
+// Create creates a new book record
 // @Summary Create a Book
 // @Description Get a book with JSON payload
 // @Accept json

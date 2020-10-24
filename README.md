@@ -1,4 +1,4 @@
-# Introduction                                        
+i# Introduction                                        
             .,*/(#####(/*,.                               .,*((###(/*.          
         .*(%%%%%%%%%%%%%%#/.                           .*#%%%%####%%%%#/.       
       ./#%%%%#(/,,...,,***.           .......          *#%%%#*.   ,(%%%#/.      
@@ -57,51 +57,59 @@ This kit is composed of standard Go library together with well known libraries t
 It has few dependencies and replacing one library to another is easy.
 
 
-# Getting It
+# Quickstart
+
+Get it
 
     git clone https://github.com/gmhafiz/go8
     cd go8
 
-# Quickstart
+The minimum external dependency is the `golang-migrate` program. While technically you can run
+ the schema in `database/migration` yourself, it is recommended to use the program instead. But
+  before doing this, create a directory where you can put your binaries and add this path to the
+   `PATH` environment variable.
+   
+    mkdir -p ~/.local/bin
 
-A. Have both a postgres database and a redis(optional) instance ready.
-
-If not, you can run the following command if you have `docker-compose` installed:
- 
-    docker-compose up -d postgres redis
-
-B. This project uses [Task](https://github.com/go-task/task) to handle various tasks such as
- migration, generation of swagger docs, build and run the app. It is essentially a [sh interpreter
- ](https://github.com/mvdan/sh). Only requirement is to download the binary and append to your `PATH` variable.
-  - Install task runner binary bash script:
-
-
-    scripts/install-task.sh
-
-  - And put this binary in your path if not exists
-  
+To add this newly created directory to `PATH` environment variable, add this line to `~/.profile
+` file
 
     echo 'PATH=$PATH:$HOME/.local/bin' >> ~/.bashrc
-    source ~/.bashrc        
 
-`Task` tasks are defined inside `Taskfile.yml` file. A list of tasks available can be viewed with:
-                                                     
-    task -l   # or
-    task list
+To make your shell learn of the new path, reload your `~/.bashrc` file
 
-Once `Task` is installed, setup can be initiated by the following command:
-
-    task init
+    source ~/.bashrc
     
-This copies example configurations for the app, `sqlboiler` and `Task` to its respective .yml
- files as well as syncs dependencies. Check your `.env` and `sqlboiler.toml` files.
+Then download and install `golang-migrate`
 
-C. Finally, to run,
-
-    task run
+    curl -L https://github.com/golang-migrate/migrate/releases/download/v4.11.0/migrate.linux-amd64.tar.gz | tar xvz
+    mv migrate.linux-amd64 ~/.local/bin/migrate
     
-And you'll get the following log messages
+`migrate` is able to read `.env` file for database credentials. So we first run a script that
+ makes a copy of `.env` file and prompts for database connection details. This will also install
+  all other convenient tools.
 
+    go run cmd/init/main.go
+
+
+Have a database ready either by installing them yourself or the following command. the `docker
+-compose.yml` will use database credentials set in `.env` file. Optionally, you may redis as well
+
+    docker-compose up -d postgres # or
+    docker-compose up -d postgres redis
+
+To run migration,
+
+    migrate -path database/migrations up
+
+
+Once the database is up, you may run the api
+
+    go run cmd/go8/main.go
+    
+
+You will see the address the API is running at as well as all registered routes.
+    
     task: go run cmd/go8/main.go
     2020-10-09T11:44:50+11:00 INF internal/server/rest/server.go:26 > starting at 0.0.0.0:3080 service=go8
     2020-10-09T11:44:50+11:00 INF internal/server/rest/server.go:86 >  routes={"method":"GET","path":"/api/v1/authors/"} service=go8
@@ -111,11 +119,31 @@ And you'll get the following log messages
     2020-10-09T11:44:50+11:00 INF internal/server/rest/server.go:86 >  routes={"method":"PUT","path":"/api/v1/books/{id}"} service=go8
     2020-10-09T11:44:50+11:00 INF internal/server/rest/server.go:86 >  routes={"method":"DELETE","path":"/api/v1/books/{id}"} service=go8
     2020-10-09T11:44:50+11:00 INF internal/server/rest/server.go:86 >  routes={"method":"GET","path":"/swagger"} service=go8
-    
-  
+
 To use, follow examples in the `examples/` folder
 
     curl --location --request GET 'http://localhost:3080/api/v1/books'
+
+
+# Tools
+
+While the above quickstart is sufficient to start the API, some tools are included for easier
+ task management.
+
+A. This project uses [Task](https://github.com/go-task/task) to handle various tasks such as
+ migration, generation of swagger docs, build and run the app. It is essentially a [sh interpreter
+ ](https://github.com/mvdan/sh). Only requirement is to download the binary and append to your `PATH` variable.
+  - Install task runner binary bash script:
+
+
+    sudo ./scripts/install-task.sh
+
+This installs `task` to `/usr/local/bin/task` so `sudo` is needed.       
+    
+`Task` tasks are defined inside `Taskfile.yml` file. A list of tasks available can be viewed with:
+                                                     
+    task -l   # or
+    task list
   
 
 ## Migration
@@ -169,7 +197,7 @@ Using `Task`:
 
 Without `Task`
     
-    go run cmd/go8/go8.go 
+    go run cmd/go8/main.go 
     
 ## Docker
 
@@ -182,17 +210,6 @@ Run the following command to build a container from this image. `--net=host` tel
  to use local's network so that it can access local's database.
 
     task docker-run
-
-
-## Docker Compose
-
-If you have `docker-compose` installed, you may run the app with the following command. Docker
--compose binary must be installed beforehand. 
-
-    docker-compose up -d
-
-Both Postgres and redis ports are mapped to local machine. To allow `api` container to reach the
- database and redis.
 
 
 # Swagger docs

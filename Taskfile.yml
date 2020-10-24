@@ -7,10 +7,6 @@ tasks:
     desc: Lists available commands
     cmds:
       - task -l
-  init:
-    desc: Copies example configuration files to your own. The copied files are ignored with .gitignore file as well as sync dependencies.
-    cmds:
-      - go run cmd/init/main.go
 
   migrate-create:
     desc: Creates .sql migration files (Up and Down). Set name by appending with 'NAME={{name_of_file}}'

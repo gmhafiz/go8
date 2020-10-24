@@ -26,12 +26,20 @@ const (
 	GolangCIVersion      = "v1.31.0"
 )
 
+var (
+	HomeDir string
+)
+
+func init() {
+	HomeDir = os.Getenv("HOME")
+}
+
 func main() {
 	var dbConfigs configs.Database
 
 	go syncsGoMod()
 
-	go installTools()
+	installTools()
 
 	copyENV()
 
@@ -53,23 +61,117 @@ func exportEnv(cfg *configs.Database) {
 }
 
 func installTools() {
-	_ = exec.Command("curl", "-L",
-		"https://github.com/golang-migrate/migrate/releases/download/"+GolangMigrateVersion+"/migrate.linux-amd64.tar.gz", "|", "tar", "xvz")
-	_ = exec.Command("mv migrate.linux-amd64 ~/.local/bin/migrate")
-	_ = exec.Command("source ~/.bashrc")
-	_ = exec.Command("GO111MODULE=off go get -u -t github.com/volatiletech/sqlboiler")
-	_ = exec.Command("GO111MODULE=off go get github.com/volatiletech/sqlboiler/drivers/sqlboiler-psql")
-	_ = exec.Command("GO111MODULE=off go get github.com/volatiletech/sqlboiler/drivers/sqlboiler-mysql")
-	_ = exec.Command("GO111MODULE=off go get github.com/volatiletech/sqlboiler/drivers/sqlboiler-mssql")
-	_ = exec.Command("go get github.com/stretchr/testify")
-	_ = exec.Command("go get -u github.com/swaggo/swag/cmd/swag")
-	_ = exec.Command("go get gopkg.in/ini.v1")
-	_ = exec.Command("go get github.com/go-redis/redis/v8")
-	_ = exec.Command("curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin " + GolangCIVersion)
+	installGolangMigrate()
+	installSQLBoiler()
+	installTestify()
+	installSwag()
+	installGolangCILint()
+	source()
+}
+
+func source() {
+	cmd := exec.Command("source", fmt.Sprintf("%s/.bashrc", HomeDir))
+	err := cmd.Run()
+	if err != nil {
+		log.Fatalln("error sourcing ~/.bashrc")
+	}
+}
+
+func installGolangCILint() {
+	cmd := fmt.Sprintf("curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin %s", GolangCIVersion)
+	_, err := exec.Command("bash", "-c", cmd).Output()
+	if err != nil {
+		log.Fatalln("error installing")
+	}
+}
+
+func installSwag() {
+	if binaryExists("swag") {
+		return
+	}
+
+	goGet("github.com/swaggo/swag/cmd/swag")
+}
+
+func installTestify() {
+	if binaryExists("testify") {
+		return
+	}
+
+	goGet("github.com/stretchr/testify")
+}
+
+func installSQLBoiler() {
+	if binaryExists("sqlboiler") {
+		return
+	}
+
+	binaries := []string{
+		"github.com/volatiletech/sqlboiler",
+		"github.com/volatiletech/sqlboiler/drivers/sqlboiler-psql",
+		"github.com/volatiletech/sqlboiler/drivers/sqlboiler-mysql",
+		"github.com/volatiletech/sqlboiler/drivers/sqlboiler-mssql",
+	}
+	for _, val := range binaries {
+		goGet(val)
+	}
+}
+
+func goGet(path string) {
+	cmd := exec.Command("GO111MODULE=off", "go", "get", "-u", "-t", path)
+	err := cmd.Run()
+	if err != nil {
+		log.Fatalln("error downloading")
+	}
+}
+
+func installGolangMigrate() {
+	if binaryExists("migrate") {
+		return
+	}
+
+	cmd := exec.Command("wget", "https://github.com/golang-migrate/migrate/releases/download/"+GolangMigrateVersion+"/migrate.linux-amd64.tar.gz")
+	err := cmd.Run()
+	if err != nil {
+		log.Fatalf("golang-migrate download failed with %s \n", err)
+	}
+
+	cmd = exec.Command("tar", "xvzf", "migrate.linux-amd64.tar.gz")
+	err = cmd.Run()
+	if err != nil {
+		log.Fatalf("extracting golang-migrate failed with %s \n", err)
+	}
+
+	cmd = exec.Command("mkdir", "-p", fmt.Sprintf("%s/.local/bin", HomeDir))
+	err = cmd.Run()
+	if err != nil {
+		log.Fatalf("error creating folder with %s \n", err)
+	}
+
+	cmd = exec.Command("mv", "migrate.linux-amd64", fmt.Sprintf("%s/.local/bin/migrate", HomeDir))
+	err = cmd.Run()
+	if err != nil {
+		log.Fatalf("error moving binary with %s \n", err)
+	}
+
+	return
+}
+
+func binaryExists(binaryName string) bool {
+	cmd := exec.Command("which", binaryName)
+	stdout, _ := cmd.CombinedOutput()
+	if len(stdout) != 0 {
+		return true
+	}
+	return false
 }
 
 func syncsGoMod() {
-	_ = exec.Command("go", "mod", "tidy")
+	cmd := exec.Command("go", "mod", "tidy")
+	err := cmd.Run()
+	if err != nil {
+		log.Fatalln("error executing go mod tidy")
+	}
 }
 
 func fillIntoENV(cfg *configs.Database) {
@@ -117,15 +219,13 @@ func fillIntoSQLBoiler(dbConfigs *configs.Database) {
 }
 
 func getDbDetails(cfg *configs.Database) *configs.Database {
-	cfg.Driver = getInput("Enter database driver (postgres/mysql) (default: postgres): ",
-		"postgres")
+	cfg.Driver = getInput("Enter database driver (postgres/mysql) (default: postgres): ", "postgres")
 	cfg.Host = getInput("Enter database host (default: localhost): ", "localhost")
 	cfg.Port = getInput("Enter database port (default: 5432): ", "5432")
 	cfg.Name = getInput("Enter database name: ", "")
 	cfg.User = getInput("Enter database username: ", "")
 	cfg.Pass = getInput("Enter database password: ", "")
 	cfg.SslMode = getInput("Database SSL MODE (disable/enable) (default: disable): ", "disable")
-
 	return cfg
 }
 

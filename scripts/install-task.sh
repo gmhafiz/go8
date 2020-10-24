@@ -1,13 +1,20 @@
 #!/usr/bin/env bash
 
+# bool function to test if the user is root or not
+is_user_root () { [ ${EUID:-$(id -u)} -eq 0 ]; }
+
 TASKPATH=$(which task)
 if [ -z "$TASKPATH" ]
 then
-  curl -sL https://taskfile.dev/install.sh | sh
-  mv bin/task $HOME/.local/bin/
-  echo "task binary moved to $HOME/.local/bin"
-  echo "please do 'source ~/.bashrc' to reload \$PATH"
-  rm -R bin
+  if is_user_root;
+  then
+    curl -sL https://taskfile.dev/install.sh | sh
+    sudo mv bin/task /usr/local/bin
+    echo "task binary added to \$PATH"
+    rm -R bin
+  else
+    echo "you need to be a sudo to add the binary to \$PATH"
+  fi
 else
   echo "Task has already been installed"
 fi

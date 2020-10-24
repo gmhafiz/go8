@@ -66,15 +66,6 @@ func installTools() {
 	installTestify()
 	installSwag()
 	installGolangCILint()
-	source()
-}
-
-func source() {
-	cmd := exec.Command("source", fmt.Sprintf("%s/.bashrc", HomeDir))
-	err := cmd.Run()
-	if err != nil {
-		log.Fatalln("error sourcing ~/.bashrc")
-	}
 }
 
 func installGolangCILint() {
@@ -118,7 +109,10 @@ func installSQLBoiler() {
 }
 
 func goGet(path string) {
-	cmd := exec.Command("GO111MODULE=off", "go", "get", "-u", "-t", path)
+	log.Printf("installing %s\n", path)
+	cmd := exec.Command("go", "get", "-u", "-t", path)
+	cmd.Env = os.Environ()
+	cmd.Env = append(cmd.Env, "GO111MODULE=off")
 	err := cmd.Run()
 	if err != nil {
 		log.Fatalln("error downloading")

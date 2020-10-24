@@ -59,10 +59,15 @@ It has few dependencies and replacing one library to another is easy.
 
 # Quickstart
 
+You need to [have a go binary](## Go Installation) and put into path as well as [`git`](## Go
+ Installation). Optionally `docker` and `docker-compose` for easier start up.
+
+
 Get it
 
     git clone https://github.com/gmhafiz/go8
     cd go8
+
 
 The minimum external dependency is the `golang-migrate` program. While technically you can run
  the schema in `database/migration` yourself, it is recommended to use the program instead. But
@@ -74,7 +79,7 @@ The minimum external dependency is the `golang-migrate` program. While technical
 To add this newly created directory to `PATH` environment variable, add this line to `~/.profile
 ` file
 
-    echo 'PATH=$PATH:$HOME/.local/bin' >> ~/.bashrc
+    echo 'PATH=$PATH:$HOME/.local/bin' >> ~/.profile
 
 To make your shell learn of the new path, reload your `~/.bashrc` file
 
@@ -299,3 +304,27 @@ Initialization of external libraries are located in `internal/library`
  - Complete HTTP integration test
  - use [xID](https://github.com/rs/xid) for table ID primary key
  - better control of json output formatting
+
+
+# Appendix
+
+## Go Installation
+
+For ubuntu:
+
+    sudo apt update && sudo apt install git
+    wget https://golang.org/dl/go1.15.3.linux-amd64.tar.gz
+    sudo tar -C /usr/local -xzf go1.15.3.linux-amd64.tar.gz
+    export PATH=$PATH:/usr/local/go/bin
+    echo 'PATH=$PATH:/usr/local/go/bin' >> ~/.profile
+
+    sudo apt remove docker docker-engine docker.io containerd runc
+    sudo apt update
+    sudo apt install apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+    sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+    sudo apt update
+    sudo apt install docker-ce docker-ce-cli containerd.io
+        
+    sudo curl -L "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    sudo chmod +x /usr/local/bin/docker-compose

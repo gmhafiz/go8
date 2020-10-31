@@ -59,8 +59,7 @@ It has few dependencies and replacing one library to another is easy.
 
 # Quickstart
 
-You need to [have a go binary](# Appendix) and put into path as well as [`git`](# Go
- Installation). Optionally `docker` and `docker-compose` for easier start up.
+You need to [have a go binary](#appendix) and put into path as well as [git](#appendix). Optionally `docker` and `docker-compose` for easier start up.
 
 
 Get it

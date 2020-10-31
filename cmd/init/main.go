@@ -62,10 +62,10 @@ func exportEnv(cfg *configs.Database) {
 
 func installTools() {
 	installGolangMigrate()
-	installSQLBoiler()
 	installTestify()
 	installSwag()
 	installGolangCILint()
+	installSQLBoiler()
 }
 
 func installGolangCILint() {
@@ -124,6 +124,7 @@ func installGolangMigrate() {
 		return
 	}
 
+	log.Println("installing golang-migrate")
 	cmd := exec.Command("wget", "https://github.com/golang-migrate/migrate/releases/download/"+GolangMigrateVersion+"/migrate.linux-amd64.tar.gz")
 	err := cmd.Run()
 	if err != nil {

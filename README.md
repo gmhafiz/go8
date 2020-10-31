@@ -1,4 +1,4 @@
-i# Introduction                                        
+# Introduction                                        
             .,*/(#####(/*,.                               .,*((###(/*.          
         .*(%%%%%%%%%%%%%%#/.                           .*#%%%%####%%%%#/.       
       ./#%%%%#(/,,...,,***.           .......          *#%%%#*.   ,(%%%#/.      
@@ -20,7 +20,7 @@ A starter kit for Go API development. Inspired by [How I write HTTP services aft
 This kit tries to follow the [Standard Go Project Layout](https://github.com/golang-standards/project-layout) to make project structure familiar to a Go developer.
 
 It is still in early stages and I do not consider it is completed until all integration tests are
- done.
+ completed.
 
 In short, this kit is a Go + Postgres + Chi Router + SqlBoiler starter kit for API development.
 
@@ -59,7 +59,7 @@ It has few dependencies and replacing one library to another is easy.
 
 # Quickstart
 
-You need to [have a go binary](## Go Installation) and put into path as well as [`git`](## Go
+You need to [have a go binary](# Appendix) and put into path as well as [`git`](# Go
  Installation). Optionally `docker` and `docker-compose` for easier start up.
 
 
@@ -85,14 +85,8 @@ To make your shell learn of the new path, reload your `~/.bashrc` file
 
     source ~/.bashrc
     
-Then download and install `golang-migrate`
-
-    curl -L https://github.com/golang-migrate/migrate/releases/download/v4.11.0/migrate.linux-amd64.tar.gz | tar xvz
-    mv migrate.linux-amd64 ~/.local/bin/migrate
-    
-`migrate` is able to read `.env` file for database credentials. So we first run a script that
- makes a copy of `.env` file and prompts for database connection details. This will also install
-  all other convenient tools.
+So we first run a program that downloads all necessary tools for this kit to work. It also
+ initializes various settings file including database credentials in `.env` and `sqlboiler.toml`
 
     go run cmd/init/main.go
 
@@ -100,22 +94,21 @@ Then download and install `golang-migrate`
 Have a database ready either by installing them yourself or the following command. the `docker
 -compose.yml` will use database credentials set in `.env` file. Optionally, you may redis as well
 
-    docker-compose up -d postgres # or
+    docker-compose up -d postgres # or optionally redis
     docker-compose up -d postgres redis
 
-To run migration,
+Once the database is up you may run run migration,
 
     migrate -path database/migrations up
 
 
-Once the database is up, you may run the api
+Run the API with
 
     go run cmd/go8/main.go
     
 
 You will see the address the API is running at as well as all registered routes.
     
-    task: go run cmd/go8/main.go
     2020-10-09T11:44:50+11:00 INF internal/server/rest/server.go:26 > starting at 0.0.0.0:3080 service=go8
     2020-10-09T11:44:50+11:00 INF internal/server/rest/server.go:86 >  routes={"method":"GET","path":"/api/v1/authors/"} service=go8
     2020-10-09T11:44:50+11:00 INF internal/server/rest/server.go:86 >  routes={"method":"GET","path":"/api/v1/books/"} service=go8
@@ -138,8 +131,8 @@ While the above quickstart is sufficient to start the API, some tools are includ
 A. This project uses [Task](https://github.com/go-task/task) to handle various tasks such as
  migration, generation of swagger docs, build and run the app. It is essentially a [sh interpreter
  ](https://github.com/mvdan/sh). Only requirement is to download the binary and append to your `PATH` variable.
-  - Install task runner binary bash script:
-
+ 
+Install task runner binary bash script:
 
     sudo ./scripts/install-task.sh
 
@@ -308,7 +301,7 @@ Initialization of external libraries are located in `internal/library`
 
 # Appendix
 
-## Go Installation
+## Dev Environment Installation
 
 For ubuntu:
 
@@ -320,11 +313,14 @@ For ubuntu:
 
     sudo apt remove docker docker-engine docker.io containerd runc
     sudo apt update
-    sudo apt install apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+    sudo apt install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
     sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
     sudo apt update
-    sudo apt install docker-ce docker-ce-cli containerd.io
+    sudo apt install -y docker-ce docker-ce-cli containerd.io
+    sudo usermod -aG docker ${USER}
+    newgrp docker
+    su -s ${USER} # or logout and login
         
     sudo curl -L "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
     sudo chmod +x /usr/local/bin/docker-compose

@@ -11,8 +11,7 @@
        ,(#%%%%%##(((##%%%%(*    .*#%%%%#(((##%%%%(,   .*#%%%##(///(#%%%#/.      
          .*/###%%%%%%%###(/,      .,/##%%%%%##(/,.      .*(##%%%%%%##(*,        
               .........                ......                .......             
-                               
-A starter kit for Go API development. Inspired by [How I write HTTP services after eight years](https://pace.dev/blog/2018/05/09/how-I-write-http-services-after-eight-years.html).
+0-years.html).
  However I wanted to use [chi router](https://github.com/go-chi/chi) which is more common in the
   community, [sqlboiler](https://github.com/volatiletech/sqlboiler/) to solve database operations
    and design towards more like [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html).

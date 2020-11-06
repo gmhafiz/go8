@@ -2,10 +2,11 @@ package health
 
 import (
 	"database/sql"
+	"net/http"
+
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
 	"github.com/rs/zerolog"
-	"net/http"
 )
 
 type Handler struct {

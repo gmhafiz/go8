@@ -11,7 +11,8 @@
        ,(#%%%%%##(((##%%%%(*    .*#%%%%#(((##%%%%(,   .*#%%%##(///(#%%%#/.      
          .*/###%%%%%%%###(/,      .,/##%%%%%##(/,.      .*(##%%%%%%##(*,        
               .........                ......                .......             
-0-years.html).
+A starter kit for Go API development. Inspired by [How I write HTTP services after eight years](https://pace.dev/blog/2018/05/09/how-I-write-http-services-after-eight-years.html).
+
  However I wanted to use [chi router](https://github.com/go-chi/chi) which is more common in the
   community, [sqlboiler](https://github.com/volatiletech/sqlboiler/) to solve database operations
    and design towards more like [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html).
@@ -79,25 +80,29 @@ To add this newly created directory to `PATH` environment variable, add this lin
 
     echo 'PATH=$PATH:$HOME/.local/bin' >> ~/.profile
 
-To make your shell learn of the new path, reload your `~/.bashrc` file
+To make your shell learn of the new path, reload your `~/.profile` file
 
-    source ~/.bashrc
+    source ~/.profile
+
     
 So we first run a program that downloads all necessary tools for this kit to work. It also
- initializes various settings file including database credentials in `.env` and `sqlboiler.toml`
+ initializes various settings file including database credentials in `.env` and `sqlboiler.toml
+ ` by asking you to set database datasourcename (DSN). This will make the `docker-compose` step
+  easy as it can read `.env` file created in this step.
 
     go run cmd/init/main.go
 
 
 Have a database ready either by installing them yourself or the following command. the `docker
--compose.yml` will use database credentials set in `.env` file. Optionally, you may redis as well
+-compose.yml` will use database credentials set in `.env` file which is initialized by the
+ previous step. Optionally, you may redis as well.
 
     docker-compose up -d postgres # or optionally redis
     docker-compose up -d postgres redis
 
-Once the database is up you may run run migration,
+Once the database is up you may run the migration with,
 
-    migrate -path database/migrations up
+    go run cmd/extmigrate up
 
 
 Run the API with
@@ -318,7 +323,7 @@ For ubuntu:
     sudo apt install -y docker-ce docker-ce-cli containerd.io
     sudo usermod -aG docker ${USER}
     newgrp docker
-    su -s ${USER} # or logout and login
+    su - ${USER} # or logout and login
         
     sudo curl -L "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
     sudo chmod +x /usr/local/bin/docker-compose

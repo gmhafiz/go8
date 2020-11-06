@@ -3,13 +3,13 @@ package rest
 import (
 	"database/sql"
 	"fmt"
-	"github.com/go-chi/httplog"
 	"net/http"
 	"os"
 	"time"
 
 	"github.com/go-chi/chi"
 	chiMiddleware "github.com/go-chi/chi/middleware"
+	"github.com/go-chi/httplog"
 	"github.com/rs/zerolog"
 
 	"go8ddd/configs"

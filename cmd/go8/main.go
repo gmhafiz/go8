@@ -2,19 +2,19 @@ package main
 
 import (
 	"database/sql"
-	"github.com/go-redis/redis/v8"
-	"go8ddd/internal/domain/health"
-	"go8ddd/third_party/cache"
-	"go8ddd/third_party/database"
 
 	"github.com/go-chi/chi"
 	"github.com/go-playground/validator/v10"
+	"github.com/go-redis/redis/v8"
 	"github.com/rs/zerolog"
 
 	"go8ddd/configs"
 	"go8ddd/internal/domain/authors"
 	"go8ddd/internal/domain/books"
+	"go8ddd/internal/domain/health"
 	"go8ddd/internal/server/rest"
+	"go8ddd/third_party/cache"
+	"go8ddd/third_party/database"
 	"go8ddd/third_party/logger"
 	"go8ddd/third_party/validation"
 )
@@ -60,7 +60,8 @@ func initializeBookDomain(router *chi.Mux, log zerolog.Logger, validate *validat
 	books.NewHandler(router, validate, useCase)
 }
 
-func initializeAuthorDomain(router *chi.Mux, log zerolog.Logger, validate *validator.Validate, db *sql.DB) {
+func initializeAuthorDomain(router *chi.Mux, log zerolog.Logger, validate *validator.Validate,
+	db *sql.DB) {
 	repository := authors.NewRepository(log, db)
 	useCase := authors.NewUseCase(repository)
 	authors.NewHandler(router, validate, useCase)

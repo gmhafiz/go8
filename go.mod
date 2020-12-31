@@ -12,20 +12,22 @@ require (
 	github.com/go-chi/cors v1.1.1
 	github.com/go-chi/render v1.0.1
 	github.com/go-playground/validator/v10 v10.4.1
+	github.com/golang-migrate/migrate/v4 v4.14.1
 	github.com/gotestyourself/gotestyourself v2.2.0+incompatible // indirect
 	github.com/jinzhu/copier v0.1.0
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/joho/godotenv v1.3.0
 	github.com/lib/pq v1.9.0
 	github.com/ory/dockertest v3.3.5+incompatible
-	github.com/ory/dockertest/v3 v3.6.3
-	github.com/pkg/errors v0.9.1
-	github.com/spf13/viper v1.6.3
+	github.com/ory/dockertest/v3 v3.6.3 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
+	github.com/spf13/viper v1.6.3 // indirect
 	github.com/stretchr/testify v1.6.1
 	github.com/swaggo/swag v1.7.0
 	github.com/volatiletech/null/v8 v8.1.0
 	github.com/volatiletech/sqlboiler/v4 v4.4.0
 	github.com/volatiletech/strmangle v0.0.1
 	golang.org/x/tools v0.0.0-20201229221835-b8413747bbd4 // indirect
+	gopkg.in/ini.v1 v1.51.0
 	gotest.tools v2.2.0+incompatible // indirect
 )

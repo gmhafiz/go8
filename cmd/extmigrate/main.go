@@ -27,7 +27,6 @@ func main() {
 
 	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		cfg.Database.Host, cfg.Database.Port, cfg.Database.User, cfg.Database.Pass, cfg.Database.Name)
-	//cmdString := fmt.Sprintf("migrate -source %s -database %s up", source, dsn)
 
 	db, err := sql.Open(cfg.Database.Driver, dsn)
 	if err != nil {

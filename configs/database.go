@@ -1,8 +1,6 @@
 package configs
 
-import (
-	"os"
-)
+import "os"
 
 type Database struct {
 	Driver  string
@@ -25,4 +23,3 @@ func DataStore() *Database {
 		SslMode: os.Getenv("DB_SSL_MODE"),
 	}
 }
-

@@ -7,13 +7,13 @@ import (
 )
 
 type Api struct {
-	Host                 string
-	Port                 string
-	ApiReadTimeout       time.Duration
-	ApiReadHeaderTimeout time.Duration
-	ApiWriteTimeout      time.Duration
-	ApiIdleTimeout       time.Duration
-	RequestLog           bool
+	Host              string
+	Port              string
+	ReadTimeout       time.Duration
+	ReadHeaderTimeout time.Duration
+	WriteTimeout      time.Duration
+	IdleTimeout       time.Duration
+	RequestLog        bool
 }
 
 func API() *Api {
@@ -24,12 +24,12 @@ func API() *Api {
 	requestLog, _ := strconv.ParseBool(os.Getenv("API_REQUEST_LOG"))
 
 	return &Api{
-		Host:                 os.Getenv("API_HOST"),
-		Port:                 os.Getenv("API_PORT"),
-		ApiReadTimeout:       time.Duration(apiReadTimeout),
-		ApiReadHeaderTimeout: time.Duration(apiReadHeaderTimeout),
-		ApiWriteTimeout:      time.Duration(apiWriteTimeout),
-		ApiIdleTimeout:       time.Duration(apiIdleTimeout),
-		RequestLog:           requestLog,
+		Host:              os.Getenv("API_HOST"),
+		Port:              os.Getenv("API_PORT"),
+		ReadTimeout:       time.Duration(apiReadTimeout),
+		ReadHeaderTimeout: time.Duration(apiReadHeaderTimeout),
+		WriteTimeout:      time.Duration(apiWriteTimeout),
+		IdleTimeout:       time.Duration(apiIdleTimeout),
+		RequestLog:        requestLog,
 	}
 }

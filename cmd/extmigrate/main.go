@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/golang-migrate/migrate/v4"
@@ -10,19 +11,17 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/lib/pq"
 
-	"go8ddd/configs"
-	"go8ddd/third_party/logger"
+	"github.com/gmhafiz/go8/configs"
 )
 
-const Version = "v0.2.0"
+const Version = "v0.3.0"
 
 func init() {
 
 }
 
 func main() {
-	log := logger.New(Version)
-	cfg := configs.New(log)
+	cfg := configs.New()
 
 	source := "file://database/migrations"
 
@@ -32,14 +31,14 @@ func main() {
 
 	db, err := sql.Open(cfg.Database.Driver, dsn)
 	if err != nil {
-		log.Error().Msg("error opening database")
+		log.Println("error opening database")
 		return
 	}
 
 	if cfg.Database.Driver == "postgres" {
 		driver, err := postgres.WithInstance(db, &postgres.Config{})
 		if err != nil {
-			log.Error().Msg("error instantiating database")
+			log.Println("error instantiating database")
 			return
 		}
 		m, err := migrate.NewWithDatabaseInstance(
@@ -48,7 +47,7 @@ func main() {
 		)
 
 		if len(os.Args) < 2 {
-			log.Error().Msg("usage:")
+			log.Printf("usage:")
 			return
 		}
 
@@ -58,5 +57,5 @@ func main() {
 		}
 	}
 
-	log.Info().Msg("done.")
+	log.Println("done.")
 }

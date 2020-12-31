@@ -31,11 +31,10 @@ tasks:
   build:
     desc: Creates a compiled binary and copy configuration files
     cmds:
-      - go build -v -i cmd/go8/main.go
-      - mkdir -p build
-      - mv go8 build/
-      - mkdir build/config
-      - cp config/*.yml build/config
+      - go mod download && CGO_ENABLED=0 GOOS=linux && go build -v -i cmd/go8/main.go
+      - mkdir -p bin
+      - mv go8 bin/
+      - cp .env bin
 
   swagger:
     desc: Generates Swagger page for API reference
@@ -72,3 +71,8 @@ tasks:
     desc: Uses golangci-lint
     cmds:
       - golangci-lint run
+
+  test:
+    desc: Test all code
+    cmds:
+      - go test -v ./...

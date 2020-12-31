@@ -1,29 +1,33 @@
 package configs
 
 import (
+	"log"
+
 	"github.com/joho/godotenv"
-	"github.com/rs/zerolog"
 )
 
 type Configs struct {
-	Api      *Api
-	Database *Database
-	Cache    *Cache
+	Api           *Api
+	Database      *Database
+	Cache         *Cache
+	Elasticsearch *Elasticsearch
 }
 
-func New(logger zerolog.Logger) *Configs {
+func New() *Configs {
 	err := godotenv.Load()
 	if err != nil {
-		logger.Fatal().Msg(err.Error())
+		log.Fatal(err)
 	}
 
 	api := API()
 	dataStore := DataStore()
 	cache := NewCache()
+	es := ElasticSearch()
 
 	return &Configs{
-		Api:      api,
-		Database: dataStore,
-		Cache:    cache,
+		Api:           api,
+		Database:      dataStore,
+		Cache:         cache,
+		Elasticsearch: es,
 	}
 }

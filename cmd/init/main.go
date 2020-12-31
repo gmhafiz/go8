@@ -18,7 +18,7 @@ import (
 	"github.com/joho/godotenv"
 	"gopkg.in/ini.v1"
 
-	"go8ddd/configs"
+	"github.com/gmhafiz/go8/configs"
 )
 
 const (
@@ -43,13 +43,9 @@ func main() {
 
 	copyENV()
 
-	copySqlBoiler()
-
 	cfg := getDbDetails(&dbConfigs)
 
 	fillIntoENV(cfg)
-
-	fillIntoSQLBoiler(cfg)
 
 	exportEnv(cfg)
 }
@@ -65,7 +61,6 @@ func installTools() {
 	installTestify()
 	installSwag()
 	installGolangCILint()
-	installSQLBoiler()
 }
 
 func installGolangCILint() {
@@ -90,22 +85,6 @@ func installTestify() {
 	}
 
 	goGet("github.com/stretchr/testify")
-}
-
-func installSQLBoiler() {
-	if binaryExists("sqlboiler") {
-		return
-	}
-
-	binaries := []string{
-		"github.com/volatiletech/sqlboiler",
-		"github.com/volatiletech/sqlboiler/drivers/sqlboiler-psql",
-		"github.com/volatiletech/sqlboiler/drivers/sqlboiler-mysql",
-		"github.com/volatiletech/sqlboiler/drivers/sqlboiler-mssql",
-	}
-	for _, val := range binaries {
-		goGet(val)
-	}
 }
 
 func goGet(path string) {
@@ -246,18 +225,6 @@ func getInput(prompt, defaultValue string) string {
 	}
 
 	return userInput
-}
-
-func copySqlBoiler() {
-	if fileExists("sqlboiler.toml") {
-		fmt.Println("sqlboiler.toml file already exists. Run 'task configs' to update new values")
-	} else {
-		_, err := copyFile("sqlboiler.toml.example", "sqlboiler.toml")
-		if err != nil {
-			log.Println("error copying to sqlboiler.toml")
-			os.Exit(1)
-		}
-	}
 }
 
 func copyENV() {

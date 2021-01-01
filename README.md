@@ -253,6 +253,10 @@ Initialization of external libraries are located in `internal/library`
  - better control of json output formatting
 
 
+# Acknowledgements
+
+ * https://github.com/moemoe89/integration-test-golang
+ 
 # Appendix
 
 ## Dev Environment Installation

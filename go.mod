@@ -4,7 +4,6 @@ go 1.13
 
 require (
 	github.com/Microsoft/go-winio v0.4.16 // indirect
-	github.com/Nvveen/Gotty v0.0.0-20120604004816-cd527374f1e5 // indirect
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/containerd/continuity v0.0.0-20201208142359-180525291bb7 // indirect
@@ -20,8 +19,8 @@ require (
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/joho/godotenv v1.3.0
 	github.com/lib/pq v1.9.0
-	github.com/opencontainers/runc v1.0.0-rc9 // indirect
 	github.com/ory/dockertest v3.3.5+incompatible
+	github.com/ory/dockertest/v3 v3.6.3
 	github.com/stretchr/testify v1.6.1
 	github.com/swaggo/swag v1.7.0
 	github.com/volatiletech/null/v8 v8.1.0

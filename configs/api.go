@@ -14,6 +14,7 @@ type Api struct {
 	WriteTimeout      time.Duration
 	IdleTimeout       time.Duration
 	RequestLog        bool
+	DockerPort        string
 }
 
 func API() *Api {
@@ -31,5 +32,6 @@ func API() *Api {
 		WriteTimeout:      time.Duration(apiWriteTimeout),
 		IdleTimeout:       time.Duration(apiIdleTimeout),
 		RequestLog:        requestLog,
+		DockerPort:        os.Getenv("API_DOCKER_PORT"),
 	}
 }

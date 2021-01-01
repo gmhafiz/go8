@@ -15,6 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/volatiletech/null/v8"
 
+	"github.com/gmhafiz/go8/configs"
 	"github.com/gmhafiz/go8/internal/domain/book"
 	"github.com/gmhafiz/go8/internal/model"
 )
@@ -26,8 +27,8 @@ var (
 var (
 	user     = "postgres"
 	password = "secret"
-	db       = "postgres"
-	port     = "5433"
+	dbName   = "postgres"
+	port     = configs.DockerPort
 	dialect  = "postgres"
 	dsn      = "postgres://%s:%s@localhost:%s/%s?sslmode=disable"
 )
@@ -44,7 +45,7 @@ func TestMain(m *testing.M) {
 		Env: []string{
 			"POSTGRES_USER=" + user,
 			"POSTGRES_PASSWORD=" + password,
-			"POSTGRES_DB=" + db,
+			"POSTGRES_DB=" + dbName,
 		},
 		ExposedPorts: []string{"5432"},
 		PortBindings: map[docker.Port][]docker.PortBinding{
@@ -64,7 +65,7 @@ func TestMain(m *testing.M) {
 		log.Println("error running docker container")
 	}
 
-	dsn = fmt.Sprintf(dsn, user, password, port, db)
+	dsn = fmt.Sprintf(dsn, user, password, port, dbName)
 
 	if err = pool.Retry(func() error {
 		db, err := sqlx.Open(dialect, dsn)

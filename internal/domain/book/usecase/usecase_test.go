@@ -16,6 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/volatiletech/null/v8"
 
+	"github.com/gmhafiz/go8/configs"
 	"github.com/gmhafiz/go8/internal/domain/book"
 	"github.com/gmhafiz/go8/internal/domain/book/repository/postgres"
 	"github.com/gmhafiz/go8/internal/model"
@@ -28,10 +29,11 @@ var (
 var (
 	user     = "postgres"
 	password = "secret"
-	dbName   = "postgres"
-	port     = "5433"
+	dbName   = "usecase"
+	port     = configs.DockerPort
 	dialect  = "postgres"
 	dsn      = "postgres://%s:%s@localhost:%s/%s?sslmode=disable"
+
 )
 
 func TestMain(m *testing.M) {

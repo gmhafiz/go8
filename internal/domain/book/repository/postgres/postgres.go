@@ -118,7 +118,7 @@ func (r *repository) Close() {
 func (r *repository) Up() error {
 	ctx := context.Background()
 
-	query := "CREATE table books(book_id bigserial, title varchar(255) not null, published_date timestamp with time zone not null, image_url varchar(255), description text not null, created_at timestamp with time zone default current_timestamp, updated_at timestamp with time zone default current_timestamp, deleted_at timestamp with time zone, primary key (book_id))"
+	query := "CREATE TABLE IF NOT EXISTS books(book_id bigserial, title varchar(255) not null, published_date timestamp with time zone not null, image_url varchar(255), description text not null, created_at timestamp with time zone default current_timestamp, updated_at timestamp with time zone default current_timestamp, deleted_at timestamp with time zone, primary key (book_id))"
 	stmt, err := r.db.PrepareContext(ctx, query)
 	if err != nil {
 		return err

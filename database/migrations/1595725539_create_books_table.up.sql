@@ -1,4 +1,4 @@
-CREATE table books
+CREATE TABLE IF NOT EXISTS books
 (
     book_id bigserial,
     title varchar(255) not null,

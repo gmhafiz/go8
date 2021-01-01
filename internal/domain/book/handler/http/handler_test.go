@@ -3,14 +3,13 @@ package http
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/gmhafiz/go8/internal/domain/book/usecase/mock"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/go-chi/chi"
 	"github.com/stretchr/testify/assert"
-
-	"github.com/gmhafiz/go8/internal/domain/book/usecase"
 )
 
 func TestHandler_Create(t *testing.T) {
@@ -21,7 +20,7 @@ func TestHandler_Create(t *testing.T) {
 
 	r := chi.NewRouter()
 
-	uc := new(usecase.BookUseCaseMock)
+	uc := new(mock.BookUseCaseMock)
 
 	RegisterHTTPEndPoints(r, uc)
 

@@ -14,8 +14,6 @@ import (
 	"github.com/gmhafiz/go8/configs"
 )
 
-const Version = "v0.3.0"
-
 func init() {
 
 }
@@ -41,9 +39,11 @@ func main() {
 			return
 		}
 		m, err := migrate.NewWithDatabaseInstance(
-			source,
-			cfg.Database.Driver, driver,
+			source, cfg.Database.Driver, driver,
 		)
+		if err != nil {
+			log.Println("error connecting to database")
+		}
 
 		if len(os.Args) < 2 {
 			log.Printf("usage:")

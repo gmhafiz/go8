@@ -70,7 +70,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bk, err := h.useCase.Create(context.Background(), bookRequest.Title, bookRequest.Description)
+	bk, err := h.useCase.Create(context.Background(), bookRequest.Title, bookRequest.Description, bookRequest.ImageURL, bookRequest.PublishedDate)
 	if err != nil {
 		render.Status(r, http.StatusInternalServerError)
 		render.JSON(w, r, nil)

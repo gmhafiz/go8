@@ -15,10 +15,8 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/joho/godotenv"
-	"gopkg.in/ini.v1"
-
 	"github.com/gmhafiz/go8/configs"
+	"github.com/joho/godotenv"
 )
 
 const (
@@ -127,17 +125,12 @@ func installGolangMigrate() {
 	if err != nil {
 		log.Fatalf("error moving binary with %s \n", err)
 	}
-
-	return
 }
 
 func binaryExists(binaryName string) bool {
 	cmd := exec.Command("which", binaryName)
 	stdout, _ := cmd.CombinedOutput()
-	if len(stdout) != 0 {
-		return true
-	}
-	return false
+	return len(stdout) != 0
 }
 
 func syncsGoMod() {
@@ -163,30 +156,6 @@ func fillIntoENV(cfg *configs.Database) {
 	file["DB_SSL_MODE"] = cfg.SslMode
 
 	err = godotenv.Write(file, ".env")
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func fillIntoSQLBoiler(dbConfigs *configs.Database) {
-	cfg, err := ini.Load("sqlboiler.toml")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	var section string
-	if cfg.Section("").Key("app_mode").String() == "postgres" {
-		section = "psql"
-	}
-
-	cfg.Section(section).Key("dbname").SetValue(dbConfigs.Name)
-	cfg.Section(section).Key("host").SetValue(dbConfigs.Host)
-	cfg.Section(section).Key("port").SetValue(dbConfigs.Port)
-	cfg.Section(section).Key("user").SetValue(dbConfigs.User)
-	cfg.Section(section).Key("pass").SetValue(dbConfigs.Pass)
-	cfg.Section(section).Key("sslmode").SetValue(dbConfigs.SslMode)
-
-	err = cfg.SaveTo("sqlboiler.toml")
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -8,6 +8,7 @@ import (
 )
 
 type UseCase interface {
-	Create(ctx context.Context, title, description string) (*model.Book, error)
+	Create(ctx context.Context, title, description, imageURL, publishedDate string) (*model.Book, error)
 	All(ctx context.Context) ([]resource.BookDB, error)
+	Find(ctx context.Context, bookID int64) (*model.Book, error)
 }

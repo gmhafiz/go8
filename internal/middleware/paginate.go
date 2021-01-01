@@ -8,10 +8,7 @@ import (
 	"github.com/go-chi/chi"
 )
 
-const (
-	paginationKey string = "pagination"
-	idKey         string = "id"
-)
+type key string
 
 type Pagination struct {
 	Total int `json:"total"`
@@ -22,6 +19,11 @@ type Pagination struct {
 type ID struct {
 	Id int64 `json:"id"`
 }
+
+const (
+	PaginationKey key = "pagination"
+	IDKey         key = "id"
+)
 
 func Paginate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -47,7 +49,7 @@ func Paginate(next http.Handler) http.Handler {
 			pagination.Size = 10
 		}
 
-		ctx := context.WithValue(r.Context(), paginationKey, pagination)
+		ctx := context.WithValue(r.Context(), PaginationKey, pagination)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
@@ -57,7 +59,7 @@ func IDParam(next http.Handler) http.Handler {
 		bookID := chi.URLParam(r, "id")
 		idInt64, _ := strconv.ParseInt(bookID, 10, 64)
 
-		ctx := context.WithValue(r.Context(), idKey, idInt64)
+		ctx := context.WithValue(r.Context(), IDKey, idInt64)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

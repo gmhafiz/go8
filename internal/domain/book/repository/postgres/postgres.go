@@ -2,13 +2,11 @@ package postgres
 
 import (
 	"context"
-	"github.com/friendsofgo/errors"
-	"github.com/gmhafiz/go8/internal/middleware"
-	"time"
 
+	"github.com/friendsofgo/errors"
 	"github.com/jmoiron/sqlx"
 
-	"github.com/gmhafiz/go8/internal/domain/book"
+	"github.com/gmhafiz/go8/internal/middleware"
 	"github.com/gmhafiz/go8/internal/model"
 	"github.com/gmhafiz/go8/internal/resource"
 )
@@ -17,60 +15,31 @@ type repository struct {
 	db *sqlx.DB
 }
 
-func NewBookRepository(db *sqlx.DB) (book.Repository, error) {
-	return &repository{db: db}, nil
+func NewBookRepository(db *sqlx.DB) *repository {
+	return &repository{db: db}
 }
 
-func (r *repository) Create(ctx context.Context, book *model.Book) (*model.Book, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	query := "INSERT INTO books (title, description, published_date) VALUES ($1, $2, $3) RETURNING book_id"
+func (r *repository) Create(ctx context.Context, book *model.Book) (int64, error) {
+	query := "INSERT INTO books (title, published_date, image_url, description) VALUES ($1, $2, $3, $4) RETURNING book_id"
 	stmt, err := r.db.PrepareContext(ctx, query)
 
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 	defer stmt.Close()
 
-	var bookID int
-	err = stmt.QueryRowContext(ctx, book.Title, book.Description, book.PublishedDate).Scan(&bookID)
+	var bookID int64
+	err = stmt.QueryRowContext(ctx, book.Title, book.PublishedDate, book.ImageURL, book.Description).Scan(&bookID)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 
-	query = "SELECT * FROM books where book_id = $1"
-	stmt, err = r.db.Prepare(query)
-	if err != nil {
-		return nil, err
-	}
-	defer stmt.Close()
-
-	bookDB := resource.BookDB{}
-	err = stmt.QueryRow(bookID).Scan(&bookDB.BookID, &bookDB.Title, &bookDB.PublishedDate,
-		&bookDB.ImageURL, &bookDB.Description, &bookDB.CreatedAt, &bookDB.UpdatedAt,
-		&bookDB.DeletedAt)
-	if err != nil {
-		return nil, err
-	}
-
-	b := &model.Book{
-		BookID:        bookDB.BookID,
-		Title:         bookDB.Title,
-		PublishedDate: bookDB.PublishedDate,
-		ImageURL:      bookDB.ImageURL,
-		Description:   bookDB.Description,
-		CreatedAt:     bookDB.CreatedAt,
-		UpdatedAt:     bookDB.UpdatedAt,
-		DeletedAt:     bookDB.DeletedAt,
-	}
-
-	return b, err
+	return bookID, nil
 }
 
 func (r *repository) All(ctx context.Context) ([]resource.BookDB, error) {
-	page := ctx.Value("pagination").(middleware.Pagination).Page
-	size := ctx.Value("pagination").(middleware.Pagination).Size
+	page := ctx.Value(middleware.PaginationKey).(middleware.Pagination).Page
+	size := ctx.Value(middleware.PaginationKey).(middleware.Pagination).Size
 
 	if page == 0 && size == 0 {
 		query := "SELECT * FROM books ORDER BY created_at DESC"
@@ -108,6 +77,36 @@ func (r *repository) All(ctx context.Context) ([]resource.BookDB, error) {
 		}
 		return books, nil
 	}
+}
+
+func (r *repository) Find(ctx context.Context, bookID int64) (*model.Book, error) {
+	query := "SELECT * FROM books where book_id = $1"
+	stmt, err := r.db.Prepare(query)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	bookDB := resource.BookDB{}
+	err = stmt.QueryRow(bookID).Scan(&bookDB.BookID, &bookDB.Title, &bookDB.PublishedDate,
+		&bookDB.ImageURL, &bookDB.Description, &bookDB.CreatedAt, &bookDB.UpdatedAt,
+		&bookDB.DeletedAt)
+	if err != nil {
+		return nil, err
+	}
+
+	b := &model.Book{
+		BookID:        bookDB.BookID,
+		Title:         bookDB.Title,
+		PublishedDate: bookDB.PublishedDate,
+		ImageURL:      bookDB.ImageURL,
+		Description:   bookDB.Description,
+		CreatedAt:     bookDB.CreatedAt,
+		UpdatedAt:     bookDB.UpdatedAt,
+		DeletedAt:     bookDB.DeletedAt,
+	}
+
+	return b, err
 }
 
 // Close attaches the provider and close the connection

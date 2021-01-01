@@ -34,7 +34,7 @@ func NewApp(cfg *configs.Configs) *App {
 	db := database.NewSqlx(cfg)
 
 	healthRepo := postgres.NewHealthRepository(db)
-	bookRepo, _ := bookRepo.NewBookRepository(db)
+	bookRepo := bookRepo.NewBookRepository(db)
 
 	return &App{
 		bookUC:   bookUseCase.NewBookUseCase(bookRepo),

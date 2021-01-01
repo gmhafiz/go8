@@ -2,8 +2,8 @@ package usecase
 
 import (
 	"context"
-	"time"
 
+	"github.com/jinzhu/now"
 	"github.com/volatiletech/null/v8"
 
 	"github.com/gmhafiz/go8/internal/domain/book"
@@ -21,20 +21,35 @@ func NewBookUseCase(bookRepo book.Repository) *BookUseCase {
 	}
 }
 
-func (b *BookUseCase) Create(ctx context.Context, title, description string) (*model.Book, error) {
+func (b *BookUseCase) Create(ctx context.Context, title, description, imageURL, publishedDate string) (*model.Book, error) {
 	bk := &model.Book{
-		Title: title,
+		Title:         title,
+		PublishedDate: now.MustParse(publishedDate),
+		ImageURL: null.String{
+			String: imageURL,
+			Valid:  true,
+		},
 		Description: null.String{
 			String: description,
 			Valid:  true,
 		},
-		PublishedDate: time.Now(),
 	}
 
-	bk, err := b.bookRepo.Create(ctx, bk)
-	return bk, err
+	bookID, err := b.bookRepo.Create(ctx, bk)
+	if err != nil {
+		return nil, err
+	}
+	bookFound, err := b.bookRepo.Find(context.Background(), bookID)
+	if err != nil {
+		return nil, err
+	}
+	return bookFound, err
 }
 
 func (b *BookUseCase) All(ctx context.Context) ([]resource.BookDB, error) {
 	return b.bookRepo.All(ctx)
+}
+
+func (b *BookUseCase) Find(ctx context.Context, bookID int64) (*model.Book, error) {
+	return b.bookRepo.Find(ctx, bookID)
 }

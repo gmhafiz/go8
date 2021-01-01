@@ -1,4 +1,4 @@
-package postgres
+package usecase
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jinzhu/now"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/ory/dockertest"
@@ -16,6 +17,7 @@ import (
 	"github.com/volatiletech/null/v8"
 
 	"github.com/gmhafiz/go8/internal/domain/book"
+	"github.com/gmhafiz/go8/internal/domain/book/repository/postgres"
 	"github.com/gmhafiz/go8/internal/model"
 )
 
@@ -26,7 +28,7 @@ var (
 var (
 	user     = "postgres"
 	password = "secret"
-	db       = "postgres"
+	dbName   = "postgres"
 	port     = "5433"
 	dialect  = "postgres"
 	dsn      = "postgres://%s:%s@localhost:%s/%s?sslmode=disable"
@@ -44,7 +46,7 @@ func TestMain(m *testing.M) {
 		Env: []string{
 			"POSTGRES_USER=" + user,
 			"POSTGRES_PASSWORD=" + password,
-			"POSTGRES_DB=" + db,
+			"POSTGRES_DB=" + dbName,
 		},
 		ExposedPorts: []string{"5432"},
 		PortBindings: map[docker.Port][]docker.PortBinding{
@@ -64,14 +66,14 @@ func TestMain(m *testing.M) {
 		log.Println("error running docker container")
 	}
 
-	dsn = fmt.Sprintf(dsn, user, password, port, db)
+	dsn = fmt.Sprintf(dsn, user, password, port, dbName)
 
 	if err = pool.Retry(func() error {
 		db, err := sqlx.Open(dialect, dsn)
 		if err != nil {
 			return err
 		}
-		repo = NewBookRepository(db)
+		repo = postgres.NewBookRepository(db)
 		return db.Ping()
 	}); err != nil {
 		log.Fatalf("could not connect to docker: %s", err.Error())
@@ -100,52 +102,49 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestBookRepository_Create(t *testing.T) {
-	dt := "2020-01-01T15:04:05Z"
-	timeWant, err := time.Parse(time.RFC3339, dt)
+func TestBookUseCase_Create(t *testing.T) {
+	uc := NewBookUseCase(repo)
+
+	dt := "2006-01-02 15:04:05"
+	//timeWant, err := time.Parse(time.RFC3339, dt)
+	//if err != nil {
+	//	t.Fatal("error parsing time")
+	//}
+	location, err := time.LoadLocation("Australia/Sydney")
 	if err != nil {
-		t.Fatal(err)
-	}
-	bookTest := &model.Book{
-		Title:         "test11",
-		PublishedDate: timeWant,
-		Description: null.String{
-			String: "test11",
-			Valid:  true,
-		},
+		t.Fatalf("error loading location")
 	}
 
-	bookID, err := repo.Create(context.Background(), bookTest)
-
-	assert.NoError(t, err)
-	assert.NotEqual(t, 0, bookID)
-}
-
-func TestRepository_Find(t *testing.T) {
-	dt := "2020-01-01T15:04:05Z"
-	timeWant, err := time.Parse(time.RFC3339, dt)
+	myConfig := &now.Config{
+		WeekStartDay: time.Sunday,
+		TimeLocation: location,
+		TimeFormats:  []string{"2006-01-02 15:04:05"},
+	}
+	timeWant, err := myConfig.Parse(dt)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatal("error parsing time")
 	}
 	bookWant := &model.Book{
-		Title:         "test11",
+		Title:         "title",
 		PublishedDate: timeWant,
+		ImageURL: null.String{
+			String: "https://example.com/image.png",
+			Valid:  true,
+		},
 		Description: null.String{
-			String: "test11",
+			String: "description",
 			Valid:  true,
 		},
 	}
-	bookID, err := repo.Create(context.Background(), bookWant)
+
+	bookGot, err := uc.Create(context.Background(), bookWant.Title, bookWant.Description.String,
+		bookWant.ImageURL.String, bookWant.PublishedDate.String())
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	bookGot, err := repo.Find(context.Background(), bookID)
-	if err != nil {
-		t.Fatal(err)
-	}
-
+	assert.NotEqual(t, bookGot.BookID, 0)
 	assert.Equal(t, bookGot.Title, bookWant.Title)
+	assert.Equal(t, bookGot.PublishedDate.String(), bookWant.PublishedDate.UTC().String())
 	assert.Equal(t, bookGot.Description, bookWant.Description)
-	assert.Equal(t, bookGot.PublishedDate.String(), bookWant.PublishedDate.String())
+	assert.Equal(t, bookGot.ImageURL, bookWant.ImageURL)
 }

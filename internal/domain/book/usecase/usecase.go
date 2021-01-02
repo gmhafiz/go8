@@ -8,7 +8,6 @@ import (
 
 	"github.com/gmhafiz/go8/internal/domain/book"
 	"github.com/gmhafiz/go8/internal/model"
-	"github.com/gmhafiz/go8/internal/resource"
 )
 
 type BookUseCase struct {
@@ -46,7 +45,7 @@ func (b *BookUseCase) Create(ctx context.Context, title, description, imageURL, 
 	return bookFound, err
 }
 
-func (b *BookUseCase) All(ctx context.Context) ([]resource.BookDB, error) {
+func (b *BookUseCase) All(ctx context.Context) ([]*model.Book, error) {
 	return b.bookRepo.All(ctx)
 }
 

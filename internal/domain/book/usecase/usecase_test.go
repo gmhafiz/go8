@@ -33,15 +33,6 @@ var (
 
 const uniqueDBName = "usecase"
 
-//var (
-//	user     = "postgres"
-//	password = "secret"
-//	host     = "localhost"
-//	dbName   = "usecase"
-//	port     = configs.DockerPort
-//	dialect  = "postgres"
-//)
-
 func TestMain(m *testing.M) {
 	// must go back to project's root path to get to the .env and ./database/migrations/ folder
 	changeDirTo := "../../../../"

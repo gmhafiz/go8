@@ -1,6 +1,7 @@
 package resource
 
 import (
+	"github.com/gmhafiz/go8/internal/model"
 	"reflect"
 	"time"
 
@@ -34,7 +35,8 @@ type BookDB struct {
 	DeletedAt     null.Time   `db:"deleted_at"`
 }
 
-func Book(book BookDB) (BookResource, error) {
+//func Book(book BookDB) (BookResource, error) {
+func Book(book *model.Book) (BookResource, error) {
 	var resource BookResource
 
 	err := copier.Copy(&resource, &book)
@@ -45,7 +47,7 @@ func Book(book BookDB) (BookResource, error) {
 	return resource, nil
 }
 
-func Books(books []BookDB) (interface{}, error) {
+func Books(books []*model.Book) (interface{}, error) {
 	var resource BookResource
 
 	rt := reflect.TypeOf(books)

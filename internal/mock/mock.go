@@ -6,16 +6,15 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	"github.com/gmhafiz/go8/internal/model"
-	"github.com/gmhafiz/go8/internal/resource"
 )
 
 type BookUseCaseMock struct {
 	mock.Mock
 }
 
-func (m *BookUseCaseMock) All(context.Context) ([]resource.BookDB, error) {
+func (m *BookUseCaseMock) All(context.Context) ([]*model.Book, error) {
 	args := m.Called()
-	return args.Get(0).([]resource.BookDB), args.Error(1)
+	return args.Get(0).([]*model.Book), args.Error(1)
 }
 
 func (m *BookUseCaseMock) Create(ctx context.Context, title, description, imageURL, publishedDate string) (*model.Book, error) {

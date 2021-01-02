@@ -43,7 +43,7 @@ func (r *repository) Create(ctx context.Context, book *model.Book) (int64, error
 	return bookID, nil
 }
 
-func (r *repository) All(ctx context.Context) ([]resource.BookDB, error) {
+func (r *repository) All(ctx context.Context) ([]*model.Book, error) {
 	page := ctx.Value(middleware.PaginationKey).(middleware.Pagination).Page
 	size := ctx.Value(middleware.PaginationKey).(middleware.Pagination).Size
 
@@ -53,15 +53,15 @@ func (r *repository) All(ctx context.Context) ([]resource.BookDB, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, "error fetching books")
 		}
-		var books []resource.BookDB
+		var books []*model.Book
 		for rows.Next() {
-			var book resource.BookDB
+			var book model.Book
 			err := rows.Scan(&book.BookID, &book.Title, &book.PublishedDate,
 				&book.ImageURL, &book.Description, &book.CreatedAt, &book.UpdatedAt, &book.DeletedAt)
 			if err != nil {
 				return nil, errors.Wrap(err, "error scanning book")
 			}
-			books = append(books, book)
+			books = append(books, &book)
 		}
 		return books, nil
 
@@ -71,15 +71,15 @@ func (r *repository) All(ctx context.Context) ([]resource.BookDB, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, "error fetching books")
 		}
-		var books []resource.BookDB
+		var books []*model.Book
 		for rows.Next() {
-			var book resource.BookDB
+			var book model.Book
 			err = rows.Scan(&book.BookID, &book.Title, &book.PublishedDate,
 				&book.ImageURL, &book.Description, &book.CreatedAt, &book.UpdatedAt, &book.DeletedAt)
 			if err != nil {
 				return nil, errors.Wrap(err, "error scanning book")
 			}
-			books = append(books, book)
+			books = append(books, &book)
 		}
 		return books, nil
 	}

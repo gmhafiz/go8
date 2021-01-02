@@ -13,7 +13,7 @@ type BookUseCaseMock struct {
 	mock.Mock
 }
 
-func (m *BookUseCaseMock) All(ctx context.Context) ([]resource.BookDB, error) {
+func (m *BookUseCaseMock) All(context.Context) ([]resource.BookDB, error) {
 	args := m.Called()
 	return args.Get(0).([]resource.BookDB), args.Error(1)
 }

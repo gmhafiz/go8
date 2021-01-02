@@ -252,10 +252,19 @@ Initialization of external libraries are located in `internal/library`
  - use [xID](https://github.com/rs/xid) for table ID primary key
  - better control of json output formatting
 
+# Docker
+
+Install postgres client for the docker image to perform `psql` command to see if database is up
+
+    sudo apt update && sudo apt install postgresql-client
+
+
+    docker build -t go8/server -f Dockerfile .
 
 # Acknowledgements
 
  * https://github.com/moemoe89/integration-test-golang
+ * https://github.com/george-e-shaw-iv/integration-tests-example
  
 # Appendix
 

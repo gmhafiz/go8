@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -33,12 +34,9 @@ type App struct {
 func NewApp(cfg *configs.Configs) *App {
 	db := database.NewSqlx(cfg)
 
-	healthRepo := postgres.NewHealthRepository(db)
-	bookRepo := bookRepo.NewBookRepository(db)
-
 	return &App{
-		bookUC:   bookUseCase.NewBookUseCase(bookRepo),
-		healthUC: usecase.NewHealthUseCase(healthRepo),
+		bookUC:   bookUseCase.NewBookUseCase(bookRepo.NewBookRepository(db)),
+		healthUC: usecase.NewHealthUseCase(postgres.NewHealthRepository(db)),
 	}
 }
 
@@ -60,12 +58,24 @@ func (a *App) Run(cfg *configs.Configs, version string) error {
 	}
 
 	go func() {
+		fmt.Println(`            .,*/(#####(/*,.                               .,*((###(/*.
+        .*(%%%%%%%%%%%%%%#/.                           .*#%%%%####%%%%#/.
+      ./#%%%%#(/,,...,,***.           .......          *#%%%#*.   ,(%%%#/.
+     .(#%%%#/.                    .*(#%%%%%%%##/,.     ,(%%%#*    ,(%%%#*.
+    .*#%%%#/.    ..........     .*#%%%%#(/((#%%%%(,     ,/#%%%#(/#%%%#(,
+    ./#%%%(*    ,#%%%%%%%%(*   .*#%%%#*     .*#%%%#,      *(%%%%%%%#(,.
+    ./#%%%#*    ,(((##%%%%(*   ,/%%%%/.      .(%%%#/   .*#%%%#(*/(#%%%#/,
+     ,#%%%#(.        ,#%%%(*   ,/%%%%/.      .(%%%#/  ,/%%%#/.    .*#%%%(,
+      *#%%%%(*.      ,#%%%(*   .*#%%%#*     ./#%%%#,  ,(%%%#*      .(%%%#*
+       ,(#%%%%%##(((##%%%%(*    .*#%%%%#(((##%%%%(,   .*#%%%##(///(#%%%#/.
+         .*/###%%%%%%%###(/,      .,/##%%%%%##(/,.      .*(##%%%%%%##(*,
+              .........                ......                .......`)
 		log.Printf("API version: %s\n", version)
 		log.Printf("serving at %s:%s\n", cfg.Api.Host, cfg.Api.Port)
 		printAllRegisteredRoutes(router)
 		err := a.httpServer.ListenAndServe()
 		if err != nil {
-			log.Fatalf("failed to listen and serve: %+v", err)
+			log.Fatal(err)
 		}
 	}()
 

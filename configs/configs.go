@@ -6,10 +6,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var (
-	DockerPort = "5433"
-)
-
 type Configs struct {
 	Api           *Api
 	Database      *Database

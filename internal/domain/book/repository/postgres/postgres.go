@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"log"
 
 	"github.com/friendsofgo/errors"
 	"github.com/jmoiron/sqlx"
@@ -26,7 +27,12 @@ func (r *repository) Create(ctx context.Context, book *model.Book) (int64, error
 	if err != nil {
 		return 0, err
 	}
-	defer stmt.Close()
+	defer func() {
+		err = stmt.Close()
+		if err != nil {
+			log.Println(err)
+		}
+	}()
 
 	var bookID int64
 	err = stmt.QueryRowContext(ctx, book.Title, book.PublishedDate, book.ImageURL, book.Description).Scan(&bookID)
@@ -85,10 +91,16 @@ func (r *repository) Find(ctx context.Context, bookID int64) (*model.Book, error
 	if err != nil {
 		return nil, err
 	}
-	defer stmt.Close()
+	defer func() {
+		err = stmt.Close()
+		if err != nil {
+			log.Println(err)
+		}
+	}()
 
 	bookDB := resource.BookDB{}
-	err = stmt.QueryRow(bookID).Scan(&bookDB.BookID, &bookDB.Title, &bookDB.PublishedDate,
+	err = stmt.QueryRowContext(ctx, bookID).Scan(&bookDB.BookID, &bookDB.Title,
+		&bookDB.PublishedDate,
 		&bookDB.ImageURL, &bookDB.Description, &bookDB.CreatedAt, &bookDB.UpdatedAt,
 		&bookDB.DeletedAt)
 	if err != nil {
@@ -111,7 +123,12 @@ func (r *repository) Find(ctx context.Context, bookID int64) (*model.Book, error
 
 // Close attaches the provider and close the connection
 func (r *repository) Close() {
-	r.db.Close()
+	defer func() {
+		err := r.db.Close()
+		if err != nil {
+			log.Println(err)
+		}
+	}()
 }
 
 // Up attaches the provider and create the table
@@ -123,7 +140,12 @@ func (r *repository) Up() error {
 	if err != nil {
 		return err
 	}
-	defer stmt.Close()
+	defer func() {
+		err = stmt.Close()
+		if err != nil {
+			log.Println(err)
+		}
+	}()
 
 	_, err = stmt.ExecContext(ctx)
 	return err
@@ -138,7 +160,12 @@ func (r *repository) Drop() error {
 	if err != nil {
 		return err
 	}
-	defer stmt.Close()
+	defer func() {
+		err = stmt.Close()
+		if err != nil {
+			log.Println(err)
+		}
+	}()
 
 	_, err = stmt.ExecContext(ctx)
 	return err

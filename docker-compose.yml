@@ -3,20 +3,20 @@ version: '3.4'
 services:
 
   server:
-    image: go8
-    container_name: "go8container"
+    image: "go8/server"
+    container_name: "go8_container"
     build: ./
-    command: ./app
+    command: ["./wait-for-postgres.sh", "postgres:5432"]
+#    entrypoint: ["bash", "cd /opt && ./scripts/wait-for-postgres.sh && /opt/server"]
+#    entrypoint: ["bash", "echo", "cd /opt"]
     ports:
       - ${API_PORT}:${API_PORT}
     depends_on:
       - postgres
-    environment:
-      - WAIT_HOSTS: postgres:${DB_PORT}
 
   postgres:
     image: "postgres:13"
-    restart: always
+    restart: "no"
     container_name: "go8_postgres"
     environment:
       - POSTGRES_USER=${DB_USER}

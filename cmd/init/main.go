@@ -49,8 +49,8 @@ func main() {
 }
 
 func exportEnv(cfg *configs.Database) {
-	postgresqlUrl := fmt.Sprintf("%s://%s:%s@%s:%s/%s?sslmode=%s", cfg.Driver, cfg.User, cfg.Pass, cfg.Host, cfg.Port, cfg.Name, cfg.SslMode)
-	export := fmt.Sprintf("export POSTGRESQL_URL=%s", postgresqlUrl)
+	dsn := fmt.Sprintf("%s://%s:%s@%s:%s/%s?sslmode=%s", cfg.Driver, cfg.User, cfg.Pass, cfg.Host, cfg.Port, cfg.Name, cfg.SslMode)
+	export := fmt.Sprintf("export POSTGRESQL_URL=%s", dsn)
 	_ = exec.Command(export)
 }
 
@@ -227,13 +227,24 @@ func copyFile(src, dst string) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	defer source.Close()
+	//defer source.Close()
+	defer func() {
+		err = source.Close()
+		if err != nil {
+			log.Println(err)
+		}
+	}()
 
 	destination, err := os.Create(dst)
 	if err != nil {
 		return 0, err
 	}
-	defer destination.Close()
+	defer func() {
+		err = destination.Close()
+		if err != nil {
+			log.Println(err)
+		}
+	}()
 	nBytes, err := io.Copy(destination, source)
 	return nBytes, err
 }

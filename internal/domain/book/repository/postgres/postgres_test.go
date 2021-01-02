@@ -4,17 +4,22 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net"
 	"os"
+	"runtime"
 	"testing"
 	"time"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/joho/godotenv"
+	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/lib/pq"
 	"github.com/ory/dockertest"
 	"github.com/ory/dockertest/docker"
 	"github.com/stretchr/testify/assert"
 	"github.com/volatiletech/null/v8"
 
+	"github.com/gmhafiz/go8/cmd/extmigrate/migrate"
 	"github.com/gmhafiz/go8/configs"
 	"github.com/gmhafiz/go8/internal/domain/book"
 	"github.com/gmhafiz/go8/internal/model"
@@ -24,16 +29,27 @@ var (
 	repo book.Repository
 )
 
-var (
-	user     = "postgres"
-	password = "secret"
-	dbName   = "postgres"
-	port     = configs.DockerPort
-	dialect  = "postgres"
-	dsn      = "postgres://%s:%s@localhost:%s/%s?sslmode=disable"
-)
+const uniqueDBName = "postgres_test"
+
+//var (
+//	user     = "postgres"
+//	password = "secret"
+//	host     = "localhost"
+//	dbName   = "postgres"
+//	port     = configs.DockerPort
+//	dialect  = "postgres"
+//)
 
 func TestMain(m *testing.M) {
+	// must go back to project's root path to get to the .env and ./database/migrations/ folder
+	changeDirTo := "../../../../../"
+	err := os.Chdir(changeDirTo)
+	err = godotenv.Load(".env")
+	if err != nil {
+		log.Println(err)
+	}
+	cfg := configs.DockerTestCfg()
+
 	pool, err := dockertest.NewPool("")
 	if err != nil {
 		log.Fatalf("could not connect to docker: %s", err)
@@ -43,14 +59,14 @@ func TestMain(m *testing.M) {
 		Repository: "postgres",
 		Tag:        "13",
 		Env: []string{
-			"POSTGRES_USER=" + user,
-			"POSTGRES_PASSWORD=" + password,
-			"POSTGRES_DB=" + dbName,
+			"POSTGRES_USER=" + cfg.User,
+			"POSTGRES_PASSWORD=" + cfg.Pass,
+			"POSTGRES_DB=" + uniqueDBName,
 		},
 		ExposedPorts: []string{"5432"},
 		PortBindings: map[docker.Port][]docker.PortBinding{
 			"5432": {
-				{HostIP: "0.0.0.0", HostPort: port},
+				{HostIP: "0.0.0.0", HostPort: cfg.Port},
 			},
 		},
 	}
@@ -62,13 +78,18 @@ func TestMain(m *testing.M) {
 		}
 	})
 	if err != nil {
-		log.Println("error running docker container")
+		log.Print("error running docker container")
 	}
 
-	dsn = fmt.Sprintf(dsn, user, password, port, dbName)
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		cfg.Host, cfg.Port, cfg.User, cfg.Pass, uniqueDBName)
+	// Docker layer network is different on Mac
+	if runtime.GOOS == "darwin" {
+		cfg.Host = net.JoinHostPort(resource.GetBoundIP("5432/tcp"), resource.GetPort("5432/tcp"))
+	}
 
 	if err = pool.Retry(func() error {
-		db, err := sqlx.Open(dialect, dsn)
+		db, err := sqlx.Open(cfg.Dialect, dsn)
 		if err != nil {
 			return err
 		}
@@ -82,20 +103,23 @@ func TestMain(m *testing.M) {
 		repo.Close()
 	}()
 
-	err = repo.Drop()
-	if err != nil {
-		panic(err)
+	dbCfg := &configs.Configs{
+		Database: &configs.Database{
+			Driver:  cfg.Dialect,
+			Host:    cfg.Host,
+			Port:    cfg.Port,
+			Name:    uniqueDBName,
+			User:    cfg.User,
+			Pass:    cfg.Pass,
+			SslMode: cfg.SslMode,
+		},
 	}
-
-	err = repo.Up()
-	if err != nil {
-		panic(err)
-	}
+	migrate.Up(dbCfg, ".")
 
 	code := m.Run()
 
 	if err := pool.Purge(resource); err != nil {
-		log.Fatalf("could not purge resource: %s", err)
+		log.Printf("could not purge resource: %s", err)
 	}
 
 	os.Exit(code)

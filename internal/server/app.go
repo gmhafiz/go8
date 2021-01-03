@@ -57,8 +57,7 @@ func (a *App) Run(cfg *configs.Configs, version string) error {
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	go func() {
-		fmt.Println(`            .,*/(#####(/*,.                               .,*((###(/*.
+	fmt.Println(`            .,*/(#####(/*,.                               .,*((###(/*.
         .*(%%%%%%%%%%%%%%#/.                           .*#%%%%####%%%%#/.
       ./#%%%%#(/,,...,,***.           .......          *#%%%#*.   ,(%%%#/.
      .(#%%%#/.                    .*(#%%%%%%%##/,.     ,(%%%#*    ,(%%%#*.
@@ -70,6 +69,7 @@ func (a *App) Run(cfg *configs.Configs, version string) error {
        ,(#%%%%%##(((##%%%%(*    .*#%%%%#(((##%%%%(,   .*#%%%##(///(#%%%#/.
          .*/###%%%%%%%###(/,      .,/##%%%%%##(/,.      .*(##%%%%%%##(*,
               .........                ......                .......`)
+	go func() {
 		log.Printf("API version: %s\n", version)
 		log.Printf("serving at %s:%s\n", cfg.Api.Host, cfg.Api.Port)
 		printAllRegisteredRoutes(router)

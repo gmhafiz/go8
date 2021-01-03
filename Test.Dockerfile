@@ -29,7 +29,7 @@ WORKDIR /home/appuser/app/
 
 #WORKDIR /opt/
 COPY --from=src /go/src/app/server .
-COPY .env .env
+COPY docker.env .env
 
 EXPOSE 3080
 

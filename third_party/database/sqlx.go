@@ -17,7 +17,7 @@ func NewSqlx(cfg *configs.Configs) *sqlx.DB {
 		cfg.Database.Name,
 		cfg.Database.SslMode,
 		cfg.Database.User,
-		cfg.Database.Pass, )
+		cfg.Database.Pass)
 
 	db, err := sqlx.Open(cfg.Database.Driver, dsn)
 	if err != nil {

@@ -11,10 +11,11 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/gmhafiz/go8/internal/mock"
+	"github.com/gmhafiz/go8/internal/resource"
 )
 
 func TestHandler_Create(t *testing.T) {
-	testBookRequest := &BookRequest{
+	testBookRequest := &resource.BookRequest{
 		Title:       "test01",
 		Description: "test01",
 	}
@@ -34,5 +35,5 @@ func TestHandler_Create(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodPost, "/api/v1/books", bytes.NewBuffer(body))
 	r.ServeHTTP(w, req)
 
-	assert.Equal(t, 400, w.Code)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }

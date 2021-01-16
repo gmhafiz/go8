@@ -11,6 +11,10 @@ import (
 
 	"github.com/go-chi/chi"
 	chiMiddleware "github.com/go-chi/chi/middleware"
+	"github.com/golang-migrate/migrate/v4"
+	p "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/jmoiron/sqlx"
 
 	"github.com/gmhafiz/go8/configs"
 	"github.com/gmhafiz/go8/internal/domain/book"
@@ -25,35 +29,81 @@ import (
 	"github.com/gmhafiz/go8/third_party/database"
 )
 
-type App struct {
+type Server struct {
 	httpServer *http.Server
-	bookUC     book.UseCase
-	healthUC   health.UseCase
+	db         *sqlx.DB
+	cfg        *configs.Configs
+	Domain
 }
 
-func NewApp(cfg *configs.Configs) *App {
-	db := database.NewSqlx(cfg)
+type Domain struct {
+	BookUC   book.UseCase
+	HealthUC health.UseCase
+}
 
-	return &App{
-		bookUC:   bookUseCase.NewBookUseCase(bookRepo.NewBookRepository(db)),
-		healthUC: usecase.NewHealthUseCase(postgres.NewHealthRepository(db)),
+func New(version string) *Server {
+	log.Printf("staring API version: %s\n", version)
+	return &Server{}
+}
+
+func (s *Server) Init() {
+	s.NewConfig()
+	s.NewDatabase()
+	s.InitDomains()
+}
+
+func (s *Server) NewConfig() {
+	s.cfg = configs.New()
+}
+
+func (s *Server) NewDatabase() {
+	s.db = database.NewSqlx(s.cfg)
+}
+
+func (s *Server) InitDomains() {
+	s.BookUC = bookUseCase.NewBookUseCase(bookRepo.NewBookRepository(s.db))
+	s.HealthUC = usecase.NewHealthUseCase(postgres.NewHealthRepository(s.db))
+}
+
+func (s *Server) Migrate() {
+	source := "file://database/migrations/"
+	if s.cfg.DockerTest.Driver == "postgres" {
+		driver, err := p.WithInstance(s.db.DB, &p.Config{})
+		if err != nil {
+			log.Fatalf("error instantiating database: %v", err)
+		}
+		m, err := migrate.NewWithDatabaseInstance(
+			source, s.cfg.DockerTest.Driver, driver,
+		)
+		if err != nil {
+			log.Fatalf("error connecting to database: %v", err)
+		}
+		log.Println("migrating...")
+		err = m.Up()
+		if err != nil {
+			if err != migrate.ErrNoChange {
+				log.Panicf("error migrating: %v", err)
+			}
+		}
+
+		log.Println("done migration.")
 	}
 }
 
-func (a *App) Run(cfg *configs.Configs, version string) error {
+func (s *Server) Run() error {
 	router := chi.NewRouter()
 	router.Use(middleware.Cors)
 	router.Use(chiMiddleware.Logger)
 	router.Use(chiMiddleware.Recoverer)
 
-	healthHTTP.RegisterHTTPEndPoints(router, a.healthUC)
-	bookHTTP.RegisterHTTPEndPoints(router, a.bookUC)
+	healthHTTP.RegisterHTTPEndPoints(router, s.HealthUC)
+	bookHTTP.RegisterHTTPEndPoints(router, s.BookUC)
 
-	a.httpServer = &http.Server{
-		Addr:           ":" + cfg.Api.Port,
+	s.httpServer = &http.Server{
+		Addr:           ":" + s.cfg.Api.Port,
 		Handler:        router,
-		ReadTimeout:    cfg.Api.ReadTimeout * time.Second,
-		WriteTimeout:   cfg.Api.WriteTimeout * time.Second,
+		ReadTimeout:    s.cfg.Api.ReadTimeout * time.Second,
+		WriteTimeout:   s.cfg.Api.WriteTimeout * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
 
@@ -70,10 +120,9 @@ func (a *App) Run(cfg *configs.Configs, version string) error {
          .*/###%%%%%%%###(/,      .,/##%%%%%##(/,.      .*(##%%%%%%##(*,
               .........                ......                .......`)
 	go func() {
-		log.Printf("API version: %s\n", version)
-		log.Printf("serving at %s:%s\n", cfg.Api.Host, cfg.Api.Port)
+		log.Printf("serving at %s:%s\n", s.cfg.Api.Host, s.cfg.Api.Port)
 		printAllRegisteredRoutes(router)
-		err := a.httpServer.ListenAndServe()
+		err := s.httpServer.ListenAndServe()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -84,10 +133,18 @@ func (a *App) Run(cfg *configs.Configs, version string) error {
 
 	<-quit
 
-	ctx, shutdown := context.WithTimeout(context.Background(), cfg.Api.IdleTimeout*time.Second)
+	ctx, shutdown := context.WithTimeout(context.Background(), s.cfg.Api.IdleTimeout*time.Second)
 	defer shutdown()
 
-	return a.httpServer.Shutdown(ctx)
+	return s.httpServer.Shutdown(ctx)
+}
+
+func (s *Server) GetConfig() *configs.Configs {
+	return s.cfg
+}
+
+func (s *Server) GetHTTPServer() *http.Server {
+	return s.httpServer
 }
 
 func printAllRegisteredRoutes(router *chi.Mux) {

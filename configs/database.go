@@ -42,6 +42,7 @@ func DockerTestCfg() *DockerTest {
 		Host:    os.Getenv("DOCKERTEST_HOST"),
 		Port:    os.Getenv("DOCKERTEST_PORT"),
 		User:    os.Getenv("DOCKERTEST_USER"),
+		Name:    os.Getenv("DOCKERTEST_NAME"),
 		Pass:    os.Getenv("DOCKERTEST_PASS"),
 		SslMode: os.Getenv("DOCKERTEST_SSL_MODE"),
 	}

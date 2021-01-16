@@ -11,6 +11,7 @@ type Configs struct {
 	Database      *Database
 	Cache         *Cache
 	Elasticsearch *Elasticsearch
+	DockerTest    *DockerTest
 }
 
 func New() *Configs {
@@ -19,15 +20,11 @@ func New() *Configs {
 		log.Fatal(err)
 	}
 
-	api := API()
-	dataStore := DataStore()
-	cache := NewCache()
-	es := ElasticSearch()
-
 	return &Configs{
-		Api:           api,
-		Database:      dataStore,
-		Cache:         cache,
-		Elasticsearch: es,
+		Api:           API(),
+		Database:      DataStore(),
+		Cache:         NewCache(),
+		Elasticsearch: ElasticSearch(),
+		DockerTest:    DockerTestCfg(),
 	}
 }

@@ -35,7 +35,6 @@ type BookDB struct {
 	DeletedAt     null.Time   `db:"deleted_at"`
 }
 
-//func Book(book BookDB) (BookResource, error) {
 func Book(book *model.Book) (BookResource, error) {
 	var resource BookResource
 
@@ -49,6 +48,10 @@ func Book(book *model.Book) (BookResource, error) {
 
 func Books(books []*model.Book) (interface{}, error) {
 	var resource BookResource
+
+	if len(books) == 0 {
+		return make([]string, 0), nil
+	}
 
 	rt := reflect.TypeOf(books)
 	if rt.Kind() == reflect.Slice {

@@ -240,6 +240,17 @@ All environment variables are read into specific structs initialized in `configs
 
 Migrations are stored in `database/migrations` folder
 
+## End to End Test
+
+Start
+
+     docker-compose down -v && docker-compose build && docker-compose up  -d
+
+Run tests
+
+    docker exec -t go8_container_test "/home/appuser/app/e2e"
+
+
 ## Libraries
 
 Initialization of external libraries are located in `internal/library`

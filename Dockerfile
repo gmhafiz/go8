@@ -1,10 +1,9 @@
 FROM golang:1.15-alpine AS src
 
-RUN set -ex; \
-    apk update; \
-    apk --no-cache add ca-certificates git
+#RUN set -ex; \
+#    apk update; \
+#    apk --no-cache add ca-certificates git
 
-#WORKDIR /root/
 WORKDIR /go/src/app/
 COPY . ./
 

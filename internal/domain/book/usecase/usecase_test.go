@@ -37,6 +37,9 @@ func TestMain(m *testing.M) {
 	// must go back to project's root path to get to the .env and ./database/migrations/ folder
 	changeDirTo := "../../../../"
 	err := os.Chdir(changeDirTo)
+	if err != nil {
+		log.Fatalln(err)
+	}
 	err = godotenv.Load(".env")
 	if err != nil {
 		log.Println(err)

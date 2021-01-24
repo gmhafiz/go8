@@ -31,7 +31,11 @@ tasks:
   build:
     desc: Creates a compiled binary and copy configuration files
     cmds:
-      - go mod download && CGO_ENABLED=0 GOOS=linux && go build -v -i cmd/go8/main.go
+      - task tidy
+      - task vet
+      - task golint
+      - task fmt
+      - go mod download && CGO_ENABLED=0 GOOS=linux && go build -v -i -o go8 cmd/go8/main.go
       - mkdir -p bin
       - mv go8 bin/
       - cp .env bin

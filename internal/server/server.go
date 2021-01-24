@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -32,6 +33,7 @@ import (
 type Server struct {
 	httpServer *http.Server
 	db         *sqlx.DB
+	d          *sql.DB
 	cfg        *configs.Configs
 	Domain
 }
@@ -58,6 +60,7 @@ func (s *Server) NewConfig() {
 
 func (s *Server) NewDatabase() {
 	s.db = database.NewSqlx(s.cfg)
+	s.d = database.New(s.cfg)
 }
 
 func (s *Server) InitDomains() {
@@ -93,7 +96,7 @@ func (s *Server) Migrate() {
 func (s *Server) Run() error {
 	router := chi.NewRouter()
 	router.Use(middleware.Cors)
-	if s.cfg.Api.RequestLog == true {
+	if s.cfg.Api.RequestLog {
 		router.Use(chiMiddleware.Logger)
 	}
 	router.Use(chiMiddleware.Recoverer)

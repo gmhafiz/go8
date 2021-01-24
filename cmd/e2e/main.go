@@ -88,9 +88,7 @@ func testUpdateBook(t *E2eTest, bookID string) {
 		log.Println(err)
 	}
 
-	if strconv.FormatInt(got.BookID, 10) != newBook.BookID && got.Title != newBook.Title && got.
-		Description.
-		String != newBook.Description && got.ImageURL.String != got.ImageURL.String {
+	if strconv.FormatInt(got.BookID, 10) != newBook.BookID && got.Title != newBook.Title && got.Description.String != newBook.Description && got.ImageURL.String != newBook.ImageURL {
 		if err != nil {
 			log.Fatalf("returned resource does not match. want %v, got %v", respBody, got)
 		}
@@ -199,7 +197,7 @@ func testEmptyBook(t *E2eTest) {
 
 	expected, _ := json.Marshal(make([]*resource.BookResource, 0))
 
-	if bytes.Compare(expected, got) != 0 {
+	if !bytes.Equal(expected, got) {
 		log.Printf("handler returned unexpected body: got %v want %v", string(got), expected)
 	}
 

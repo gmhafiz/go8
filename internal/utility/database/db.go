@@ -1,4 +1,4 @@
-package utility
+package database
 
 import (
 	"database/sql"
@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func DBAlive(db *sql.DB) {
+func Alive(db *sql.DB) {
 	log.Println("connecting to database... ")
 	for {
 		// Ping by itself is un-reliable, the connections are cached. This
@@ -20,4 +20,3 @@ func DBAlive(db *sql.DB) {
 		time.Sleep(time.Second)
 	}
 }
-

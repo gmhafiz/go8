@@ -8,7 +8,7 @@ import (
 	_ "github.com/lib/pq"
 
 	"github.com/gmhafiz/go8/configs"
-	"github.com/gmhafiz/go8/internal/utility"
+	"github.com/gmhafiz/go8/internal/utility/database"
 )
 
 func New(cfg *configs.Configs) *sql.DB {
@@ -26,7 +26,7 @@ func New(cfg *configs.Configs) *sql.DB {
 		log.Fatal(err)
 	}
 
-	utility.DBAlive(db)
+	database.Alive(db)
 
 	return db
 }

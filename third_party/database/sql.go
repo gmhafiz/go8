@@ -4,11 +4,11 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"time"
 
 	_ "github.com/lib/pq"
 
 	"github.com/gmhafiz/go8/configs"
+	"github.com/gmhafiz/go8/internal/utility"
 )
 
 func New(cfg *configs.Configs) *sql.DB {
@@ -26,22 +26,7 @@ func New(cfg *configs.Configs) *sql.DB {
 		log.Fatal(err)
 	}
 
-	DBAlive(db)
+	utility.DBAlive(db)
 
 	return db
-}
-
-func DBAlive(db *sql.DB) {
-	log.Println("connecting to database... ")
-	for {
-		// Ping by itself is un-reliable, the connections are cached. This
-		// ensures that the database is still running by executing a harmless
-		// dummy query against it.
-		_, err := db.Exec("SELECT true")
-		if err == nil {
-			return
-		}
-		log.Println("retrying...")
-		time.Sleep(time.Second)
-	}
 }

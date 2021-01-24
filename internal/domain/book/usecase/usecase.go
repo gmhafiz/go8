@@ -14,13 +14,17 @@ type BookUseCase struct {
 	bookRepo book.Repository
 }
 
+func (u *BookUseCase) Update(ctx context.Context, book *model.Book) (*model.Book, error) {
+	return u.bookRepo.Update(ctx, book)
+}
+
 func NewBookUseCase(bookRepo book.Repository) *BookUseCase {
 	return &BookUseCase{
 		bookRepo: bookRepo,
 	}
 }
 
-func (b *BookUseCase) Create(ctx context.Context, title, description, imageURL, publishedDate string) (*model.Book, error) {
+func (u *BookUseCase) Create(ctx context.Context, title, description, imageURL, publishedDate string) (*model.Book, error) {
 	bk := &model.Book{
 		Title:         title,
 		PublishedDate: now.MustParse(publishedDate),
@@ -34,21 +38,25 @@ func (b *BookUseCase) Create(ctx context.Context, title, description, imageURL, 
 		},
 	}
 
-	bookID, err := b.bookRepo.Create(ctx, bk)
+	bookID, err := u.bookRepo.Create(ctx, bk)
 	if err != nil {
 		return nil, err
 	}
-	bookFound, err := b.bookRepo.Find(context.Background(), bookID)
+	bookFound, err := u.bookRepo.Find(context.Background(), bookID)
 	if err != nil {
 		return nil, err
 	}
 	return bookFound, err
 }
 
-func (b *BookUseCase) All(ctx context.Context) ([]*model.Book, error) {
-	return b.bookRepo.All(ctx)
+func (u *BookUseCase) All(ctx context.Context) ([]*model.Book, error) {
+	return u.bookRepo.All(ctx)
 }
 
-func (b *BookUseCase) Find(ctx context.Context, bookID int64) (*model.Book, error) {
-	return b.bookRepo.Find(ctx, bookID)
+func (u *BookUseCase) Find(ctx context.Context, bookID int64) (*model.Book, error) {
+	return u.bookRepo.Find(ctx, bookID)
+}
+
+func (u *BookUseCase) Delete(ctx context.Context, bookID int64) error {
+	return u.bookRepo.Delete(ctx, bookID)
 }

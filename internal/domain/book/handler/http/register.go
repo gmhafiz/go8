@@ -14,5 +14,7 @@ func RegisterHTTPEndPoints(router *chi.Mux, uc book.UseCase) {
 		router.Use(middleware.Json)
 		router.With(middleware.Paginate).Get("/", h.All)
 		router.Post("/", h.Create)
+		router.Put("/{bookID}", h.Update)
+		router.Delete("/{bookID}", h.Delete)
 	})
 }

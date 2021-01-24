@@ -1,15 +1,19 @@
 package resource
 
 import (
-	"github.com/gmhafiz/go8/internal/model"
 	"reflect"
+	"strconv"
 	"time"
 
 	"github.com/jinzhu/copier"
+	"github.com/jinzhu/now"
 	"github.com/volatiletech/null/v8"
+
+	"github.com/gmhafiz/go8/internal/model"
 )
 
 type BookRequest struct {
+	BookID        string `json:"-"`
 	Title         string `json:"title" validate:"required"`
 	PublishedDate string `json:"published_date" validate:"required"`
 	ImageURL      string `json:"image_url" validate:"url"`
@@ -33,6 +37,26 @@ type BookDB struct {
 	CreatedAt     null.Time   `db:"created_at"`
 	UpdatedAt     null.Time   `db:"updated_at"`
 	DeletedAt     null.Time   `db:"deleted_at"`
+}
+
+func ToBook(req *BookRequest) *model.Book {
+	id, err := strconv.ParseInt(req.BookID, 10, 64)
+	if err != nil {
+		return nil
+	}
+	return &model.Book{
+		BookID:        id,
+		Title:         req.Title,
+		PublishedDate: now.MustParse(req.PublishedDate),
+		ImageURL: null.String{
+			String: req.ImageURL,
+			Valid:  true,
+		},
+		Description: null.String{
+			String: req.Description,
+			Valid:  true,
+		},
+	}
 }
 
 func Book(book *model.Book) (BookResource, error) {

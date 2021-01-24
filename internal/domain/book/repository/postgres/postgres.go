@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"log"
+	"time"
 
 	"github.com/friendsofgo/errors"
 	"github.com/jmoiron/sqlx"
@@ -119,6 +120,32 @@ func (r *repository) Find(ctx context.Context, bookID int64) (*model.Book, error
 	}
 
 	return b, err
+}
+
+func (r *repository) Update(ctx context.Context, book *model.Book) (*model.Book, error) {
+	now := time.Now()
+	query := "UPDATE books set title = $1, description = $2, published_date = $3, image_url = $4, updated_at = $5 where book_id = $6"
+
+	_, err := r.db.ExecContext(ctx, query, book.Title, book.Description, book.PublishedDate, book.ImageURL, now, book.BookID)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	bookDB, err := r.Find(ctx, book.BookID)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return bookDB, nil
+}
+
+func (r *repository) Delete(ctx context.Context, bookID int64) error {
+	query := "DELETE FROM books where book_id = ($1)"
+	_, err := r.db.ExecContext(ctx, query, bookID)
+
+	return err
 }
 
 // Close attaches the provider and close the connection

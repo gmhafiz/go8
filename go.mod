@@ -12,7 +12,6 @@ require (
 	github.com/friendsofgo/errors v0.9.2
 	github.com/go-chi/chi v1.5.1
 	github.com/go-chi/cors v1.1.1
-	github.com/go-chi/render v1.0.1
 	github.com/go-playground/validator/v10 v10.4.1
 	github.com/golang-migrate/migrate/v4 v4.14.1
 	github.com/gotestyourself/gotestyourself v2.2.0+incompatible // indirect

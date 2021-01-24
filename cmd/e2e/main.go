@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/volatiletech/null/v8"
@@ -39,11 +40,91 @@ func NewE2eTest(server *server.Server) *E2eTest {
 func (t *E2eTest) Run() {
 	testEmptyBook(t)
 	id := testAddOneBook(t)
+	testUpdateBook(t, strconv.FormatInt(id, 10))
 	testDeleteOneBook(t, id)
+
+	log.Println("all tests passed.")
+}
+
+func testUpdateBook(t *E2eTest, bookID string) {
+	newBook := resource.BookRequest{
+		BookID:        bookID,
+		Title:         "updated title",
+		PublishedDate: "2020-07-31T15:04:05.123499999Z",
+		ImageURL:      "https://example.com/image.png",
+		Description:   "test description",
+	}
+
+	client := &http.Client{}
+
+	bR, _ := json.Marshal(&newBook)
+
+	req, err := http.NewRequest(
+		http.MethodPut, fmt.Sprintf("http://localhost:%s/api/v1/books/%s",
+			t.server.GetConfig().Api.Port, newBook.BookID), bytes.NewBuffer(bR),
+	)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer resp.Body.Close()
+
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		log.Fatalf("error code fail, want %d, got %d\n", http.StatusOK, resp.StatusCode)
+	}
+
+	got := resource.BookResource{}
+	err = json.Unmarshal(respBody, &got)
+	if err != nil {
+		log.Println(err)
+	}
+
+	if strconv.FormatInt(got.BookID, 10) != newBook.BookID && got.Title != newBook.Title && got.
+		Description.
+		String != newBook.Description && got.ImageURL.String != got.ImageURL.String {
+		if err != nil {
+			log.Fatalf("returned resource does not match. want %v, got %v", respBody, got)
+		}
+	}
+
+	log.Println("testUpdateBook passes")
 }
 
 func testDeleteOneBook(t *E2eTest, id int64) {
+	client := &http.Client{}
 
+	req, err := http.NewRequest(
+		http.MethodDelete, fmt.Sprintf("http://localhost:%s/api/v1/books/%d", t.server.GetConfig().Api.Port, id),
+		nil,
+	)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer resp.Body.Close()
+
+	_, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		log.Fatalf("error code fail, want %d, got %d\n", http.StatusOK, resp.StatusCode)
+	}
+	log.Println("testDeleteOneBook passes")
 }
 
 func testAddOneBook(t *E2eTest) int64 {
@@ -60,6 +141,7 @@ func testAddOneBook(t *E2eTest) int64 {
 			Valid:  true,
 		},
 	}
+
 	bR, _ := json.Marshal(&want)
 
 	resp, err := http.Post(
@@ -121,5 +203,5 @@ func testEmptyBook(t *E2eTest) {
 		log.Printf("handler returned unexpected body: got %v want %v", string(got), expected)
 	}
 
-	log.Println("testEmptyBook passes2")
+	log.Println("testEmptyBook passes")
 }

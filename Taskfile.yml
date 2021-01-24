@@ -90,3 +90,17 @@ tasks:
     desc: Stop hanging dockertest container
     cmds:
       - scripts/stopDockertestByPort.sh 5433
+
+  dockertest:
+    desc: Run e2e test
+    cmds:
+      - cd docker-test
+      - docker-compose down -v
+      - docker-compose build
+      - docker-compose up  -d
+      - docker exec -t go8_container_test "/home/appuser/app/e2e"
+
+  dockertest-stop:
+    desc: stop docker e2e test
+    cmds:
+      - docker-compose down -v

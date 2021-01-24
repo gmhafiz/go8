@@ -93,7 +93,9 @@ func (s *Server) Migrate() {
 func (s *Server) Run() error {
 	router := chi.NewRouter()
 	router.Use(middleware.Cors)
-	router.Use(chiMiddleware.Logger)
+	if s.cfg.Api.RequestLog == true {
+		router.Use(chiMiddleware.Logger)
+	}
 	router.Use(chiMiddleware.Recoverer)
 
 	healthHTTP.RegisterHTTPEndPoints(router, s.HealthUC)

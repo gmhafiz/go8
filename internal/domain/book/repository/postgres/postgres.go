@@ -8,9 +8,9 @@ import (
 	"github.com/friendsofgo/errors"
 	"github.com/jmoiron/sqlx"
 
+	"github.com/gmhafiz/go8/internal/domain/book"
 	"github.com/gmhafiz/go8/internal/middleware"
-	"github.com/gmhafiz/go8/internal/model"
-	"github.com/gmhafiz/go8/internal/resource"
+	"github.com/gmhafiz/go8/internal/models"
 )
 
 type repository struct {
@@ -21,7 +21,7 @@ func NewBookRepository(db *sqlx.DB) *repository {
 	return &repository{db: db}
 }
 
-func (r *repository) Create(ctx context.Context, book *model.Book) (int64, error) {
+func (r *repository) Create(ctx context.Context, book *models.Book) (int64, error) {
 	query := "INSERT INTO books (title, published_date, image_url, description) VALUES ($1, $2, $3, $4) RETURNING book_id"
 	stmt, err := r.db.PrepareContext(ctx, query)
 
@@ -44,7 +44,7 @@ func (r *repository) Create(ctx context.Context, book *model.Book) (int64, error
 	return bookID, nil
 }
 
-func (r *repository) All(ctx context.Context) ([]*model.Book, error) {
+func (r *repository) All(ctx context.Context) ([]*models.Book, error) {
 	page := ctx.Value(middleware.PaginationKey).(middleware.Pagination).Page
 	size := ctx.Value(middleware.PaginationKey).(middleware.Pagination).Size
 
@@ -54,9 +54,9 @@ func (r *repository) All(ctx context.Context) ([]*model.Book, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, "error fetching books")
 		}
-		var books []*model.Book
+		var books []*models.Book
 		for rows.Next() {
-			var book model.Book
+			var book models.Book
 			err := rows.Scan(&book.BookID, &book.Title, &book.PublishedDate,
 				&book.ImageURL, &book.Description, &book.CreatedAt, &book.UpdatedAt, &book.DeletedAt)
 			if err != nil {
@@ -72,9 +72,9 @@ func (r *repository) All(ctx context.Context) ([]*model.Book, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, "error fetching books")
 		}
-		var books []*model.Book
+		var books []*models.Book
 		for rows.Next() {
-			var book model.Book
+			var book models.Book
 			err = rows.Scan(&book.BookID, &book.Title, &book.PublishedDate,
 				&book.ImageURL, &book.Description, &book.CreatedAt, &book.UpdatedAt, &book.DeletedAt)
 			if err != nil {
@@ -86,7 +86,7 @@ func (r *repository) All(ctx context.Context) ([]*model.Book, error) {
 	}
 }
 
-func (r *repository) Find(ctx context.Context, bookID int64) (*model.Book, error) {
+func (r *repository) Find(ctx context.Context, bookID int64) (*models.Book, error) {
 	query := "SELECT * FROM books where book_id = $1"
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -99,7 +99,7 @@ func (r *repository) Find(ctx context.Context, bookID int64) (*model.Book, error
 		}
 	}()
 
-	bookDB := resource.BookDB{}
+	bookDB := book.DB{}
 	err = stmt.QueryRowContext(ctx, bookID).Scan(&bookDB.BookID, &bookDB.Title,
 		&bookDB.PublishedDate,
 		&bookDB.ImageURL, &bookDB.Description, &bookDB.CreatedAt, &bookDB.UpdatedAt,
@@ -108,7 +108,7 @@ func (r *repository) Find(ctx context.Context, bookID int64) (*model.Book, error
 		return nil, err
 	}
 
-	b := &model.Book{
+	b := &models.Book{
 		BookID:        bookDB.BookID,
 		Title:         bookDB.Title,
 		PublishedDate: bookDB.PublishedDate,
@@ -122,7 +122,7 @@ func (r *repository) Find(ctx context.Context, bookID int64) (*model.Book, error
 	return b, err
 }
 
-func (r *repository) Update(ctx context.Context, book *model.Book) (*model.Book, error) {
+func (r *repository) Update(ctx context.Context, book *models.Book) (*models.Book, error) {
 	now := time.Now()
 	query := "UPDATE books set title = $1, description = $2, published_date = $3, image_url = $4, updated_at = $5 where book_id = $6"
 

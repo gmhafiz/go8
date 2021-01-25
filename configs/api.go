@@ -7,6 +7,7 @@ import (
 )
 
 type Api struct {
+	Name              string
 	Host              string
 	Port              string
 	ReadTimeout       time.Duration
@@ -25,6 +26,7 @@ func API() *Api {
 	requestLog, _ := strconv.ParseBool(os.Getenv("API_REQUEST_LOG"))
 
 	return &Api{
+		Name:              os.Getenv("API_HOST"),
 		Host:              os.Getenv("API_HOST"),
 		Port:              os.Getenv("API_PORT"),
 		ReadTimeout:       time.Duration(apiReadTimeout),

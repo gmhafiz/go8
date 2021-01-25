@@ -9,7 +9,6 @@ import (
 	"github.com/go-playground/validator/v10"
 
 	"github.com/gmhafiz/go8/internal/domain/book"
-	"github.com/gmhafiz/go8/internal/resource"
 	"github.com/gmhafiz/go8/internal/utility/presentation"
 )
 
@@ -26,7 +25,7 @@ func NewHandler(useCase book.UseCase) *Handler {
 }
 
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
-	var bookRequest resource.BookRequest
+	var bookRequest book.Request
 	err := json.NewDecoder(r.Body).Decode(&bookRequest)
 	if err != nil {
 		presentation.Render(w, http.StatusBadRequest, nil)
@@ -55,7 +54,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var bookRequest resource.BookRequest
+	var bookRequest book.Request
 	err = json.NewDecoder(r.Body).Decode(&bookRequest)
 	if err != nil {
 		presentation.Render(w, http.StatusBadRequest, nil)
@@ -69,13 +68,13 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := h.useCase.Update(context.Background(), resource.ToBook(&bookRequest))
+	resp, err := h.useCase.Update(context.Background(), book.ToBook(&bookRequest))
 	if err != nil {
 		presentation.Render(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	res, err := resource.Book(resp)
+	res, err := book.Book(resp)
 	if err != nil {
 		presentation.Render(w, http.StatusInternalServerError, err.Error())
 		return
@@ -91,7 +90,7 @@ func (h *Handler) All(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	list, err := resource.Books(resp)
+	list, err := book.Books(resp)
 	if err != nil {
 		presentation.Render(w, http.StatusInternalServerError, err.Error())
 		return

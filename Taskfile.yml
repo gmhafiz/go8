@@ -9,14 +9,24 @@ tasks:
       - task -l
 
   migrate-create:
-    desc: Creates .sql migration files (Up and Down). Set name by appending with 'NAME={{name_of_file}}'
+    desc: Creates .sql migration files (Up and Down). Set name by appending with 'NAME=name_of_file'
     cmds:
       - migrate create -ext sql -dir database/migrations -format unix "{{.NAME}}"
 
   migrate:
     desc: Migrates UP the database
     cmds:
-      - migrate -path database/migrations up
+      - migrate -path database/migrations -database $DB_DRIVER://$DB_USER:$DB_PASS@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=$DB_SSL_MODE up
+
+  migraten:
+    desc: Migrates UP the database
+    cmds:
+      - migrate -path database/migrations -database $DB_DRIVER://$DB_USER:$DB_PASS@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=$DB_SSL_MODE up "{{.n}}"
+
+  rollback:
+    desc: Rollback the database by one
+    cmds:
+      - migrate -path database/migrations -database $DB_DRIVER://$DB_USER:$DB_PASS@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=$DB_SSL_MODE down "{{.n}}"
 
   gen-orm:
     desc: Reads your current database schema and creates models as well as orm.
@@ -28,17 +38,58 @@ tasks:
     cmds:
       - go run cmd/go8/main.go
 
-  build:
-    desc: Creates a compiled binary and copy configuration files
+  check:
+    desc: Checks integrity of program
     cmds:
       - task tidy
       - task vet
       - task golint
+      - task security
       - task fmt
+
+  build:
+    desc: Creates a compiled binary and copy configuration files
+    cmds:
+      - task: check
       - go mod download && CGO_ENABLED=0 GOOS=linux && go build -v -i -o go8 cmd/go8/main.go
       - mkdir -p bin
       - mv go8 bin/
       - cp .env bin
+
+  tidy:
+    desc: Downloads dependencies and removes unused ones
+    cmds:
+      - go mod tidy
+
+  vet:
+    desc: Vets code
+    cmds:
+      - go vet ./...
+
+  golint:
+    desc: Uses golangci-lint
+    cmds:
+      - golangci-lint run
+
+  security:
+    desc: Run golang security
+    cmds:
+      - gosec ./...
+
+  fmt:
+    desc: Lint code
+    cmds:
+      - go fmt ./...
+
+  test:
+    desc: Test all code
+    cmds:
+      - go test -v ./...
+
+  race:
+    desc: Check race condition
+    cmds:
+      - go test -race ./...
 
   swagger:
     desc: Generates Swagger page for API reference
@@ -65,31 +116,6 @@ tasks:
     cmds:
       - docker-compose -f docker-compose.test.yml down --volumes
 
-  fmt:
-    desc: Lint code
-    cmds:
-      - go fmt ./...
-
-  tidy:
-    desc: Downloads dependencies and removes unused ones
-    cmds:
-      - go mod tidy
-
-  vet:
-    desc: Vets code
-    cmds:
-      - go vet ./...
-
-  golint:
-    desc: Uses golangci-lint
-    cmds:
-      - golangci-lint run
-
-  test:
-    desc: Test all code
-    cmds:
-      - go test -v ./...
-
   stop-dockertest:
     desc: Stop hanging dockertest container
     cmds:
@@ -108,3 +134,46 @@ tasks:
     desc: stop docker e2e test
     cmds:
       - docker-compose down -v
+
+  install-tools:
+    desc: Install all optional cli tools
+    cmds:
+      - task: install-golangci
+      - task: install-swagger
+      - task: install-testify
+      - task: install-golangmigrate
+      - task: install-sqlboiler
+      - task: install-gosec
+
+  install-sqlboiler:
+    desc: Install sqlboiler orm
+    cmds:
+      - GO111MODULE=off go get -u -t github.com/volatiletech/sqlboiler
+      - GO111MODULE=off go get github.com/volatiletech/sqlboiler/drivers/sqlboiler-psql
+
+  install-golangci:
+    desc: Install golangci linter
+    cmds:
+      - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin
+
+  install-swagger:
+    desc: Install swagger cli
+    cmds:
+      - go get github.com/swaggo/swag/cmd/swag
+
+  install-testify:
+    desc: Install testify testing suite
+    cmds:
+      - go get github.com/stretchr/testify
+
+  install-golangmigrate:
+    desc: Install golang migration tool
+    cmds:
+      - curl -L https://github.com/golang-migrate/migrate/releases/download/v4.14.1/migrate.linux-amd64.tar.gz | tar xvz
+      - mkdir ~/.local.bin
+      - mv migrate.linux-amd64 ~/.local/bin/migrate
+
+  install-gosec:
+    desc: Install golang security check. https://github.com/securego/gosec
+    cmds:
+      - go get github.com/securego/gosec/v2/cmd/gosec

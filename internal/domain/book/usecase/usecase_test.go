@@ -24,7 +24,7 @@ import (
 	"github.com/gmhafiz/go8/configs"
 	"github.com/gmhafiz/go8/internal/domain/book"
 	"github.com/gmhafiz/go8/internal/domain/book/repository/postgres"
-	"github.com/gmhafiz/go8/internal/model"
+	"github.com/gmhafiz/go8/internal/models"
 )
 
 var (
@@ -139,20 +139,17 @@ func TestBookUseCase_Create(t *testing.T) {
 	if err != nil {
 		t.Fatal("error parsing time")
 	}
-	bookWant := &model.Book{
+	bookWant := &models.Book{
 		Title:         "title",
 		PublishedDate: timeWant,
 		ImageURL: null.String{
 			String: "https://example.com/image.png",
 			Valid:  true,
 		},
-		Description: null.String{
-			String: "description",
-			Valid:  true,
-		},
+		Description: "description",
 	}
 
-	bookGot, err := uc.Create(context.Background(), bookWant.Title, bookWant.Description.String,
+	bookGot, err := uc.Create(context.Background(), bookWant.Title, bookWant.Description,
 		bookWant.ImageURL.String, bookWant.PublishedDate.String())
 	if err != nil {
 		t.Fatal(err)

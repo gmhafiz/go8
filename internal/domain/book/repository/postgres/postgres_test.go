@@ -17,12 +17,11 @@ import (
 	"github.com/ory/dockertest"
 	"github.com/ory/dockertest/docker"
 	"github.com/stretchr/testify/assert"
-	"github.com/volatiletech/null/v8"
 
 	"github.com/gmhafiz/go8/cmd/extmigrate/migrate"
 	"github.com/gmhafiz/go8/configs"
 	"github.com/gmhafiz/go8/internal/domain/book"
-	"github.com/gmhafiz/go8/internal/model"
+	"github.com/gmhafiz/go8/internal/models"
 )
 
 var (
@@ -125,13 +124,10 @@ func TestBookRepository_Create(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	bookTest := &model.Book{
+	bookTest := &models.Book{
 		Title:         "test11",
 		PublishedDate: timeWant,
-		Description: null.String{
-			String: "test11",
-			Valid:  true,
-		},
+		Description:   "test11",
 	}
 
 	bookID, err := repo.Create(context.Background(), bookTest)
@@ -146,13 +142,10 @@ func TestRepository_Find(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	bookWant := &model.Book{
+	bookWant := &models.Book{
 		Title:         "test11",
 		PublishedDate: timeWant,
-		Description: null.String{
-			String: "test11",
-			Valid:  true,
-		},
+		Description:   "test11",
 	}
 	bookID, err := repo.Create(context.Background(), bookWant)
 	if err != nil {

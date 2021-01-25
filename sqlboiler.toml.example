@@ -1,4 +1,4 @@
-output   = "internal/models"
+output   = "internal/model"
 wipe     = true
 no-tests = true
 debug    = false

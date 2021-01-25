@@ -10,12 +10,12 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/gmhafiz/go8/internal/domain/book"
 	"github.com/gmhafiz/go8/internal/mock"
-	"github.com/gmhafiz/go8/internal/resource"
 )
 
 func TestHandler_Create(t *testing.T) {
-	testBookRequest := &resource.BookRequest{
+	testBookRequest := &book.Request{
 		Title:       "test01",
 		Description: "test01",
 	}

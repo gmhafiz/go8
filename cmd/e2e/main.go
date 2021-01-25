@@ -12,7 +12,7 @@ import (
 
 	"github.com/volatiletech/null/v8"
 
-	"github.com/gmhafiz/go8/internal/resource"
+	"github.com/gmhafiz/go8/internal/domain/book"
 	"github.com/gmhafiz/go8/internal/server"
 )
 
@@ -47,7 +47,7 @@ func (t *E2eTest) Run() {
 }
 
 func testUpdateBook(t *E2eTest, bookID string) {
-	newBook := resource.BookRequest{
+	newBook := book.Request{
 		BookID:        bookID,
 		Title:         "updated title",
 		PublishedDate: "2020-07-31T15:04:05.123499999Z",
@@ -82,7 +82,7 @@ func testUpdateBook(t *E2eTest, bookID string) {
 		log.Fatalf("error code fail, want %d, got %d\n", http.StatusOK, resp.StatusCode)
 	}
 
-	got := resource.BookResource{}
+	got := book.Resource{}
 	err = json.Unmarshal(respBody, &got)
 	if err != nil {
 		log.Println(err)
@@ -126,7 +126,7 @@ func testDeleteOneBook(t *E2eTest, id int64) {
 }
 
 func testAddOneBook(t *E2eTest) int64 {
-	want := resource.BookResource{
+	want := book.Resource{
 		BookID:        1,
 		Title:         "test title",
 		PublishedDate: time.Time{},
@@ -158,7 +158,7 @@ func testAddOneBook(t *E2eTest) int64 {
 		log.Fatalln(err)
 	}
 
-	got := resource.BookResource{}
+	got := book.Resource{}
 	err = json.Unmarshal(gotBody, &got)
 	if err != nil {
 		log.Println(err)
@@ -195,7 +195,7 @@ func testEmptyBook(t *E2eTest) {
 			status, http.StatusOK)
 	}
 
-	expected, _ := json.Marshal(make([]*resource.BookResource, 0))
+	expected, _ := json.Marshal(make([]*book.Resource, 0))
 
 	if !bytes.Equal(expected, got) {
 		log.Printf("handler returned unexpected body: got %v want %v", string(got), expected)

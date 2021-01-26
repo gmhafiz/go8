@@ -6,7 +6,7 @@ import (
 	"github.com/gmhafiz/go8/internal/server"
 )
 
-const Version = "v0.4.0"
+const Version = "v0.5.0"
 
 func main() {
 	s := server.New(Version)

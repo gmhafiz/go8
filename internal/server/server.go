@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -13,34 +12,26 @@ import (
 	"github.com/go-chi/chi"
 	chiMiddleware "github.com/go-chi/chi/middleware"
 	"github.com/golang-migrate/migrate/v4"
-	p "github.com/golang-migrate/migrate/v4/database/postgres"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
 
 	"github.com/gmhafiz/go8/configs"
-	"github.com/gmhafiz/go8/internal/domain/book"
-	bookHTTP "github.com/gmhafiz/go8/internal/domain/book/handler/http"
+	bookHandler "github.com/gmhafiz/go8/internal/domain/book/handler/http"
 	bookRepo "github.com/gmhafiz/go8/internal/domain/book/repository/postgres"
 	bookUseCase "github.com/gmhafiz/go8/internal/domain/book/usecase"
-	"github.com/gmhafiz/go8/internal/domain/health"
-	healthHTTP "github.com/gmhafiz/go8/internal/domain/health/handler/http"
-	"github.com/gmhafiz/go8/internal/domain/health/repository/postgres"
-	"github.com/gmhafiz/go8/internal/domain/health/usecase"
+	healthHandler "github.com/gmhafiz/go8/internal/domain/health/handler/http"
+	healthRepo "github.com/gmhafiz/go8/internal/domain/health/repository/postgres"
+	healthUseCase "github.com/gmhafiz/go8/internal/domain/health/usecase"
 	"github.com/gmhafiz/go8/internal/middleware"
 	"github.com/gmhafiz/go8/third_party/database"
 )
 
 type Server struct {
-	httpServer *http.Server
-	db         *sqlx.DB
-	d          *sql.DB
 	cfg        *configs.Configs
-	Domain
-}
-
-type Domain struct {
-	BookUC   book.UseCase
-	HealthUC health.UseCase
+	db         *sqlx.DB
+	router     *chi.Mux
+	httpServer *http.Server
 }
 
 func New(version string) *Server {
@@ -49,29 +40,38 @@ func New(version string) *Server {
 }
 
 func (s *Server) Init() {
-	s.NewConfig()
-	s.NewDatabase()
-	s.InitDomains()
+	s.newConfig()
+	s.newDatabase()
+	s.newRouter()
+	s.initDomains()
 }
 
-func (s *Server) NewConfig() {
+func (s *Server) newConfig() {
 	s.cfg = configs.New()
 }
 
-func (s *Server) NewDatabase() {
+func (s *Server) newDatabase() {
 	s.db = database.NewSqlx(s.cfg)
-	s.d = database.New(s.cfg)
 }
 
-func (s *Server) InitDomains() {
-	s.BookUC = bookUseCase.NewBookUseCase(bookRepo.NewBookRepository(s.db))
-	s.HealthUC = usecase.NewHealthUseCase(postgres.NewHealthRepository(s.db))
+func (s *Server) newRouter() {
+	s.router = chi.NewRouter()
+	s.router.Use(middleware.Cors)
+	if s.cfg.Api.RequestLog {
+		s.router.Use(chiMiddleware.Logger)
+	}
+	s.router.Use(chiMiddleware.Recoverer)
+}
+
+func (s *Server) initDomains() {
+	healthHandler.RegisterHTTPEndPoints(s.router, healthUseCase.NewHealthUseCase(healthRepo.NewHealthRepository(s.db)))
+	bookHandler.RegisterHTTPEndPoints(s.router, bookUseCase.NewBookUseCase(bookRepo.NewBookRepository(s.db)))
 }
 
 func (s *Server) Migrate() {
 	source := "file://database/migrations/"
 	if s.cfg.DockerTest.Driver == "postgres" {
-		driver, err := p.WithInstance(s.db.DB, &p.Config{})
+		driver, err := postgres.WithInstance(s.db.DB, &postgres.Config{})
 		if err != nil {
 			log.Fatalf("error instantiating database: %v", err)
 		}
@@ -94,19 +94,9 @@ func (s *Server) Migrate() {
 }
 
 func (s *Server) Run() error {
-	router := chi.NewRouter()
-	router.Use(middleware.Cors)
-	if s.cfg.Api.RequestLog {
-		router.Use(chiMiddleware.Logger)
-	}
-	router.Use(chiMiddleware.Recoverer)
-
-	healthHTTP.RegisterHTTPEndPoints(router, s.HealthUC)
-	bookHTTP.RegisterHTTPEndPoints(router, s.BookUC)
-
 	s.httpServer = &http.Server{
 		Addr:           ":" + s.cfg.Api.Port,
-		Handler:        router,
+		Handler:        s.router,
 		ReadTimeout:    s.cfg.Api.ReadTimeout * time.Second,
 		WriteTimeout:   s.cfg.Api.WriteTimeout * time.Second,
 		MaxHeaderBytes: 1 << 20,
@@ -126,7 +116,7 @@ func (s *Server) Run() error {
               .........                ......                .......`)
 	go func() {
 		log.Printf("serving at %s:%s\n", s.cfg.Api.Host, s.cfg.Api.Port)
-		printAllRegisteredRoutes(router)
+		printAllRegisteredRoutes(s.router)
 		err := s.httpServer.ListenAndServe()
 		if err != nil {
 			log.Fatal(err)
@@ -146,10 +136,6 @@ func (s *Server) Run() error {
 
 func (s *Server) GetConfig() *configs.Configs {
 	return s.cfg
-}
-
-func (s *Server) GetHTTPServer() *http.Server {
-	return s.httpServer
 }
 
 func printAllRegisteredRoutes(router *chi.Mux) {

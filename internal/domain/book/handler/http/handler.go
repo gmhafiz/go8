@@ -102,6 +102,10 @@ func (h *Handler) All(w http.ResponseWriter, r *http.Request) {
 	presentation.Render(w, http.StatusOK, list)
 }
 
+func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
+
+}
+
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 	bookID, err := presentation.GetURLParamInt64(r, "bookID")
 	if err != nil {

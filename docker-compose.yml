@@ -11,19 +11,17 @@ services:
     entrypoint: ["/home/appuser/app/server"]
     ports:
       - ${API_PORT}:${API_PORT}
-    depends_on:
-      - postgres
 
   postgres:
     image: "postgres:13"
-    restart: "no"
+    restart: "yes"
     container_name: "go8_postgres"
     environment:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASS}
       - POSTGRES_DB=${DB_NAME}
     ports:
-      - "5432:5432"
+      - ${DB_PORT}:5432
     expose:
       - "5432"
     volumes:

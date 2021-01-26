@@ -18,13 +18,13 @@ tasks:
     cmds:
       - migrate -path database/migrations -database $DB_DRIVER://$DB_USER:$DB_PASS@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=$DB_SSL_MODE up
 
-  migraten:
+  migrate-step:
     desc: Migrates UP the database
     cmds:
       - migrate -path database/migrations -database $DB_DRIVER://$DB_USER:$DB_PASS@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=$DB_SSL_MODE up "{{.n}}"
 
   rollback:
-    desc: Rollback the database by one
+    desc: Rollback the database by 'n' step(s)
     cmds:
       - migrate -path database/migrations -database $DB_DRIVER://$DB_USER:$DB_PASS@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=$DB_SSL_MODE down "{{.n}}"
 
@@ -74,7 +74,7 @@ tasks:
   security:
     desc: Run golang security
     cmds:
-      - gosec ./...
+      - gosec -quiet ./...
 
   fmt:
     desc: Lint code
@@ -97,43 +97,45 @@ tasks:
       - swag init -g cmd/go8/main.go
 
   docker-build:
-    desc: Builds a Docker image
+    desc: Builds a Docker image a server container
     cmds:
       - docker build -t go8/server -f Dockerfile .
 
   docker-run:
     desc: Runs the app Docker image as a Docker container
     cmds:
-      - docker run -p 3080:3080 --rm -it --net=host --name go8container go8
+      - docker run -p 3080:3080 --rm -it --net=host --name go8container go8/server
 
   docker-compose-start:
     desc: Runs server and database using docker-compose
     cmds:
-      - docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit
+      - docker-compose -f docker-compose.yml up --build --abort-on-container-exit
 
   docker-compose-stop:
     desc: Stops server and database using docker-compose
     cmds:
-      - docker-compose -f docker-compose.test.yml down --volumes
+      - docker-compose -f docker-compose.yml down --volumes
+
+  dockertest:
+    desc: Run e2e test
+    dir: docker-test
+    cmds:
+      - task: dockertest-stop
+      - docker-compose build
+      - docker-compose up -d
+      - docker exec -t go8_container_test "/home/appuser/app/e2e"
+      - task: dockertest-stop
+
+  dockertest-stop:
+    desc: stop docker e2e test
+    dir: docker-test
+    cmds:
+      - docker-compose down -v
 
   stop-dockertest:
     desc: Stop hanging dockertest container
     cmds:
       - scripts/stopDockertestByPort.sh 5433
-
-  dockertest:
-    desc: Run e2e test
-    cmds:
-      - cd docker-test
-      - docker-compose down -v
-      - docker-compose build
-      - docker-compose up  -d
-      - docker exec -t go8_container_test "/home/appuser/app/e2e"
-
-  dockertest-stop:
-    desc: stop docker e2e test
-    cmds:
-      - docker-compose down -v
 
   install-tools:
     desc: Install all optional cli tools
@@ -170,7 +172,7 @@ tasks:
     desc: Install golang migration tool
     cmds:
       - curl -L https://github.com/golang-migrate/migrate/releases/download/v4.14.1/migrate.linux-amd64.tar.gz | tar xvz
-      - mkdir ~/.local.bin
+      - mkdir -p ~/.local/bin
       - mv migrate.linux-amd64 ~/.local/bin/migrate
 
   install-gosec:

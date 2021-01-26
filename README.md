@@ -13,81 +13,54 @@
               .........                ......                .......
 A starter kit for Go API development. Inspired by [How I write HTTP services after eight years](https://pace.dev/blog/2018/05/09/how-I-write-http-services-after-eight-years.html).
 
- However I wanted to use [chi router](https://github.com/go-chi/chi) which is more common in the
-  community, [sqlx](github.com/jmoiron/sqlx) for database operations and design towards more like [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html).
+However, I wanted to use [chi router](https://github.com/go-chi/chi) which is more common in the community, [sqlx](https://github.com/jmoiron/sqlx) for database operations and design towards more like [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html).
 
 This kit tries to follow the [Standard Go Project Layout](https://github.com/golang-standards/project-layout) to make project structure familiar to a Go developer.
 
-It is still in early stages and I do not consider it is completed until all integration tests are
- completed.
+It is still in early stages, and I do not consider it is completed until all integration tests are completed.
 
 In short, this kit is a Go + Postgres + Chi Router + sqlx starter kit for API development.
 
 # Motivation
 
-On the topic of API development, there are two opposing camps between a framework (like
- [echo](https://github.com/labstack/echo), [gin](https://github.com/gin-gonic/gin),
-   [buffalo](http://gobuffalo.io/) and starting small and only add features you need. However
-   , starting small and adding features aren't that straightforward. Also, you will want to
-    structure your project in such a way that there are clear separation of functionalities for
-     different files. This is the idea behind [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html). This way, it is easy to switch whichever library to another of your choice.
+On the topic of API development, there are two opposing camps between a framework (like [echo](https://github.com/labstack/echo), [gin](https://github.com/gin-gonic/gin), [buffalo](http://gobuffalo.io/) and starting small and only add features you need. 
+
+However , starting small and adding  features aren't that straightforward. Also, you will want to structure your project in such a way that there are clear separation of functionalities for your controller, business logic and database operations. 
+
+This is the idea behind [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html). This way, it is easy to switch whichever library to another of your choice.
 
 
 # Features
 
-This kit is composed of standard Go library together with well known libraries to
- manage things like router, database query and migration support.
+This kit is composed of standard Go library together with some well-known libraries to manage things like router, database query and migration support.
 
-  - Router/Mux with [Chi Router](https://github.com/go-chi/chi)
-  - Database Operations with [sqlx](github.com/jmoiron/sqlx)
-  - Database migration with [golang-migrate](https://github.com/golang-migrate/migrate/)
-  - Input [validation](https://github.com/go-playground/validator) that return multiple error
-   strings
-  - Request log that logs each user uniquely based on host address
-  - Cors
-  - Pagination through middleware
+  - [x] Router/Mux with [Chi Router](https://github.com/go-chi/chi)
+  - [x] Database Operations with [sqlx](https://github.com/jmoiron/sqlx)
+  - [x] Database migration with [golang-migrate](https://github.com/golang-migrate/migrate/)
+  - [x] Input [validation](https://github.com/go-playground/validator) that return multiple error strings
+  - [x] Read all configurations using a single `.env` file
+  - [x] (optional) Request log that logs each user uniquely based on host address
+  - [x] Cors
+  - [x] Custom model JSON output
+  - [x] Uses [Task](https://taskfile.dev) to simplify various tasks 
+  - [x] End-to-end test using ephemeral docker containers
+  
 
 It has few dependencies and replacing one library to another is easy.
 
 
-# Quickstart
+# Quick Start
 
-You need to [have a go binary](#appendix) and put into path as well as [git](#appendix). Optionally `docker` and `docker-compose` for easier start up.
-
+You need to [have a go installation](#appendix) (>= v1.13) and put into path as well as [git
+](#appendix
+). Optionally `docker` and `docker-compose` for easier start up.
 
 Get it
 
     git clone https://github.com/gmhafiz/go8
     cd go8
 
-
-The minimum external dependency is the `golang-migrate` program. While technically you can run
- the schema in `database/migration` yourself, it is recommended to use the program instead. But
-  before doing this, create a directory where you can put your binaries and add this path to the
-   `PATH` environment variable.
-
-    mkdir -p ~/.local/bin
-
-To add this newly created directory to `PATH` environment variable, add this line to `~/.profile
-` file
-
-    echo 'PATH=$PATH:$HOME/.local/bin' >> ~/.profile
-
-To make your shell learn of the new path, reload your `~/.profile` file
-
-    source ~/.profile
-
-
-So we first run a program that downloads all necessary tools for this kit to work. It also
- initializes various settings file including database credentials in `.env` by asking you to set database datasourcename (DSN). This will make the `docker-compose` step
-  easy as it can read `.env` file created in this step.
-
-    go run cmd/init/main.go
-
-
-Have a database ready either by installing them yourself or the following command. the `docker
--compose.yml` will use database credentials set in `.env` file which is initialized by the
- previous step. Optionally, you may redis as well.
+Have a database ready either by installing them yourself or the following command. the `docker-compose.yml` will use database credentials set in `.env` file which is initialized by the previous step. Optionally, you may redis as well.
 
     docker-compose up -d postgres
 
@@ -95,6 +68,9 @@ Once the database is up you may run the migration with,
 
     go run cmd/extmigrate up
 
+Fill in your database credentials in `.env` by making a copy of `env.example` first.
+
+    cp env.example .env
 
 Run the API with
 
@@ -103,14 +79,15 @@ Run the API with
 
 You will see the address the API is running at as well as all registered routes.
 
-    2020-10-09T11:44:50+11:00 INF internal/server/rest/server.go:26 > starting at 0.0.0.0:3080 service=go8
-    2020-10-09T11:44:50+11:00 INF internal/server/rest/server.go:86 >  routes={"method":"GET","path":"/api/v1/authors/"} service=go8
-    2020-10-09T11:44:50+11:00 INF internal/server/rest/server.go:86 >  routes={"method":"GET","path":"/api/v1/books/"} service=go8
-    2020-10-09T11:44:50+11:00 INF internal/server/rest/server.go:86 >  routes={"method":"POST","path":"/api/v1/books/"} service=go8
-    2020-10-09T11:44:50+11:00 INF internal/server/rest/server.go:86 >  routes={"method":"GET","path":"/api/v1/books/{id}"} service=go8
-    2020-10-09T11:44:50+11:00 INF internal/server/rest/server.go:86 >  routes={"method":"PUT","path":"/api/v1/books/{id}"} service=go8
-    2020-10-09T11:44:50+11:00 INF internal/server/rest/server.go:86 >  routes={"method":"DELETE","path":"/api/v1/books/{id}"} service=go8
-    2020-10-09T11:44:50+11:00 INF internal/server/rest/server.go:86 >  routes={"method":"GET","path":"/swagger"} service=go8
+    2021/01/26 18:45:22 serving at 0.0.0.0:3080
+    2021/01/26 18:45:22 path: /api/v1/books/ method: GET 
+    2021/01/26 18:45:22 path: /api/v1/books/ method: POST 
+    2021/01/26 18:45:22 path: /api/v1/books/{bookID} method: GET 
+    2021/01/26 18:45:22 path: /api/v1/books/{bookID} method: PUT 
+    2021/01/26 18:45:22 path: /api/v1/books/{bookID} method: DELETE 
+    2021/01/26 18:45:22 path: /health/liveness method: GET 
+    2021/01/26 18:45:22 path: /health/readiness method: GET 
+
 
 To use, follow examples in the `examples/` folder
 
@@ -119,11 +96,9 @@ To use, follow examples in the `examples/` folder
 
 # Tools
 
-While the above quickstart is sufficient to start the API, some tools are included for easier task management.
+While the above quick start is sufficient to start the API, some tools are included for easier task management.
 
-A. This project uses [Task](https://github.com/go-task/task) to handle various tasks such as
- migration, generation of swagger docs, build and run the app. It is essentially a [sh interpreter
- ](https://github.com/mvdan/sh). Only requirement is to download the binary and append to your `PATH` variable.
+A. This project uses [Task](https://github.com/go-task/task) to handle various tasks such as migration, generation of swagger docs, build and run the app. It is essentially a [sh interpreter](https://github.com/mvdan/sh).
 
 Install task runner binary bash script:
 
@@ -136,24 +111,33 @@ This installs `task` to `/usr/local/bin/task` so `sudo` is needed.
     task -l   # or
     task list
 
-
 ## Migration
 
-Migration is a good step towards having a versioned database and makes publishing to a production
- server a safe process.
+Migration is a good step towards having a versioned database and makes publishing to a production server a safe process.
 
 ### Create Migration
 
-Using `Task`, creating a migration file is done by the following command. Name the file after
- `NAME=`.
+Using `Task`, creating a migration file is done by the following command. Name the file after `NAME=`.
 
     task migrate-create NAME=create_a_tablename
 
+Write your schema in pure sql in the 'up' version and any reversal in the 'down' version of the files.
+ 
 ### Migrate up
 
 After you are satisfied with your `.sql` files, run the following command to migrate your database.
 
     task migrate
+
+To migrate one step
+
+    task migrate-step n=1
+      
+### Rollback
+    
+To roll back migration
+
+    task rollback n=1
 
 Further `golang-migrate` commands are available in its [documentation (postgres)](https://github.com/golang-migrate/migrate/blob/master/database/postgres/TUTORIAL.md)
 
@@ -170,25 +154,30 @@ Run available unit tests with
 
 Conventionally, all apps are placed inside the `cmd` folder.
 
-Using `Task`:
+If you have `Task` installed, the server can be run with:
 
     task run
 
-Without `Task`
+or without `Task`, just like in quick start section:
 
     go run cmd/go8/main.go
 
 ## Docker
 
-You can build a docker image with the app with its config files. Docker needs to be installed
- beforehand.
+You can build a docker image with the app with its config files. Docker needs to be installed beforehand.
 
      task docker-build
 
-Run the following command to build a container from this image. `--net=host` tells the container
- to use local's network so that it can access local's database.
+Run the following command to build a container from this image. `--net=host` tells the container to use local's network so that it can access host database.
 
+    docker-compose up -d postgres # If you haven't run this from quick start 
     task docker-run
+
+### docker-compose
+
+If you prefer to use docker-compose instead, both server and the database can be run with:
+
+    task docker-compose-start
 
 # Tooling
 
@@ -203,77 +192,133 @@ Various tooling are included within the `Task` runner
     * Quickly catches compile error.
   * `task golint`
     * Runs an opinionated code linter from https://golangci-lint.run/
+  * `task security`
+    * Runs opinionated security checks from https://github.com/securego/gosec
+
+All of these can run with:
+
+    task check
 
 # Structure
 
 This project mostly follows the structure documented at [Standard Go Project Layout](https://github.com/golang-standards/project-layout).
 
-In addition, this project also tries to follow [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) where each functionality are separated into  different files.
+In addition, this project also tries to follow [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) where each functionality are separated into different files.
 
 ## Starting Point
 Starting point of project is at `cmd/go8/main.go`
 
 ![main](assets/main.png)
 
-Purpose of this is to initialize all dependencies (logger, read .env, validation, database, redis) and
- passes it on to the `rest` package. After all domains are initialized, the rest server can be
-  started.
+`s.Init()` in `internal/server/server.go` simply creates a new server, initializes server configuration, database, router, and domains. Lastly `s.Run()` starts the server.
 
-## Domain
-Looking at the `internal/domain/books` folder:
-![book-domain](assets/domain-book.png)
+![init](assets/init.png)
 
-  * `handler.go` handles request coming in to perform input validation, calls usecase, and
-    formats the output.
-  * `routes.go` defines available routes for `books`.
-  * `usecase.go` receives request from handler, perform business logic, and call repository if
-   needed.
-  * `repository.go` handles database operations. Also may queries redis cache.
-  * `cache.go` performs redis queries.
 
 ## Configurations
 ![configs](assets/configs.png)
 
-All environment variables are read into specific structs initialized in `configs/configs.go`.
+All environment variables are read into specific `Configs` struct initialized in `configs/configs.go`.Each of the embedded struct are defined in its own file of the same package where its fields are read from either environment variable of `.env` file.
+
+This approach allows code completion when accessing your configurations.
+
+![config code completion](assets/config-code-completion.png)
 
 ## Database
 
-Migrations are stored in `database/migrations` folder
+Migrations files are stored in `database/migrations` folder. [golang-migrate](https://github.com/golang-migrate/migrate) library is used to perform migration using `task` commands.
+
+## Router
+
+Router or mux is created for use by `Domain`.
+
+Middleware that affects all routes such as CORS, request log and panic recoverer can be registered here.
+
+## Domain
+
+Let us look at how this repository attempts at Clean Architecture. A domain consists of: 
+
+  1. Handler (Controllers)
+  2. Use case (Use Cases)
+  3. Repository (Entities)
+  
+Let us look at how `repository` is implemented.
+
+![clean architecture](assets/CleanArchitecture.jpeg)
+
+### Repository
+
+Starting with inner most circle, `Entities`. This is where all database operations are handled. Looking at the `internal/domain/health` folder:
+
+![book-domain](assets/domain-health.png)
+
+Interfaces for both use case and repository are on its own file under the `health` package while its implementation in its separate `usecase` and `repository` package respectively.
+
+Starting with `internal/domain/health/repository.go`
+
+    type Repository interface {
+    	Readiness() error
+    }
+
+is implemented in a package called `postgres` in `internal/domain/health/repository/postgres/postgres.go`
+
+    func (r *repository) Readiness() error {
+    	return r.db.Ping()
+    }
+
+
+### Use Case
+
+This is where all business logic lives. By having repository layer underneath in a separate layer, those functions are reusable in other use case layers.
+
+### Handler
+
+This layer is responsible in handling request from outside world and into the `use case` layer. It does the following:
+
+ 1. Parse request into private 'request' struct
+ 2. Sanitize and validates said struct
+ 3. Pass into `use case` layer
+ 4. Process results from `use case` layer and decide how the payload is going to be formatted to
+  outside world.
+  
+Route API are defined in `RegisterHTTPEndPoints` in their respective `register.go` file. 
+
+
+### Dependency Injection
+
+How does dependency injection happens? It starts with `InitDomains()` method. 
+
+    healthHandler.RegisterHTTPEndPoints(s.router, usecase.NewHealthUseCase(postgres.NewHealthRepository(s.db)))
+
+The repository gets access a pointer to `sql.DB` to perform database operations. This layer also knows nothing of layers above it. `NewBookUseCase` depends on that repository and finally the handler depends on the use case.
+
+## Libraries
+
+Initialization of external libraries are located in `third_party/`
 
 ## End to End Test
 
 Start
 
-     docker-compose down -v && docker-compose build && docker-compose up  -d
+    task dockertest
 
-Run tests
+or
 
+    cd docker-test && docker-compose down -v --build && docker-compose up -d
     docker exec -t go8_container_test "/home/appuser/app/e2e"
 
+Stop container
 
-## Libraries
-
-Initialization of external libraries are located in `internal/library`
-
-![library](assets/library.png)
+    docker-compose down
 
 # TODO
 
- - Complete HTTP integration test
- - use [xID](https://github.com/rs/xid) for table ID primary key
- - better control of json output formatting
-
-# Docker
-
-Install postgres client for the docker image to perform `psql` command to see if database is up
-
-    sudo apt update && sudo apt install postgresql-client
-
-
-    docker build -t go8/server -f Dockerfile .
+ - [ ] Complete HTTP integration test
+ - [x] better control of json output formatting
 
 # Acknowledgements
 
+ * https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html
  * https://github.com/moemoe89/integration-test-golang
  * https://github.com/george-e-shaw-iv/integration-tests-example
  
@@ -281,7 +326,7 @@ Install postgres client for the docker image to perform `psql` command to see if
 
 ## Dev Environment Installation
 
-For ubuntu:
+For Ubuntu:
 
     sudo apt update && sudo apt install git
     wget https://golang.org/dl/go1.15.6.linux-amd64.tar.gz

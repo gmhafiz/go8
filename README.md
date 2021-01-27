@@ -60,6 +60,10 @@ Get it
     git clone https://github.com/gmhafiz/go8
     cd go8
 
+Fill in your database credentials in `.env` by making a copy of `env.example` first.
+
+    cp env.example .env
+
 Have a database ready either by installing them yourself or the following command. the `docker-compose.yml` will use database credentials set in `.env` file which is initialized by the previous step. Optionally, you may want redis as well.
 
     docker-compose up -d postgres
@@ -67,10 +71,6 @@ Have a database ready either by installing them yourself or the following comman
 Once the database is up you may run the migration with,
 
     go run cmd/extmigrate up
-
-Fill in your database credentials in `.env` by making a copy of `env.example` first.
-
-    cp env.example .env
 
 Run the API with
 

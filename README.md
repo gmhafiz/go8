@@ -60,7 +60,7 @@ Get it
     git clone https://github.com/gmhafiz/go8
     cd go8
 
-Have a database ready either by installing them yourself or the following command. the `docker-compose.yml` will use database credentials set in `.env` file which is initialized by the previous step. Optionally, you may redis as well.
+Have a database ready either by installing them yourself or the following command. the `docker-compose.yml` will use database credentials set in `.env` file which is initialized by the previous step. Optionally, you may want redis as well.
 
     docker-compose up -d postgres
 
@@ -195,7 +195,7 @@ Various tooling are included within the `Task` runner
   * `task security`
     * Runs opinionated security checks from https://github.com/securego/gosec
 
-All of these can run with:
+All of these can be run with:
 
     task check
 

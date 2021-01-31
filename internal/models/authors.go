@@ -24,16 +24,16 @@ import (
 
 // Author is an object representing the database table.
 type Author struct {
-	AuthorID   int64       `boil:"author_id" json:"author_id" toml:"author_id" yaml:"author_id"`
-	FirstName  string      `boil:"first_name" json:"first_name" toml:"first_name" yaml:"first_name"`
-	MiddleName null.String `boil:"middle_name" json:"middle_name,omitempty" toml:"middle_name" yaml:"middle_name,omitempty"`
-	LastName   string      `boil:"last_name" json:"last_name" toml:"last_name" yaml:"last_name"`
-	CreatedAt  null.Time   `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
-	UpdatedAt  null.Time   `boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
-	DeletedAt  null.Time   `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
+	AuthorID   int64       `db:"author_id" boil:"author_id" json:"author_id" toml:"author_id" yaml:"author_id"`
+	FirstName  string      `db:"first_name" boil:"first_name" json:"first_name" toml:"first_name" yaml:"first_name"`
+	MiddleName null.String `db:"middle_name" boil:"middle_name" json:"middle_name,omitempty" toml:"middle_name" yaml:"middle_name,omitempty"`
+	LastName   string      `db:"last_name" boil:"last_name" json:"last_name" toml:"last_name" yaml:"last_name"`
+	CreatedAt  null.Time   `db:"created_at" boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
+	UpdatedAt  null.Time   `db:"updated_at" boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
+	DeletedAt  null.Time   `db:"deleted_at" boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
 
-	R *authorR `boil:"-" json:"-" toml:"-" yaml:"-"`
-	L authorL  `boil:"-" json:"-" toml:"-" yaml:"-"`
+	R *authorR `db:"-" boil:"-" json:"-" toml:"-" yaml:"-"`
+	L authorL  `db:"-" boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var AuthorColumns = struct {
@@ -175,7 +175,7 @@ var AuthorRels = struct {
 
 // authorR is where relationships are stored.
 type authorR struct {
-	BookAuthors BookAuthorSlice `boil:"BookAuthors" json:"BookAuthors" toml:"BookAuthors" yaml:"BookAuthors"`
+	BookAuthors BookAuthorSlice `db:"BookAuthors" boil:"BookAuthors" json:"BookAuthors" toml:"BookAuthors" yaml:"BookAuthors"`
 }
 
 // NewStruct creates a new relationship struct

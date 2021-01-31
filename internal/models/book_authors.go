@@ -23,11 +23,11 @@ import (
 
 // BookAuthor is an object representing the database table.
 type BookAuthor struct {
-	BooksID  int64 `boil:"books_id" json:"books_id" toml:"books_id" yaml:"books_id"`
-	AuthorID int64 `boil:"author_id" json:"author_id" toml:"author_id" yaml:"author_id"`
+	BooksID  int64 `db:"books_id" boil:"books_id" json:"books_id" toml:"books_id" yaml:"books_id"`
+	AuthorID int64 `db:"author_id" boil:"author_id" json:"author_id" toml:"author_id" yaml:"author_id"`
 
-	R *bookAuthorR `boil:"-" json:"-" toml:"-" yaml:"-"`
-	L bookAuthorL  `boil:"-" json:"-" toml:"-" yaml:"-"`
+	R *bookAuthorR `db:"-" boil:"-" json:"-" toml:"-" yaml:"-"`
+	L bookAuthorL  `db:"-" boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var BookAuthorColumns = struct {
@@ -57,7 +57,7 @@ var BookAuthorRels = struct {
 
 // bookAuthorR is where relationships are stored.
 type bookAuthorR struct {
-	Author *Author `boil:"Author" json:"Author" toml:"Author" yaml:"Author"`
+	Author *Author `db:"Author" boil:"Author" json:"Author" toml:"Author" yaml:"Author"`
 }
 
 // NewStruct creates a new relationship struct

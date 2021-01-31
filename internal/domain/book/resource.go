@@ -19,17 +19,6 @@ type Request struct {
 	Description   string `json:"description" validate:"required"`
 }
 
-type DB struct {
-	BookID        int64       `db:"book_id"`
-	Title         string      `db:"title"`
-	PublishedDate time.Time   `db:"published_date"`
-	ImageURL      null.String `db:"image_url"`
-	Description   string      `db:"description"`
-	CreatedAt     null.Time   `db:"created_at"`
-	UpdatedAt     null.Time   `db:"updated_at"`
-	DeletedAt     null.Time   `db:"deleted_at"`
-}
-
 type Resource struct {
 	BookID        int64       `json:"book_id" deepcopier:"field:book_id" db:"id"`
 	Title         string      `json:"title" deepcopier:"field:title" db:"title"`
@@ -48,37 +37,6 @@ func ToBook(req *Request) *models.Book {
 		},
 		Description: req.Description,
 	}
-}
-
-func DBToModel(db DB) *models.Book {
-	return &models.Book{
-		BookID:        db.BookID,
-		Title:         db.Title,
-		PublishedDate: db.PublishedDate,
-		ImageURL:      db.ImageURL,
-		Description:   db.Description,
-		CreatedAt:     db.CreatedAt,
-		UpdatedAt:     db.UpdatedAt,
-		DeletedAt:     db.DeletedAt,
-	}
-}
-
-func DBsToModels(db []*DB) []*models.Book {
-	var books []*models.Book
-	for _, val := range db {
-		b := &models.Book{
-			BookID:        val.BookID,
-			Title:         val.Title,
-			PublishedDate: val.PublishedDate,
-			ImageURL:      val.ImageURL,
-			Description:   val.Description,
-			CreatedAt:     val.CreatedAt,
-			UpdatedAt:     val.UpdatedAt,
-			DeletedAt:     val.DeletedAt,
-		}
-		books = append(books, b)
-	}
-	return books
 }
 
 func Book(book *models.Book) (Resource, error) {

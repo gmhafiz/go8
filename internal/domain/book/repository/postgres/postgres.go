@@ -67,13 +67,11 @@ func (r *repository) All(ctx context.Context) ([]*models.Book, error) {
 		return books, nil
 
 	} else {
-		var booksR []*book.DB
-		err := r.db.SelectContext(ctx, &booksR, SelectFromBooksPaginate, size, page*(page-1))
+		var books []*models.Book
+		err := r.db.SelectContext(ctx, &books, SelectFromBooksPaginate, size, page*(page-1))
 		if err != nil {
 			return nil, errors.Wrap(err, "error fetching books")
 		}
-
-		books := book.DBsToModels(booksR)
 
 		return books, nil
 	}
@@ -91,13 +89,13 @@ func (r *repository) Find(ctx context.Context, bookID int64) (*models.Book, erro
 		}
 	}()
 
-	var bookDB book.DB
-	err = r.db.GetContext(ctx, &bookDB, SelectBookByID, bookID)
+	var b models.Book
+	err = r.db.GetContext(ctx, &b, SelectBookByID, bookID)
 	if err != nil {
 		return nil, err
 	}
 
-	return book.DBToModel(bookDB), err
+	return &b, err
 }
 
 func (r *repository) Update(ctx context.Context, book *models.Book) (*models.Book, error) {

@@ -89,14 +89,16 @@ func (h *Handler) All(w http.ResponseWriter, r *http.Request) {
 	filters, search := book.Filter(r.URL.Query())
 
 	var books []*models.Book
-	if search {
+
+	switch search {
+	case true:
 		resp, err := h.useCase.Search(context.Background(), filters)
 		if err != nil {
 			respond.Error(w, http.StatusInternalServerError, err)
 			return
 		}
 		books = resp
-	} else {
+	default:
 		resp, err := h.useCase.All(r.Context())
 		if err != nil {
 			respond.Error(w, http.StatusInternalServerError, err)

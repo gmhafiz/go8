@@ -9,7 +9,8 @@ import (
 	"github.com/go-playground/validator/v10"
 
 	"github.com/gmhafiz/go8/internal/domain/book"
-	"github.com/gmhafiz/go8/internal/utility/presentation"
+	"github.com/gmhafiz/go8/internal/models"
+	"github.com/gmhafiz/go8/internal/utility/respond"
 )
 
 type Handler struct {
@@ -28,96 +29,118 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	var bookRequest book.Request
 	err := json.NewDecoder(r.Body).Decode(&bookRequest)
 	if err != nil {
-		presentation.Render(w, http.StatusBadRequest, nil)
+		respond.Error(w, http.StatusBadRequest, nil)
 		return
 	}
 
-	errs := presentation.Validate(h.validate, bookRequest)
+	errs := respond.Validate(h.validate, bookRequest)
 	if errs != nil {
-		presentation.Render(w, http.StatusBadRequest, map[string][]string{"errors": errs})
+		respond.Error(w, http.StatusBadRequest, map[string][]string{"errors": errs})
 		return
 	}
 
-	bk, err := h.useCase.Create(context.Background(), bookRequest.Title, bookRequest.Description, bookRequest.ImageURL, bookRequest.PublishedDate)
+	bk, err := h.useCase.Create(context.Background(), bookRequest)
 	if err != nil {
-		presentation.Render(w, http.StatusInternalServerError, err.Error())
+		respond.Error(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	presentation.Render(w, http.StatusCreated, bk)
+	b, err := book.Book(bk)
+	if err != nil {
+		respond.Error(w, http.StatusInternalServerError, err)
+		return
+	}
+	respond.Render(w, http.StatusCreated, b)
 }
 
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
-	bookID, err := presentation.GetURLParamInt64(r, "bookID")
-	if err != nil {
-		presentation.Render(w, http.StatusBadRequest, nil)
-		return
-	}
+	bookID := respond.GetURLParamInt64(w, r, "bookID")
 
 	var bookRequest book.Request
-	err = json.NewDecoder(r.Body).Decode(&bookRequest)
+	err := json.NewDecoder(r.Body).Decode(&bookRequest)
 	if err != nil {
-		presentation.Render(w, http.StatusBadRequest, nil)
+		respond.Error(w, http.StatusBadRequest, nil)
 		return
 	}
 	bookRequest.BookID = strconv.FormatInt(bookID, 10)
 
-	errs := presentation.Validate(h.validate, bookRequest)
+	errs := respond.Validate(h.validate, bookRequest)
 	if errs != nil {
-		presentation.Render(w, http.StatusBadRequest, map[string][]string{"errors": errs})
+		respond.Error(w, http.StatusBadRequest, map[string][]string{"errors": errs})
 		return
 	}
 
 	resp, err := h.useCase.Update(context.Background(), book.ToBook(&bookRequest))
 	if err != nil {
-		presentation.Render(w, http.StatusInternalServerError, err.Error())
+		respond.Error(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	res, err := book.Book(resp)
 	if err != nil {
-		presentation.Render(w, http.StatusInternalServerError, err.Error())
+		respond.Error(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	presentation.Render(w, http.StatusOK, res)
+	respond.Render(w, http.StatusOK, res)
 }
 
 func (h *Handler) All(w http.ResponseWriter, r *http.Request) {
-	resp, err := h.useCase.All(r.Context())
-	if err != nil {
-		presentation.Render(w, http.StatusInternalServerError, err.Error())
-		return
+	filters, search := book.Filter(r.URL.Query())
+
+	var books []*models.Book
+	if search {
+		resp, err := h.useCase.Search(context.Background(), filters)
+		if err != nil {
+			respond.Error(w, http.StatusInternalServerError, err)
+			return
+		}
+		books = resp
+	} else {
+		resp, err := h.useCase.All(r.Context())
+		if err != nil {
+			respond.Error(w, http.StatusInternalServerError, err)
+			return
+		}
+		books = resp
 	}
 
-	list, err := book.Books(resp)
+	list, err := book.Books(books)
 	if err != nil {
-		presentation.Render(w, http.StatusInternalServerError, err.Error())
+		respond.Render(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
 		return
 	} else if list == nil {
-		presentation.Render(w, http.StatusNoContent, nil)
+		respond.Error(w, http.StatusNoContent, nil)
 		return
 	}
 
-	presentation.Render(w, http.StatusOK, list)
+	respond.Render(w, http.StatusOK, list)
 }
 
 func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
+	bookID := respond.GetURLParamInt64(w, r, "bookID")
 
+	b, err := h.useCase.Find(context.Background(), bookID)
+	if err != nil {
+		respond.Error(w, http.StatusInternalServerError, nil)
+		return
+	}
+	list, err := book.Book(b)
+	if err != nil {
+		respond.Error(w, http.StatusInternalServerError, nil)
+		return
+	}
+	respond.Render(w, http.StatusOK, list)
 }
 
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
-	bookID, err := presentation.GetURLParamInt64(r, "bookID")
+	bookID := respond.GetURLParamInt64(w, r, "bookID")
+
+	err := h.useCase.Delete(context.Background(), bookID)
 	if err != nil {
-		presentation.Render(w, http.StatusInternalServerError, nil)
+		respond.Error(w, http.StatusInternalServerError, nil)
 		return
 	}
 
-	err = h.useCase.Delete(context.Background(), bookID)
-	if err != nil {
-		presentation.Render(w, http.StatusInternalServerError, nil)
-		return
-	}
-
-	presentation.Render(w, http.StatusOK, nil)
+	respond.Render(w, http.StatusOK, nil)
 }

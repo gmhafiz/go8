@@ -3,9 +3,6 @@ package usecase
 import (
 	"context"
 
-	"github.com/jinzhu/now"
-	"github.com/volatiletech/null/v8"
-
 	"github.com/gmhafiz/go8/internal/domain/book"
 	"github.com/gmhafiz/go8/internal/models"
 )
@@ -20,17 +17,8 @@ func NewBookUseCase(bookRepo book.Repository) *BookUseCase {
 	}
 }
 
-func (u *BookUseCase) Create(ctx context.Context, title, description, imageURL, publishedDate string) (*models.Book, error) {
-	bk := &models.Book{
-		Title:         title,
-		PublishedDate: now.MustParse(publishedDate),
-		ImageURL: null.String{
-			String: imageURL,
-			Valid:  true,
-		},
-		Description: description,
-	}
-
+func (u *BookUseCase) Create(ctx context.Context, r book.Request) (*models.Book, error) {
+	bk := book.ToBook(&r)
 	bookID, err := u.bookRepo.Create(ctx, bk)
 	if err != nil {
 		return nil, err
@@ -56,4 +44,8 @@ func (u *BookUseCase) Update(ctx context.Context, book *models.Book) (*models.Bo
 
 func (u *BookUseCase) Delete(ctx context.Context, bookID int64) error {
 	return u.bookRepo.Delete(ctx, bookID)
+}
+
+func (u *BookUseCase) Search(ctx context.Context, filters *book.Filters) ([]*models.Book, error) {
+	return u.bookRepo.Search(ctx, filters)
 }

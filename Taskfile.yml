@@ -31,7 +31,7 @@ tasks:
   gen-orm:
     desc: Reads your current database schema and creates models as well as orm.
     cmds:
-      - sqlboiler --wipe --add-soft-deletes psql
+      - sqlboiler --wipe --add-soft-deletes -t db psql
 
   run:
     desc: Runs the app

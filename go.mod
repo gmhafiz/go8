@@ -13,6 +13,7 @@ require (
 	github.com/go-chi/cors v1.1.1
 	github.com/go-playground/validator/v10 v10.4.1
 	github.com/golang-migrate/migrate/v4 v4.14.1
+	github.com/golang/mock v1.4.4
 	github.com/google/go-cmp v0.5.4 // indirect
 	github.com/gotestyourself/gotestyourself v2.2.0+incompatible // indirect
 	github.com/jinzhu/copier v0.1.0

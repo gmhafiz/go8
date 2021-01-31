@@ -10,6 +10,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gmhafiz/go8/cmd/extmigrate/migrate"
+	"github.com/gmhafiz/go8/configs"
+	"github.com/gmhafiz/go8/internal/domain/book"
+	"github.com/gmhafiz/go8/internal/domain/book/repository/postgres"
 	"github.com/jinzhu/now"
 	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
@@ -18,17 +22,10 @@ import (
 	"github.com/ory/dockertest"
 	"github.com/ory/dockertest/docker"
 	"github.com/stretchr/testify/assert"
-	"github.com/volatiletech/null/v8"
-
-	"github.com/gmhafiz/go8/cmd/extmigrate/migrate"
-	"github.com/gmhafiz/go8/configs"
-	"github.com/gmhafiz/go8/internal/domain/book"
-	"github.com/gmhafiz/go8/internal/domain/book/repository/postgres"
-	"github.com/gmhafiz/go8/internal/models"
 )
 
 var (
-	repo book.Repository
+	repo book.Test
 )
 
 const uniqueDBName = "usecase"
@@ -139,24 +136,20 @@ func TestBookUseCase_Create(t *testing.T) {
 	if err != nil {
 		t.Fatal("error parsing time")
 	}
-	bookWant := &models.Book{
+	request := book.Request{
 		Title:         "title",
-		PublishedDate: timeWant,
-		ImageURL: null.String{
-			String: "https://example.com/image.png",
-			Valid:  true,
-		},
-		Description: "description",
+		PublishedDate: timeWant.String(),
+		ImageURL:      "https://example.com/image.png",
+		Description:   "",
 	}
 
-	bookGot, err := uc.Create(context.Background(), bookWant.Title, bookWant.Description,
-		bookWant.ImageURL.String, bookWant.PublishedDate.String())
+	bookGot, err := uc.Create(context.Background(), request)
 	if err != nil {
 		t.Fatal(err)
 	}
 	assert.NotEqual(t, bookGot.BookID, 0)
-	assert.Equal(t, bookGot.Title, bookWant.Title)
-	assert.Equal(t, bookGot.PublishedDate.String(), bookWant.PublishedDate.UTC().String())
-	assert.Equal(t, bookGot.Description, bookWant.Description)
-	assert.Equal(t, bookGot.ImageURL, bookWant.ImageURL)
+	assert.Equal(t, bookGot.Title, request.Title)
+	assert.Equal(t, bookGot.PublishedDate.String(), request.PublishedDate)
+	assert.Equal(t, bookGot.Description, request.Description)
+	assert.Equal(t, bookGot.ImageURL, request.ImageURL)
 }

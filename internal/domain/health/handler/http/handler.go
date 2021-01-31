@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gmhafiz/go8/internal/domain/health"
-	"github.com/gmhafiz/go8/internal/utility/presentation"
+	"github.com/gmhafiz/go8/internal/utility/respond"
 )
 
 type Handler struct {
@@ -18,14 +18,14 @@ func NewHandler(useCase health.UseCase) *Handler {
 }
 
 func (h *Handler) Liveness(w http.ResponseWriter, r *http.Request) {
-	presentation.Render(w, http.StatusOK, nil)
+	respond.Render(w, http.StatusOK, nil)
 }
 
 func (h *Handler) Readiness(w http.ResponseWriter, r *http.Request) {
 	err := h.useCase.Readiness()
 	if err != nil {
-		presentation.Render(w, http.StatusInternalServerError, nil)
+		respond.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	presentation.Render(w, http.StatusOK, nil)
+	respond.Render(w, http.StatusOK, nil)
 }

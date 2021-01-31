@@ -17,13 +17,22 @@ type repository struct {
 	db *sqlx.DB
 }
 
+const (
+	InsertIntoBooks         = "INSERT INTO books (title, published_date, image_url, description) VALUES ($1, $2, $3, $4) RETURNING book_id"
+	SelectFromBooks         = "SELECT * FROM books ORDER BY created_at DESC"
+	SelectFromBooksPaginate = "SELECT * FROM books ORDER BY created_at DESC LIMIT $1 OFFSET $2"
+	SelectBookByID          = "SELECT * FROM books where book_id = $1"
+	UpdateBook              = "UPDATE books set title = $1, description = $2, published_date = $3, image_url = $4, updated_at = $5 where book_id = $6"
+	DeleteByID              = "DELETE FROM books where book_id = ($1)"
+	SearchBooks             = "SELECT * FROM books where title like '%' || $1 || '%' or description like '%'|| $2 || '%'"
+)
+
 func NewBookRepository(db *sqlx.DB) *repository {
 	return &repository{db: db}
 }
 
 func (r *repository) Create(ctx context.Context, book *models.Book) (int64, error) {
-	query := "INSERT INTO books (title, published_date, image_url, description) VALUES ($1, $2, $3, $4) RETURNING book_id"
-	stmt, err := r.db.PrepareContext(ctx, query)
+	stmt, err := r.db.PrepareContext(ctx, InsertIntoBooks)
 
 	if err != nil {
 		return 0, err
@@ -49,46 +58,29 @@ func (r *repository) All(ctx context.Context) ([]*models.Book, error) {
 	size := ctx.Value(middleware.PaginationKey).(middleware.Pagination).Size
 
 	if page == 0 && size == 0 {
-		query := "SELECT * FROM books ORDER BY created_at DESC"
-		rows, err := r.db.QueryContext(ctx, query)
+		var books []*models.Book
+		err := r.db.SelectContext(ctx, &books, SelectFromBooks)
 		if err != nil {
 			return nil, errors.Wrap(err, "error fetching books")
 		}
-		var books []*models.Book
-		for rows.Next() {
-			var book models.Book
-			err := rows.Scan(&book.BookID, &book.Title, &book.PublishedDate,
-				&book.ImageURL, &book.Description, &book.CreatedAt, &book.UpdatedAt, &book.DeletedAt)
-			if err != nil {
-				return nil, errors.Wrap(err, "error scanning book")
-			}
-			books = append(books, &book)
-		}
+
 		return books, nil
 
 	} else {
-		query := "SELECT * FROM books ORDER BY created_at DESC LIMIT $1 OFFSET $2 "
-		rows, err := r.db.QueryContext(ctx, query, size, page*(page-1))
+		var booksR []*book.DB
+		err := r.db.SelectContext(ctx, &booksR, SelectFromBooksPaginate, size, page*(page-1))
 		if err != nil {
 			return nil, errors.Wrap(err, "error fetching books")
 		}
-		var books []*models.Book
-		for rows.Next() {
-			var book models.Book
-			err = rows.Scan(&book.BookID, &book.Title, &book.PublishedDate,
-				&book.ImageURL, &book.Description, &book.CreatedAt, &book.UpdatedAt, &book.DeletedAt)
-			if err != nil {
-				return nil, errors.Wrap(err, "error scanning book")
-			}
-			books = append(books, &book)
-		}
+
+		books := book.DBsToModels(booksR)
+
 		return books, nil
 	}
 }
 
 func (r *repository) Find(ctx context.Context, bookID int64) (*models.Book, error) {
-	query := "SELECT * FROM books where book_id = $1"
-	stmt, err := r.db.Prepare(query)
+	stmt, err := r.db.Prepare(SelectBookByID)
 	if err != nil {
 		return nil, err
 	}
@@ -99,34 +91,20 @@ func (r *repository) Find(ctx context.Context, bookID int64) (*models.Book, erro
 		}
 	}()
 
-	bookDB := book.DB{}
-	err = stmt.QueryRowContext(ctx, bookID).Scan(&bookDB.BookID, &bookDB.Title,
-		&bookDB.PublishedDate,
-		&bookDB.ImageURL, &bookDB.Description, &bookDB.CreatedAt, &bookDB.UpdatedAt,
-		&bookDB.DeletedAt)
+	var bookDB book.DB
+	err = r.db.GetContext(ctx, &bookDB, SelectBookByID, bookID)
 	if err != nil {
 		return nil, err
 	}
 
-	b := &models.Book{
-		BookID:        bookDB.BookID,
-		Title:         bookDB.Title,
-		PublishedDate: bookDB.PublishedDate,
-		ImageURL:      bookDB.ImageURL,
-		Description:   bookDB.Description,
-		CreatedAt:     bookDB.CreatedAt,
-		UpdatedAt:     bookDB.UpdatedAt,
-		DeletedAt:     bookDB.DeletedAt,
-	}
-
-	return b, err
+	return book.DBToModel(bookDB), err
 }
 
 func (r *repository) Update(ctx context.Context, book *models.Book) (*models.Book, error) {
 	now := time.Now()
-	query := "UPDATE books set title = $1, description = $2, published_date = $3, image_url = $4, updated_at = $5 where book_id = $6"
 
-	_, err := r.db.ExecContext(ctx, query, book.Title, book.Description, book.PublishedDate, book.ImageURL, now, book.BookID)
+	_, err := r.db.ExecContext(ctx, UpdateBook, book.Title, book.Description,
+		book.PublishedDate, book.ImageURL, now, book.BookID)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -142,10 +120,19 @@ func (r *repository) Update(ctx context.Context, book *models.Book) (*models.Boo
 }
 
 func (r *repository) Delete(ctx context.Context, bookID int64) error {
-	query := "DELETE FROM books where book_id = ($1)"
-	_, err := r.db.ExecContext(ctx, query, bookID)
+	_, err := r.db.ExecContext(ctx, DeleteByID, bookID)
 
 	return err
+}
+
+func (r *repository) Search(ctx context.Context, filters *book.Filters) ([]*models.Book, error) {
+	var books []*models.Book
+	err := r.db.SelectContext(ctx, &books, SearchBooks, filters.Title, filters.Description)
+	if err != nil {
+		return nil, err
+	}
+
+	return books, nil
 }
 
 // Close attaches the provider and close the connection

@@ -25,7 +25,7 @@ import (
 )
 
 var (
-	repo book.Repository
+	repo book.Test
 )
 
 const uniqueDBName = "postgres_test"

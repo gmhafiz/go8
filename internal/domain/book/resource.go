@@ -2,7 +2,6 @@ package book
 
 import (
 	"reflect"
-	"strconv"
 	"time"
 
 	"github.com/jinzhu/copier"
@@ -20,14 +19,6 @@ type Request struct {
 	Description   string `json:"description" validate:"required"`
 }
 
-type Resource struct {
-	BookID        int64       `json:"book_id" deepcopier:"field:book_id" db:"id"`
-	Title         string      `json:"title" deepcopier:"field:title" db:"title"`
-	PublishedDate time.Time   `json:"published_date" deepcopier:"field:force" db:"published_date"`
-	ImageURL      null.String `json:"image_url" deepcopier:"field:image_url" db:"image_url"`
-	Description   null.String `json:"description" deepcopier:"field:description"`
-}
-
 type DB struct {
 	BookID        int64       `db:"book_id"`
 	Title         string      `db:"title"`
@@ -39,13 +30,16 @@ type DB struct {
 	DeletedAt     null.Time   `db:"deleted_at"`
 }
 
+type Resource struct {
+	BookID        int64       `json:"book_id" deepcopier:"field:book_id" db:"id"`
+	Title         string      `json:"title" deepcopier:"field:title" db:"title"`
+	PublishedDate time.Time   `json:"published_date" deepcopier:"field:force" db:"published_date"`
+	ImageURL      null.String `json:"image_url" deepcopier:"field:image_url" db:"image_url"`
+	Description   null.String `json:"description" deepcopier:"field:description"`
+}
+
 func ToBook(req *Request) *models.Book {
-	id, err := strconv.ParseInt(req.BookID, 10, 64)
-	if err != nil {
-		return nil
-	}
 	return &models.Book{
-		BookID:        id,
 		Title:         req.Title,
 		PublishedDate: now.MustParse(req.PublishedDate),
 		ImageURL: null.String{
@@ -54,6 +48,37 @@ func ToBook(req *Request) *models.Book {
 		},
 		Description: req.Description,
 	}
+}
+
+func DBToModel(db DB) *models.Book {
+	return &models.Book{
+		BookID:        db.BookID,
+		Title:         db.Title,
+		PublishedDate: db.PublishedDate,
+		ImageURL:      db.ImageURL,
+		Description:   db.Description,
+		CreatedAt:     db.CreatedAt,
+		UpdatedAt:     db.UpdatedAt,
+		DeletedAt:     db.DeletedAt,
+	}
+}
+
+func DBsToModels(db []*DB) []*models.Book {
+	var books []*models.Book
+	for _, val := range db {
+		b := &models.Book{
+			BookID:        val.BookID,
+			Title:         val.Title,
+			PublishedDate: val.PublishedDate,
+			ImageURL:      val.ImageURL,
+			Description:   val.Description,
+			CreatedAt:     val.CreatedAt,
+			UpdatedAt:     val.UpdatedAt,
+			DeletedAt:     val.DeletedAt,
+		}
+		books = append(books, b)
+	}
+	return books
 }
 
 func Book(book *models.Book) (Resource, error) {

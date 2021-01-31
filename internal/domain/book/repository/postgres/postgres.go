@@ -24,7 +24,7 @@ const (
 	SelectBookByID          = "SELECT * FROM books where book_id = $1"
 	UpdateBook              = "UPDATE books set title = $1, description = $2, published_date = $3, image_url = $4, updated_at = $5 where book_id = $6"
 	DeleteByID              = "DELETE FROM books where book_id = ($1)"
-	SearchBooks             = "SELECT * FROM books where title like '%' || $1 || '%' or description like '%'|| $2 || '%'"
+	SearchBooks             = "SELECT * FROM books where title like '%' || $1 || '%' and description like '%'|| $2 || '%'"
 )
 
 func NewBookRepository(db *sqlx.DB) *repository {
@@ -123,9 +123,9 @@ func (r *repository) Delete(ctx context.Context, bookID int64) error {
 	return err
 }
 
-func (r *repository) Search(ctx context.Context, filters *book.Filters) ([]*models.Book, error) {
+func (r *repository) Search(ctx context.Context, req *book.Request) ([]*models.Book, error) {
 	var books []*models.Book
-	err := r.db.SelectContext(ctx, &books, SearchBooks, filters.Title, filters.Description)
+	err := r.db.SelectContext(ctx, &books, SearchBooks, req.Title, req.Description)
 	if err != nil {
 		return nil, err
 	}

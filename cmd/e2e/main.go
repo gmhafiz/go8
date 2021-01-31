@@ -82,7 +82,7 @@ func testUpdateBook(t *E2eTest, bookID string) {
 		log.Fatalf("error code fail, want %d, got %d\n", http.StatusOK, resp.StatusCode)
 	}
 
-	got := book.Resource{}
+	got := book.Res{}
 	err = json.Unmarshal(respBody, &got)
 	if err != nil {
 		log.Println(err)
@@ -126,7 +126,7 @@ func testDeleteOneBook(t *E2eTest, id int64) {
 }
 
 func testAddOneBook(t *E2eTest) int64 {
-	want := book.Resource{
+	want := book.Res{
 		BookID:        1,
 		Title:         "test title",
 		PublishedDate: time.Time{},
@@ -158,7 +158,7 @@ func testAddOneBook(t *E2eTest) int64 {
 		log.Fatalln(err)
 	}
 
-	got := book.Resource{}
+	got := book.Res{}
 	err = json.Unmarshal(gotBody, &got)
 	if err != nil {
 		log.Println(err)
@@ -195,7 +195,7 @@ func testEmptyBook(t *E2eTest) {
 			status, http.StatusOK)
 	}
 
-	expected, _ := json.Marshal(make([]*book.Resource, 0))
+	expected, _ := json.Marshal(make([]*book.Res, 0))
 
 	if !bytes.Equal(expected, got) {
 		log.Printf("handler returned unexpected body: got %v want %v", string(got), expected)

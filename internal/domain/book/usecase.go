@@ -12,5 +12,5 @@ type UseCase interface {
 	Find(ctx context.Context, bookID int64) (*models.Book, error)
 	Update(ctx context.Context, book *models.Book) (*models.Book, error)
 	Delete(ctx context.Context, bookID int64) error
-	Search(ctx context.Context, filters *Filters) ([]*models.Book, error)
+	Search(ctx context.Context, req *Request) ([]*models.Book, error)
 }

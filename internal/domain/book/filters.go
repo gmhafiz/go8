@@ -1,15 +1,12 @@
 package book
 
-import "net/url"
+import (
+	"net/url"
 
-type Filters struct {
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Page        string `json:"page"`
-	Size        string `json:"size"`
-}
+	"github.com/gmhafiz/go8/internal/middleware"
+)
 
-func Filter(queries url.Values) (*Filters, bool) {
+func Filter(queries url.Values) (*Request, bool) {
 	var isSearch bool
 
 	for key := range queries {
@@ -20,11 +17,18 @@ func Filter(queries url.Values) (*Filters, bool) {
 	}
 
 	if isSearch {
-		filter := &Filters{
+		f, err := middleware.Parse(queries)
+		if err != nil {
+			return nil, false
+		}
+
+		req := &Request{
 			Title:       queries.Get("title"),
 			Description: queries.Get("description"),
+			Pagination:  f,
 		}
-		return filter, true
+
+		return req, true
 	}
 	return nil, false
 }

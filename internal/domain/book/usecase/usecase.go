@@ -46,6 +46,6 @@ func (u *BookUseCase) Delete(ctx context.Context, bookID int64) error {
 	return u.bookRepo.Delete(ctx, bookID)
 }
 
-func (u *BookUseCase) Search(ctx context.Context, filters *book.Filters) ([]*models.Book, error) {
-	return u.bookRepo.Search(ctx, filters)
+func (u *BookUseCase) Search(ctx context.Context, req *book.Request) ([]*models.Book, error) {
+	return u.bookRepo.Search(ctx, req)
 }

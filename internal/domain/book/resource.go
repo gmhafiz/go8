@@ -1,13 +1,13 @@
 package book
 
 import (
-	"reflect"
 	"time"
 
 	"github.com/jinzhu/copier"
 	"github.com/jinzhu/now"
 	"github.com/volatiletech/null/v8"
 
+	"github.com/gmhafiz/go8/internal/middleware"
 	"github.com/gmhafiz/go8/internal/models"
 )
 
@@ -17,9 +17,10 @@ type Request struct {
 	PublishedDate string `json:"published_date" validate:"required"`
 	ImageURL      string `json:"image_url" validate:"url"`
 	Description   string `json:"description" validate:"required"`
+	middleware.Pagination
 }
 
-type Resource struct {
+type Res struct {
 	BookID        int64       `json:"book_id" deepcopier:"field:book_id" db:"id"`
 	Title         string      `json:"title" deepcopier:"field:title" db:"title"`
 	PublishedDate time.Time   `json:"published_date" deepcopier:"field:force" db:"published_date"`
@@ -39,8 +40,8 @@ func ToBook(req *Request) *models.Book {
 	}
 }
 
-func Book(book *models.Book) (Resource, error) {
-	var resource Resource
+func Resource(book *models.Book) (Res, error) {
+	var resource Res
 
 	err := copier.Copy(&resource, &book)
 	if err != nil {
@@ -50,27 +51,34 @@ func Book(book *models.Book) (Resource, error) {
 	return resource, nil
 }
 
-func Books(books []*models.Book) (interface{}, error) {
-	var resource Resource
+func Resources(books []*models.Book) (interface{}, error) {
+	//var resource Res
 
 	if len(books) == 0 {
 		return make([]string, 0), nil
 	}
 
-	rt := reflect.TypeOf(books)
-	if rt.Kind() == reflect.Slice {
-		var resources []Resource
-		for _, book := range books {
-			res, _ := Book(book)
-			resources = append(resources, res)
-		}
-		return resources, nil
+	var resources []Res
+	for _, book := range books {
+		res, _ := Resource(book)
+		resources = append(resources, res)
 	}
+	return resources, nil
 
-	err := copier.Copy(&resource, books)
-	if err != nil {
-		return resource, err
-	}
+	//rt := reflect.TypeOf(books)
+	//if rt.Kind() == reflect.Slice {
+	//	var resources []Res
+	//	for _, book := range books {
+	//		res, _ := Resource(book)
+	//		resources = append(resources, res)
+	//	}
+	//	return resources, nil
+	//}
 
-	return resource, nil
+	//err := copier.Copy(&resource, books)
+	//if err != nil {
+	//	return resource, err
+	//}
+	//
+	//return resource, nil
 }

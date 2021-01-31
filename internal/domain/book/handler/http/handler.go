@@ -45,7 +45,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	b, err := book.Book(bk)
+	b, err := book.Resource(bk)
 	if err != nil {
 		respond.Error(w, http.StatusInternalServerError, err)
 		return
@@ -76,7 +76,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := book.Book(resp)
+	res, err := book.Resource(resp)
 	if err != nil {
 		respond.Error(w, http.StatusInternalServerError, err)
 		return
@@ -107,7 +107,7 @@ func (h *Handler) All(w http.ResponseWriter, r *http.Request) {
 		books = resp
 	}
 
-	list, err := book.Books(books)
+	list, err := book.Resources(books)
 	if err != nil {
 		respond.Render(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
 		return
@@ -127,7 +127,7 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 		respond.Error(w, http.StatusInternalServerError, nil)
 		return
 	}
-	list, err := book.Book(b)
+	list, err := book.Resource(b)
 	if err != nil {
 		respond.Error(w, http.StatusInternalServerError, nil)
 		return

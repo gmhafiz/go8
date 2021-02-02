@@ -64,21 +64,4 @@ func Resources(books []*models.Book) (interface{}, error) {
 		resources = append(resources, res)
 	}
 	return resources, nil
-
-	//rt := reflect.TypeOf(books)
-	//if rt.Kind() == reflect.Slice {
-	//	var resources []Res
-	//	for _, book := range books {
-	//		res, _ := Resource(book)
-	//		resources = append(resources, res)
-	//	}
-	//	return resources, nil
-	//}
-
-	//err := copier.Copy(&resource, books)
-	//if err != nil {
-	//	return resource, err
-	//}
-	//
-	//return resource, nil
 }

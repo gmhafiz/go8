@@ -3,7 +3,7 @@ package usecase
 import (
 	"context"
 	"github.com/gmhafiz/go8/internal/domain/book"
-	"github.com/gmhafiz/go8/internal/mock"
+	mock2 "github.com/gmhafiz/go8/internal/domain/book/repository/postgres/mock"
 	"github.com/gmhafiz/go8/internal/models"
 	"github.com/golang/mock/gomock"
 	"github.com/jinzhu/now"
@@ -18,7 +18,7 @@ func TestBookUseCase_Create(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	repo := mock.NewMockRepository(ctrl)
+	repo := mock2.NewMockRepository(ctrl)
 	uc := NewBookUseCase(repo)
 
 	request := book.Request{

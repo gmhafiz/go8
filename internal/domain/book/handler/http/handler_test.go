@@ -17,7 +17,7 @@ import (
 	"github.com/gmhafiz/go8/internal/models"
 )
 
-//go:generate mockgen -package mock -source handler.go -aux_files handler=datastore.go -destination=handler_test.go
+//go:generate mockgen -package mock -source handler.go -destination=mock/mock.go
 
 func TestHandler_Create(t *testing.T) {
 	testBookRequest := &book.Request{

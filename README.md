@@ -51,9 +51,7 @@ It has few dependencies and replacing one library to another is easy.
 
 # Quick Start
 
-You need to [have a go installation](#appendix) (>= v1.13) and put into path as well as [git
-](#appendix
-). Optionally `docker` and `docker-compose` for easier start up.
+You need to [have a go installation](#appendix) (>= v1.13) and put into path as well as [git](#appendix). Optionally `docker` and `docker-compose` for easier start up.
 
 Get it
 
@@ -333,6 +331,8 @@ For Ubuntu:
     sudo tar -C /usr/local -xzf go1.15.6.linux-amd64.tar.gz
     export PATH=$PATH:/usr/local/go/bin
     echo 'PATH=$PATH:/usr/local/go/bin' >> ~/.profile
+
+    curl -s https://get.docker.com | sudo bash
 
     sudo apt remove docker docker-engine docker.io containerd runc
     sudo apt update

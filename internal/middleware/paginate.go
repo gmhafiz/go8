@@ -22,7 +22,7 @@ var (
 type Pagination struct {
 	Page      int    `json:"page" validate:"number"`
 	Size      int    `json:"size" validate:"number"`
-	Direction string `json:"sort" validate:"oneof=desc asc"`
+	Direction string `json:"sort" validate:"ascii"`
 }
 
 func NewPagination() Pagination {

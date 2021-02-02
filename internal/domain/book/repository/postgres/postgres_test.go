@@ -17,6 +17,7 @@ import (
 	"github.com/ory/dockertest"
 	"github.com/ory/dockertest/docker"
 	"github.com/stretchr/testify/assert"
+	"github.com/volatiletech/null/v8"
 
 	"github.com/gmhafiz/go8/cmd/extmigrate/migrate"
 	"github.com/gmhafiz/go8/configs"
@@ -32,8 +33,8 @@ const uniqueDBName = "postgres_test"
 
 func TestMain(m *testing.M) {
 	// must go back to project's root path to get to the .env and ./database/migrations/ folder
-	changeDirTo := "../../../../../"
-	err := os.Chdir(changeDirTo)
+	to := "../../../../../"
+	err := os.Chdir(to)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -42,6 +43,7 @@ func TestMain(m *testing.M) {
 		log.Println(err)
 	}
 	cfg := configs.DockerTestCfg()
+	cfg.Name = uniqueDBName
 
 	pool, err := dockertest.NewPool("")
 	if err != nil {
@@ -55,6 +57,8 @@ func TestMain(m *testing.M) {
 			"POSTGRES_USER=" + cfg.User,
 			"POSTGRES_PASSWORD=" + cfg.Pass,
 			"POSTGRES_DB=" + uniqueDBName,
+			"TZ=UTC",
+			"PG_TZ=UTC",
 		},
 		ExposedPorts: []string{"5432"},
 		PortBindings: map[docker.Port][]docker.PortBinding{
@@ -63,6 +67,7 @@ func TestMain(m *testing.M) {
 			},
 		},
 	}
+
 	resource, err := pool.RunWithOptions(&opts, func(config *docker.HostConfig) {
 		// set AutoRemove to true so that stopped container goes away by itself
 		config.AutoRemove = true
@@ -71,7 +76,7 @@ func TestMain(m *testing.M) {
 		}
 	})
 	if err != nil {
-		log.Print("error running docker container")
+		log.Fatalln("error running docker container")
 	}
 
 	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
@@ -96,18 +101,7 @@ func TestMain(m *testing.M) {
 		repo.Close()
 	}()
 
-	dbCfg := &configs.Configs{
-		Database: &configs.Database{
-			Driver:  cfg.Dialect,
-			Host:    cfg.Host,
-			Port:    cfg.Port,
-			Name:    uniqueDBName,
-			User:    cfg.User,
-			Pass:    cfg.Pass,
-			SslMode: cfg.SslMode,
-		},
-	}
-	migrate.Up(dbCfg, ".")
+	migrate.Start()
 
 	code := m.Run()
 
@@ -128,6 +122,10 @@ func TestBookRepository_Create(t *testing.T) {
 		Title:         "test11",
 		PublishedDate: timeWant,
 		Description:   "test11",
+		ImageURL: null.String{
+			String: "http://example.com/image.png",
+			Valid:  true,
+		},
 	}
 
 	bookID, err := repo.Create(context.Background(), bookTest)

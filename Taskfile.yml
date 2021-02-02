@@ -135,7 +135,7 @@ tasks:
   stop-dockertest:
     desc: Stop hanging dockertest container
     cmds:
-      - scripts/stopDockertestByPort.sh 5433
+      - scripts/stopDockertestByPort.sh 5434
 
   install-tools:
     desc: Install all optional cli tools

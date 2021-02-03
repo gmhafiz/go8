@@ -46,6 +46,7 @@ tasks:
       - task golint
       - task security
       - task fmt
+      - task test
 
   build:
     desc: Creates a compiled binary and copy configuration files
@@ -85,6 +86,16 @@ tasks:
     desc: Test all code
     cmds:
       - go test -v ./...
+
+  coverage:
+    desc: Peform test coverage
+    cmds:
+      - go test -cover ./...
+
+  generate:
+    desc: Runs all //go:generate commands embedded in .go files
+    cmds:
+      - go generate ./...
 
   race:
     desc: Check race condition
@@ -143,6 +154,7 @@ tasks:
       - task: install-golangci
       - task: install-swagger
       - task: install-testify
+      - task: install-gomock
       - task: install-golangmigrate
       - task: install-sqlboiler
       - task: install-gosec
@@ -167,6 +179,11 @@ tasks:
     desc: Install testify testing suite
     cmds:
       - go get github.com/stretchr/testify
+
+  install-gomock:
+    desc: Install gomock test framework
+    cmds:
+      - GO111MODULE=on go get github.com/golang/mock/mockgen@v1.4.4
 
   install-golangmigrate:
     desc: Install golang migration tool

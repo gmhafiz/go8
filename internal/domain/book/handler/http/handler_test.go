@@ -13,11 +13,11 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/gmhafiz/go8/internal/domain/book"
-	"github.com/gmhafiz/go8/internal/domain/book/usecase/mock"
+	"github.com/gmhafiz/go8/internal/domain/book/mock"
 	"github.com/gmhafiz/go8/internal/models"
 )
 
-//go:generate mockgen -package mock -source handler.go -destination=mock/mock.go
+//go:generate mockgen -package mock -source handler.go -destination=../../mock/mock_handler.go
 
 func TestHandler_Create(t *testing.T) {
 	testBookRequest := &book.Request{

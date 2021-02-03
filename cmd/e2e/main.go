@@ -8,15 +8,12 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"time"
-
-	"github.com/volatiletech/null/v8"
 
 	"github.com/gmhafiz/go8/internal/domain/book"
 	"github.com/gmhafiz/go8/internal/server"
 )
 
-const Version = "v0.4.0-test"
+const Version = "v0.5.0-test"
 
 func main() {
 	s := server.New(Version)
@@ -46,6 +43,78 @@ func (t *E2eTest) Run() {
 	log.Println("all tests passed.")
 }
 
+func testEmptyBook(t *E2eTest) {
+	resp, err := http.Get(fmt.Sprintf("http://localhost:%s/api/v1/books",
+		t.server.GetConfig().Api.Port))
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer resp.Body.Close()
+
+	got, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	if status := resp.StatusCode; status != http.StatusOK {
+		log.Printf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+
+	expected, _ := json.Marshal(make([]*book.Res, 0))
+
+	if !bytes.Equal(expected, got) {
+		log.Printf("handler returned unexpected body: got %v want %v", string(got), expected)
+	}
+
+	log.Println("testEmptyBook passes")
+}
+
+func testAddOneBook(t *E2eTest) int64 {
+	want := &book.Request{
+		Title:         "test01",
+		PublishedDate: "2020-02-02",
+		ImageURL:      "http://example.com/image.png",
+		Description:   "test01",
+	}
+
+	bR, _ := json.Marshal(want)
+
+	resp, err := http.Post(
+		fmt.Sprintf("http://localhost:%s/api/v1/books",
+			t.server.GetConfig().Api.Port),
+		"Content-Type: application/json",
+		bytes.NewBuffer(bR),
+	)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer resp.Body.Close()
+
+	gotBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	got := book.Res{}
+	err = json.Unmarshal(gotBody, &got)
+	if err != nil {
+		log.Println(err)
+	}
+
+	if resp.StatusCode != http.StatusCreated {
+		log.Printf("error code want %d, got %d", http.StatusCreated, resp.StatusCode)
+	}
+
+	if want.Title != got.Title && want.Description != got.Description.String && want.
+		ImageURL != got.ImageURL.String && want.PublishedDate != got.PublishedDate.String() {
+		log.Printf("want %v, got %v\n", want, got)
+	}
+
+	log.Println("testAddOneBook passes")
+	return got.BookID
+}
+
 func testUpdateBook(t *E2eTest, bookID string) {
 	newBook := book.Request{
 		BookID:        bookID,
@@ -57,12 +126,14 @@ func testUpdateBook(t *E2eTest, bookID string) {
 
 	client := &http.Client{}
 
-	bR, _ := json.Marshal(&newBook)
+	bR, err := json.Marshal(&newBook)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	req, err := http.NewRequest(
-		http.MethodPut, fmt.Sprintf("http://localhost:%s/api/v1/books/%s",
-			t.server.GetConfig().Api.Port, newBook.BookID), bytes.NewBuffer(bR),
-	)
+	url := fmt.Sprintf("http://localhost:%s/api/v1/books/%s", t.server.GetConfig().Api.Port, newBook.BookID)
+
+	req, err := http.NewRequest(http.MethodPut, url, bytes.NewBuffer(bR))
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -123,83 +194,4 @@ func testDeleteOneBook(t *E2eTest, id int64) {
 		log.Fatalf("error code fail, want %d, got %d\n", http.StatusOK, resp.StatusCode)
 	}
 	log.Println("testDeleteOneBook passes")
-}
-
-func testAddOneBook(t *E2eTest) int64 {
-	want := book.Res{
-		BookID:        1,
-		Title:         "test title",
-		PublishedDate: time.Time{},
-		ImageURL: null.String{
-			String: "https://example.com/image.png",
-			Valid:  true,
-		},
-		Description: null.String{
-			String: "test description",
-			Valid:  true,
-		},
-	}
-
-	bR, _ := json.Marshal(&want)
-
-	resp, err := http.Post(
-		fmt.Sprintf("http://localhost:%s/api/v1/books",
-			t.server.GetConfig().Api.Port),
-		"Content-Type: application/json",
-		bytes.NewBuffer(bR),
-	)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	defer resp.Body.Close()
-
-	gotBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	got := book.Res{}
-	err = json.Unmarshal(gotBody, &got)
-	if err != nil {
-		log.Println(err)
-	}
-
-	if resp.StatusCode != http.StatusCreated {
-		log.Printf("error code want %d, got %d", http.StatusCreated, resp.StatusCode)
-	}
-
-	if want.Title != got.Title && want.Description.String != got.Description.String && want.
-		ImageURL.String != got.ImageURL.String && !want.PublishedDate.Equal(got.PublishedDate) {
-		log.Printf("want %v, got %v\n", want, got)
-	}
-
-	log.Println("testAddOneBook passes")
-	return got.BookID
-}
-
-func testEmptyBook(t *E2eTest) {
-	resp, err := http.Get(fmt.Sprintf("http://localhost:%s/api/v1/books",
-		t.server.GetConfig().Api.Port))
-	if err != nil {
-		log.Fatalln(err)
-	}
-	defer resp.Body.Close()
-
-	got, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	if status := resp.StatusCode; status != http.StatusOK {
-		log.Printf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
-	}
-
-	expected, _ := json.Marshal(make([]*book.Res, 0))
-
-	if !bytes.Equal(expected, got) {
-		log.Printf("handler returned unexpected body: got %v want %v", string(got), expected)
-	}
-
-	log.Println("testEmptyBook passes")
 }

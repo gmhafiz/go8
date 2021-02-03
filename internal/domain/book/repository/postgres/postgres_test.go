@@ -25,6 +25,8 @@ import (
 	"github.com/gmhafiz/go8/internal/models"
 )
 
+//go:generate mockgen -package mock -source ../../repository.go -destination=../../mock/mock_repository.go
+
 var (
 	repo book.Test
 )

@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"net"
@@ -23,12 +24,13 @@ import (
 	"github.com/gmhafiz/go8/configs"
 	"github.com/gmhafiz/go8/internal/domain/book"
 	"github.com/gmhafiz/go8/internal/models"
+	"github.com/gmhafiz/go8/internal/middleware"
 )
 
 //go:generate mockgen -package mock -source ../../repository.go -destination=../../mock/mock_repository.go
 
 var (
-	repo book.Test
+	repo book.Repository
 )
 
 const uniqueDBName = "postgres_test"
@@ -99,10 +101,6 @@ func TestMain(m *testing.M) {
 		log.Fatalf("could not connect to docker: %s", err.Error())
 	}
 
-	defer func() {
-		repo.Close()
-	}()
-
 	migrate.Start()
 
 	code := m.Run()
@@ -121,9 +119,9 @@ func TestBookRepository_Create(t *testing.T) {
 		t.Fatal(err)
 	}
 	bookTest := &models.Book{
-		Title:         "test11",
+		Title:         "test1",
 		PublishedDate: timeWant,
-		Description:   "test11",
+		Description:   "test1",
 		ImageURL: null.String{
 			String: "http://example.com/image.png",
 			Valid:  true,
@@ -143,9 +141,9 @@ func TestRepository_Find(t *testing.T) {
 		t.Fatal(err)
 	}
 	bookWant := &models.Book{
-		Title:         "test11",
+		Title:         "test2",
 		PublishedDate: timeWant,
-		Description:   "test11",
+		Description:   "test2",
 	}
 	bookID, err := repo.Create(context.Background(), bookWant)
 	if err != nil {
@@ -160,4 +158,74 @@ func TestRepository_Find(t *testing.T) {
 	assert.Equal(t, bookGot.Title, bookWant.Title)
 	assert.Equal(t, bookGot.Description, bookWant.Description)
 	assert.Equal(t, bookGot.PublishedDate.String(), bookWant.PublishedDate.String())
+}
+
+func TestRepository_All(t *testing.T) {
+	pagination := middleware.Pagination{
+		Page:      1,
+		Size:      10,
+		Direction: "asc",
+	}
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, middleware.PaginationKey, pagination)
+
+	books, err := repo.All(ctx)
+
+	assert.NoError(t, err)
+	assert.Len(t, books, 2)
+}
+
+func TestRepository_Update(t *testing.T) {
+	ctx := context.Background()
+	dt := "2020-01-01T15:04:05Z"
+	timeWant, err := time.Parse(time.RFC3339, dt)
+	if err != nil {
+		assert.NoError(t, err)
+	}
+
+	want := &models.Book{
+		BookID:        1,
+		Title:         "updated title 1",
+		PublishedDate: timeWant,
+		ImageURL: null.String{
+			String: "http://example.com/image2.png",
+			Valid:  true,
+		},
+		Description: "updated description",
+	}
+
+	got, err := repo.Update(ctx, want)
+
+	assert.NoError(t, err)
+	assert.Equal(t, want.BookID, got.BookID)
+	assert.Equal(t, want.Title, got.Title)
+	assert.Equal(t, want.Description, got.Description)
+	assert.Equal(t, want.PublishedDate.String(), got.PublishedDate.String())
+	assert.Equal(t, want.ImageURL.String, got.ImageURL.String)
+}
+
+func TestRepository_Delete(t *testing.T) {
+	ctx := context.Background()
+
+	err := repo.Delete(ctx, 1)
+
+	assert.NoError(t, err)
+
+	got, err := repo.Find(ctx, 1)
+
+	assert.Nil(t, got)
+	assert.Error(t, err, sql.ErrNoRows)
+}
+
+func TestRepository_Search(t *testing.T) {
+	ctx := context.Background()
+
+	req := &book.Request{
+		Title: "test2",
+	}
+
+	got, err := repo.Search(ctx, req)
+
+	assert.NoError(t, err)
+	assert.Len(t, got, 1)
 }

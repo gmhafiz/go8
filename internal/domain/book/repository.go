@@ -14,10 +14,3 @@ type Repository interface {
 	Delete(ctx context.Context, bookID int64) error
 	Search(ctx context.Context, req *Request) ([]*models.Book, error)
 }
-
-type Test interface {
-	Repository
-	Close()
-	Drop() error
-	Up() error
-}

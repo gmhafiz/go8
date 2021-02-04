@@ -104,13 +104,11 @@ func (r *repository) Update(ctx context.Context, book *models.Book) (*models.Boo
 	_, err := r.db.ExecContext(ctx, UpdateBook, book.Title, book.Description,
 		book.PublishedDate, book.ImageURL, now, book.BookID)
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
 
 	bookDB, err := r.Find(ctx, book.BookID)
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
 
@@ -124,6 +122,7 @@ func (r *repository) Delete(ctx context.Context, bookID int64) error {
 }
 
 func (r *repository) Search(ctx context.Context, req *book.Request) ([]*models.Book, error) {
+
 	var books []*models.Book
 	err := r.db.SelectContext(ctx, &books, SearchBooks, req.Title, req.Description)
 	if err != nil {
@@ -131,54 +130,4 @@ func (r *repository) Search(ctx context.Context, req *book.Request) ([]*models.B
 	}
 
 	return books, nil
-}
-
-// Close attaches the provider and close the connection
-func (r *repository) Close() {
-	defer func() {
-		err := r.db.Close()
-		if err != nil {
-			log.Println(err)
-		}
-	}()
-}
-
-// Up attaches the provider and create the table
-func (r *repository) Up() error {
-	ctx := context.Background()
-
-	query := "CREATE TABLE IF NOT EXISTS books(book_id bigserial, title varchar(255) not null, published_date timestamp with time zone not null, image_url varchar(255), description text not null, created_at timestamp with time zone default current_timestamp, updated_at timestamp with time zone default current_timestamp, deleted_at timestamp with time zone, primary key (book_id))"
-	stmt, err := r.db.PrepareContext(ctx, query)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		err = stmt.Close()
-		if err != nil {
-			log.Println(err)
-		}
-	}()
-
-	_, err = stmt.ExecContext(ctx)
-	return err
-}
-
-// Drop attaches the provider and drop the table
-func (r *repository) Drop() error {
-	ctx := context.Background()
-
-	query := "DROP TABLE IF EXISTS books cascade"
-	stmt, err := r.db.PrepareContext(ctx, query)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		err = stmt.Close()
-		if err != nil {
-			log.Println(err)
-		}
-	}()
-
-	_, err = stmt.ExecContext(ctx)
-	return err
 }

@@ -98,21 +98,22 @@ func (r *repository) Find(ctx context.Context, bookID int64) (*models.Book, erro
 	return &b, err
 }
 
-func (r *repository) Update(ctx context.Context, book *models.Book) (*models.Book, error) {
+func (r *repository) Update(ctx context.Context, book *models.Book) error {
 	now := time.Now()
 
 	_, err := r.db.ExecContext(ctx, UpdateBook, book.Title, book.Description,
 		book.PublishedDate, book.ImageURL, now, book.BookID)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	bookDB, err := r.Find(ctx, book.BookID)
-	if err != nil {
-		return nil, err
-	}
-
-	return bookDB, nil
+	return nil
+	//bookDB, err := r.Find(ctx, book.BookID)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//return bookDB, nil
 }
 
 func (r *repository) Delete(ctx context.Context, bookID int64) error {

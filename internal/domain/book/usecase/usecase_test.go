@@ -16,7 +16,7 @@ import (
 	"github.com/gmhafiz/go8/internal/models"
 )
 
-//go:generate mockgen -package mock -source handler.go -destination=../../mock/mock_usecase.go
+//go:generate mockgen -package mock -source ../usecase.go -destination=../mock/mock_usecase.go
 
 func TestBookUseCase_Create(t *testing.T) {
 	ctrl := gomock.NewController(t)

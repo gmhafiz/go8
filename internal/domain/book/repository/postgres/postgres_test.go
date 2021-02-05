@@ -23,8 +23,8 @@ import (
 	"github.com/gmhafiz/go8/cmd/extmigrate/migrate"
 	"github.com/gmhafiz/go8/configs"
 	"github.com/gmhafiz/go8/internal/domain/book"
-	"github.com/gmhafiz/go8/internal/models"
 	"github.com/gmhafiz/go8/internal/middleware"
+	"github.com/gmhafiz/go8/internal/models"
 )
 
 //go:generate mockgen -package mock -source ../../repository.go -destination=../../mock/mock_repository.go
@@ -194,14 +194,9 @@ func TestRepository_Update(t *testing.T) {
 		Description: "updated description",
 	}
 
-	got, err := repo.Update(ctx, want)
+	err = repo.Update(ctx, want)
 
 	assert.NoError(t, err)
-	assert.Equal(t, want.BookID, got.BookID)
-	assert.Equal(t, want.Title, got.Title)
-	assert.Equal(t, want.Description, got.Description)
-	assert.Equal(t, want.PublishedDate.String(), got.PublishedDate.String())
-	assert.Equal(t, want.ImageURL.String, got.ImageURL.String)
 }
 
 func TestRepository_Delete(t *testing.T) {

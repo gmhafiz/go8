@@ -39,7 +39,11 @@ func (u *BookUseCase) Find(ctx context.Context, bookID int64) (*models.Book, err
 }
 
 func (u *BookUseCase) Update(ctx context.Context, book *models.Book) (*models.Book, error) {
-	return u.bookRepo.Update(ctx, book)
+	err := u.bookRepo.Update(ctx, book)
+	if err != nil {
+		return nil, err
+	}
+	return u.bookRepo.Find(ctx, book.BookID)
 }
 
 func (u *BookUseCase) Delete(ctx context.Context, bookID int64) error {

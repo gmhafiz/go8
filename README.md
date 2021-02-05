@@ -19,7 +19,7 @@ This kit tries to follow the [Standard Go Project Layout](https://github.com/gol
 
 It is still in early stages, and I do not consider it is completed until all integration tests are completed.
 
-In short, this kit is a Go + Postgres + Chi Router + sqlx starter kit for API development.
+In short, this kit is a Go + Postgres + Chi Router + sqlx + unit testing starter kit for API development.
 
 # Motivation
 
@@ -43,6 +43,7 @@ This kit is composed of standard Go library together with some well-known librar
   - [x] Cors
   - [x] Custom model JSON output
   - [x] Uses [Task](https://taskfile.dev) to simplify various tasks 
+  - [x] Unit testing of repository, use case, and handler
   - [x] End-to-end test using ephemeral docker containers
   
 
@@ -138,13 +139,6 @@ To roll back migration
     task rollback n=1
 
 Further `golang-migrate` commands are available in its [documentation (postgres)](https://github.com/golang-migrate/migrate/blob/master/database/postgres/TUTORIAL.md)
-
-
-# Test
-
-Run available unit tests with
-
-    task test # which performs go test -v ./...
 
 # Run
 
@@ -294,7 +288,19 @@ The repository gets access a pointer to `sql.DB` to perform database operations.
 
 Initialization of external libraries are located in `third_party/`
 
-## End to End Test
+## Testing
+
+### Unit Testing
+
+Unit testing can be run with
+
+    task test
+    
+Which runs `go test -v ./...`
+
+In repository unit testing, tt makes use of [dockertest](https://github.com/ory/dockertest) from ory that spins up temporary database in a docker to run all repositories.
+
+### End to End Test
 
 Start
 

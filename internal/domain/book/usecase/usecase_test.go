@@ -18,12 +18,16 @@ import (
 
 //go:generate mockgen -package mock -source ../usecase.go -destination=../mock/mock_usecase.go
 
-func TestBookUseCase_Create(t *testing.T) {
+func newUseCase(t *testing.T) (*BookUseCase, *mock.MockRepository) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	repo := mock.NewMockRepository(ctrl)
-	uc := NewBookUseCase(repo)
+	return NewBookUseCase(repo), repo
+}
+
+func TestBookUseCase_Create(t *testing.T) {
+	uc, repo := newUseCase(t)
 
 	request := book.Request{
 		Title:         "title",
@@ -59,4 +63,19 @@ func TestBookUseCase_Create(t *testing.T) {
 	assert.Equal(t, bookGot.PublishedDate.String(), request.PublishedDate)
 	assert.Equal(t, bookGot.Description, request.Description)
 	assert.Equal(t, bookGot.ImageURL.String, request.ImageURL)
+}
+
+func TestBookUseCase_All(t *testing.T) {
+	uc, repo := newUseCase(t)
+
+	ctx := context.Background()
+	var err error
+	var want []*models.Book
+
+	repo.EXPECT().All(ctx).Return(want, err).AnyTimes()
+
+	books, err := uc.All(ctx)
+
+	assert.NoError(t, err)
+	assert.Nil(t, books)
 }

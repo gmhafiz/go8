@@ -20,7 +20,7 @@ var doc = `{
         "title": "{{.Title}}",
         "contact": {
             "name": "Hafiz Shafruddin",
-            "url": "http://www.gmhafiz.com/contact",
+            "url": "https://github.com/gmhafiz/go8",
             "email": "gmhafiz@gmail.com"
         },
         "license": {},
@@ -29,7 +29,54 @@ var doc = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/book": {
+        "/api/v1/books": {
+            "get": {
+                "description": "Get all books. By default it gets first page with 10 items.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Show all books",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "size",
+                        "name": "size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "term",
+                        "name": "title",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "term",
+                        "name": "description",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Book"
+                            }
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Get a book with JSON payload",
                 "consumes": [
@@ -46,7 +93,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/books.bookRequest"
+                            "$ref": "#/definitions/book.Request"
                         }
                     }
                 ],
@@ -60,7 +107,7 @@ var doc = `{
                 }
             }
         },
-        "/book/{bookID}": {
+        "/api/v1/books/{bookID}": {
             "get": {
                 "description": "Get a book by its id.",
                 "consumes": [
@@ -74,7 +121,7 @@ var doc = `{
                     {
                         "type": "integer",
                         "description": "book ID",
-                        "name": "id",
+                        "name": "bookID",
                         "in": "path",
                         "required": true
                     }
@@ -104,7 +151,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/books.bookRequest"
+                            "$ref": "#/definitions/book.Request"
                         }
                     }
                 ],
@@ -145,46 +192,29 @@ var doc = `{
                 }
             }
         },
-        "/books": {
+        "/health/liveness": {
             "get": {
-                "description": "Get all books. By default it gets first page with 10 items.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Show all books",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "page number",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "size",
-                        "name": "size",
-                        "in": "query"
-                    }
-                ],
+                "description": "Hits this API to see if API is running in the server",
+                "summary": "Checks if API is up",
                 "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.Book"
-                            }
-                        }
-                    }
+                    "200": {},
+                    "500": {}
+                }
+            }
+        },
+        "/health/readiness": {
+            "get": {
+                "description": "Hits this API to see if both API and Database are running in the server",
+                "summary": "Checks if both API and Database are up",
+                "responses": {
+                    "200": {},
+                    "500": {}
                 }
             }
         }
     },
     "definitions": {
-        "books.bookRequest": {
+        "book.Request": {
             "type": "object",
             "required": [
                 "description",
@@ -198,7 +228,16 @@ var doc = `{
                 "image_url": {
                     "type": "string"
                 },
+                "page": {
+                    "type": "integer"
+                },
                 "published_date": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "sort": {
                     "type": "string"
                 },
                 "title": {
@@ -249,12 +288,12 @@ type swaggerInfo struct {
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = swaggerInfo{
-	Version:     "0.2.0",
+	Version:     "0.5.0",
 	Host:        "localhost:3080",
-	BasePath:    "/api/v1",
+	BasePath:    "/",
 	Schemes:     []string{},
 	Title:       "Go8",
-	Description: "Go + Postgres + Chi Router + SqlBoiler starter kit for API development.",
+	Description: "Go + Postgres + Chi Router + sqlx + Unit Testing starter kit for API development.",
 }
 
 type s struct{}

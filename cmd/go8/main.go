@@ -8,9 +8,20 @@ import (
 
 const Version = "v0.5.0"
 
+// @title Go8
+// @version 0.5.0
+// @description Go + Postgres + Chi Router + sqlx + Unit Testing starter kit for API development.
+
+// @contact.name Hafiz Shafruddin
+// @contact.url https://github.com/gmhafiz/go8
+// @contact.email gmhafiz@gmail.com
+
+// @host localhost:3080
+// @BasePath /
 func main() {
 	s := server.New(Version)
 	s.Init()
+	s.StartSwagger()
 
 	if err := s.Run(); err != nil {
 		log.Fatalf("%s", err.Error())

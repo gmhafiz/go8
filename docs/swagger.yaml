@@ -1,12 +1,18 @@
-basePath: /api/v1
+basePath: /
 definitions:
-  books.bookRequest:
+  book.Request:
     properties:
       description:
         type: string
       image_url:
         type: string
+      page:
+        type: integer
       published_date:
+        type: string
+      size:
+        type: integer
+      sort:
         type: string
       title:
         type: string
@@ -39,13 +45,44 @@ info:
   contact:
     email: gmhafiz@gmail.com
     name: Hafiz Shafruddin
-    url: http://www.gmhafiz.com/contact
-  description: Go + Postgres + Chi Router + SqlBoiler starter kit for API development.
+    url: https://github.com/gmhafiz/go8
+  description: Go + Postgres + Chi Router + sqlx + Unit Testing starter kit for API development.
   license: {}
   title: Go8
-  version: 0.2.0
+  version: 0.5.0
 paths:
-  /book:
+  /api/v1/books:
+    get:
+      consumes:
+      - application/json
+      description: Get all books. By default it gets first page with 10 items.
+      parameters:
+      - description: page
+        in: query
+        name: page
+        type: string
+      - description: size
+        in: query
+        name: size
+        type: string
+      - description: term
+        in: query
+        name: title
+        type: string
+      - description: term
+        in: query
+        name: description
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Book'
+            type: array
+      summary: Show all books
     post:
       consumes:
       - application/json
@@ -56,7 +93,7 @@ paths:
         name: Book
         required: true
         schema:
-          $ref: '#/definitions/books.bookRequest'
+          $ref: '#/definitions/book.Request'
       produces:
       - application/json
       responses:
@@ -65,7 +102,7 @@ paths:
           schema:
             $ref: '#/definitions/models.Book'
       summary: Create a Book
-  /book/{bookID}:
+  /api/v1/books/{bookID}:
     delete:
       consumes:
       - application/json
@@ -91,7 +128,7 @@ paths:
       parameters:
       - description: book ID
         in: path
-        name: id
+        name: bookID
         required: true
         type: integer
       produces:
@@ -112,7 +149,7 @@ paths:
         name: Book
         required: true
         schema:
-          $ref: '#/definitions/books.bookRequest'
+          $ref: '#/definitions/book.Request'
       produces:
       - application/json
       responses:
@@ -121,28 +158,18 @@ paths:
         "500":
           description: Internal Server error
       summary: Update a Book
-  /books:
+  /health/liveness:
     get:
-      consumes:
-      - application/json
-      description: Get all books. By default it gets first page with 10 items.
-      parameters:
-      - description: page number
-        in: query
-        name: page
-        type: string
-      - description: size
-        in: query
-        name: size
-        type: string
-      produces:
-      - application/json
+      description: Hits this API to see if API is running in the server
       responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/models.Book'
-            type: array
-      summary: Show all books
+        "200": {}
+        "500": {}
+      summary: Checks if API is up
+  /health/readiness:
+    get:
+      description: Hits this API to see if both API and Database are running in the server
+      responses:
+        "200": {}
+        "500": {}
+      summary: Checks if both API and Database are up
 swagger: "2.0"

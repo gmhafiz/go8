@@ -15,6 +15,7 @@ type Api struct {
 	WriteTimeout      time.Duration
 	IdleTimeout       time.Duration
 	RequestLog        bool
+	RunSwagger		  bool
 	//DockerPort        string
 }
 
@@ -24,6 +25,7 @@ func API() *Api {
 	apiWriteTimeout, _ := strconv.Atoi(os.Getenv("API_WRITE_TIMEOUT"))
 	apiIdleTimeout, _ := strconv.Atoi(os.Getenv("API_IDLE_TIMEOUT"))
 	requestLog, _ := strconv.ParseBool(os.Getenv("API_REQUEST_LOG"))
+	runSwagger, _ := strconv.ParseBool(os.Getenv("RUN_SWAGGER"))
 
 	return &Api{
 		Name:              os.Getenv("API_HOST"),
@@ -34,6 +36,6 @@ func API() *Api {
 		WriteTimeout:      time.Duration(apiWriteTimeout),
 		IdleTimeout:       time.Duration(apiIdleTimeout),
 		RequestLog:        requestLog,
-		//DockerPort:        os.Getenv("API_DOCKER_PORT"),
+		RunSwagger:        runSwagger,
 	}
 }

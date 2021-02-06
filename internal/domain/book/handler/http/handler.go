@@ -33,6 +33,14 @@ func NewHandler(useCase book.UseCase) *Handler {
 	}
 }
 
+// Create creates a new book record
+// @Summary Create a Book
+// @Description Get a book with JSON payload
+// @Accept json
+// @Produce json
+// @Param Book body book.Request true "Book Request"
+// @Success 201 {object} models.Book
+// @Router /api/v1/books [post]
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	var bookRequest book.Request
 	err := json.NewDecoder(r.Body).Decode(&bookRequest)
@@ -61,6 +69,15 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	respond.Render(w, http.StatusCreated, b)
 }
 
+// Update a book
+// @Summary Update a Book
+// @Description Update a book by its model.
+// @Accept json
+// @Produce json
+// @Param Book body book.Request true "Book Request"
+// @Success 200 "Ok"
+// @Failure 500 "Internal Server error"
+// @Router /api/v1/books/{bookID} [put]
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	bookID := respond.GetURLParamInt64(w, r, "bookID")
 
@@ -93,6 +110,17 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	respond.Render(w, http.StatusOK, res)
 }
 
+// All will fetch the article based on given params
+// @Summary Show all books
+// @Description Get all books. By default it gets first page with 10 items.
+// @Accept json
+// @Produce json
+// @Param page query string false "page"
+// @Param size query string false "size"
+// @Param title query string false "term"
+// @Param description query string false "term"
+// @Success 200 {object} []models.Book
+// @Router /api/v1/books [get]
 func (h *Handler) All(w http.ResponseWriter, r *http.Request) {
 	filters, search := book.Filter(r.URL.Query())
 
@@ -127,6 +155,14 @@ func (h *Handler) All(w http.ResponseWriter, r *http.Request) {
 	respond.Render(w, http.StatusOK, list)
 }
 
+// Get a book by its ID
+// @Summary Get a Book
+// @Description Get a book by its id.
+// @Accept json
+// @Produce json
+// @Param bookID path int true "book ID"
+// @Success 200 {object} models.Book
+// @Router /api/v1/books/{bookID} [get]
 func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 	bookID := respond.GetURLParamInt64(w, r, "bookID")
 
@@ -143,6 +179,15 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 	respond.Render(w, http.StatusOK, list)
 }
 
+// Delete a book by its ID
+// @Summary Delete a Book
+// @Description Delete a book by its id.
+// @Accept json
+// @Produce json
+// @Param id path int true "book ID"
+// @Success 200 "Ok"
+// @Failure 500 "Internal Server error"
+// @Router /api/v1/books/{bookID} [delete]
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 	bookID := respond.GetURLParamInt64(w, r, "bookID")
 

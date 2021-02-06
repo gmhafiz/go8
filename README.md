@@ -41,6 +41,7 @@ This kit is composed of standard Go library together with some well-known librar
   - [x] Read all configurations using a single `.env` file
   - [x] (optional) Request log that logs each user uniquely based on host address
   - [x] Cors
+  - [x] Scans and auto-generate [Swagger](https://github.com/swaggo/swag) docs using a declarative comments format 
   - [x] Custom model JSON output
   - [x] Uses [Task](https://taskfile.dev) to simplify various tasks 
   - [x] Unit testing of repository, use case, and handler
@@ -190,6 +191,30 @@ Various tooling are included within the `Task` runner
 All of these can be run with:
 
     task check
+
+# Swagger docs
+
+Swagger UI allows you to play with the API from a browser
+
+![swagger UI](assets/swagger.png)
+     
+Edit `cmd/go8/go8.go` `main()` function host and BasePath  
+
+    // @host localhost:3080
+    // @BasePath /api/v1
+
+   
+Generate with
+
+    task swagger
+    
+Access at
+
+    http://localhost:3080
+
+The command `swag init` scans the whole directory and looks for [swagger's declarative comments](https://github.com/swaggo/swag#declarative-comments-format) format.
+
+Custom theme is obtained from [https://github.com/ostranme/swagger-ui-themes](https://github.com/ostranme/swagger-ui-themes)
 
 # Structure
 

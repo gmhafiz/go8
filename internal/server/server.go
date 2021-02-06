@@ -46,6 +46,12 @@ func (s *Server) Init() {
 	s.initDomains()
 }
 
+func (s *Server) StartSwagger() {
+	if s.cfg.Api.RunSwagger {
+		swaggerServer(s.router)
+	}
+}
+
 func (s *Server) newConfig() {
 	s.cfg = configs.New()
 }
@@ -136,6 +142,19 @@ func (s *Server) Run() error {
 
 func (s *Server) GetConfig() *configs.Configs {
 	return s.cfg
+}
+
+func swaggerServer(router *chi.Mux) {
+	root := "./docs"
+	fs := http.FileServer(http.Dir(root))
+
+	router.Get("/*", func(w http.ResponseWriter, r *http.Request) {
+		if _, err := os.Stat(root + r.RequestURI); os.IsNotExist(err) {
+			http.StripPrefix(r.RequestURI, fs).ServeHTTP(w, r)
+		} else {
+			fs.ServeHTTP(w, r)
+		}
+	})
 }
 
 func printAllRegisteredRoutes(router *chi.Mux) {

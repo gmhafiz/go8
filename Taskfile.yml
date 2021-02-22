@@ -83,9 +83,10 @@ tasks:
       - go fmt ./...
 
   test:
-    desc: Test all code
+    desc: Test all cQode
     cmds:
-      - go test -v ./...
+      - go test ./...
+      - task: stop-dockertest
 
   coverage:
     desc: Peform test coverage

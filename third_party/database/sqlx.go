@@ -2,10 +2,9 @@ package database
 
 import (
 	"fmt"
-	"log"
-
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"log"
 
 	"github.com/gmhafiz/go8/configs"
 	"github.com/gmhafiz/go8/internal/utility/database"
@@ -26,6 +25,8 @@ func NewSqlx(cfg *configs.Configs) *sqlx.DB {
 	}
 
 	database.Alive(db.DB)
+
+	db.DB.SetMaxOpenConns(cfg.Database.MaxConnPool)
 
 	return db
 }

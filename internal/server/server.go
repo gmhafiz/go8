@@ -17,14 +17,10 @@ import (
 	"github.com/jmoiron/sqlx"
 
 	"github.com/gmhafiz/go8/configs"
-	bookHandler "github.com/gmhafiz/go8/internal/domain/book/handler/http"
-	bookRepo "github.com/gmhafiz/go8/internal/domain/book/repository/postgres"
-	bookUseCase "github.com/gmhafiz/go8/internal/domain/book/usecase"
-	healthHandler "github.com/gmhafiz/go8/internal/domain/health/handler/http"
-	healthRepo "github.com/gmhafiz/go8/internal/domain/health/repository/postgres"
-	healthUseCase "github.com/gmhafiz/go8/internal/domain/health/usecase"
+
 	"github.com/gmhafiz/go8/internal/middleware"
 	"github.com/gmhafiz/go8/third_party/database"
+	"github.com/gmhafiz/go8/third_party/elasticsearch"
 )
 
 type Server struct {
@@ -32,6 +28,7 @@ type Server struct {
 	db         *sqlx.DB
 	router     *chi.Mux
 	httpServer *http.Server
+	es         *elasticsearch.ES
 }
 
 func New(version string) *Server {
@@ -57,7 +54,11 @@ func (s *Server) newConfig() {
 }
 
 func (s *Server) newDatabase() {
+	if s.cfg.Database.Driver == "" {
+		log.Fatal("please fill in database credentials in .env file")
+	}
 	s.db = database.NewSqlx(s.cfg)
+	s.db.SetMaxOpenConns(s.cfg.Database.MaxConnPool)
 }
 
 func (s *Server) newRouter() {
@@ -67,11 +68,6 @@ func (s *Server) newRouter() {
 		s.router.Use(chiMiddleware.Logger)
 	}
 	s.router.Use(chiMiddleware.Recoverer)
-}
-
-func (s *Server) initDomains() {
-	healthHandler.RegisterHTTPEndPoints(s.router, healthUseCase.NewHealthUseCase(healthRepo.NewHealthRepository(s.db)))
-	bookHandler.RegisterHTTPEndPoints(s.router, bookUseCase.NewBookUseCase(bookRepo.NewBookRepository(s.db)))
 }
 
 func (s *Server) Migrate() {

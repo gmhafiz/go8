@@ -95,7 +95,7 @@ func TestMain(m *testing.M) {
 		if err != nil {
 			return err
 		}
-		repo = NewBookRepository(db)
+		repo = New(db)
 		return db.Ping()
 	}); err != nil {
 		log.Fatalf("could not connect to docker: %s", err.Error())

@@ -15,8 +15,7 @@ type Api struct {
 	WriteTimeout      time.Duration
 	IdleTimeout       time.Duration
 	RequestLog        bool
-	RunSwagger		  bool
-	//DockerPort        string
+	RunSwagger        bool
 }
 
 func API() *Api {

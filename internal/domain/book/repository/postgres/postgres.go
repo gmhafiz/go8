@@ -27,7 +27,7 @@ const (
 	SearchBooks             = "SELECT * FROM books where title like '%' || $1 || '%' and description like '%'|| $2 || '%'"
 )
 
-func NewBookRepository(db *sqlx.DB) *repository {
+func New(db *sqlx.DB) *repository {
 	return &repository{db: db}
 }
 
@@ -68,7 +68,7 @@ func (r *repository) All(ctx context.Context) ([]*models.Book, error) {
 
 	} else {
 		var books []*models.Book
-		err := r.db.SelectContext(ctx, &books, SelectFromBooksPaginate, size, page*(page-1))
+		err := r.db.SelectContext(ctx, &books, SelectFromBooksPaginate, size, size*(page-1))
 		if err != nil {
 			return nil, errors.Wrap(err, "error fetching books")
 		}

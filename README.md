@@ -241,6 +241,54 @@ This approach allows code completion when accessing your configurations.
 
 ![config code completion](assets/config-code-completion.png)
 
+
+#### .env files
+
+The `.env` file defines settings for various parts of the API including the database credentials
+.
+
+To add a new type of configuration, for example for Elasticsearch
+ 
+1. Create a new go file in `./configs`
+
+   ```
+    touch configs/elasticsearch.go
+   ```
+    
+2. Create a new struct for your type
+
+    ```
+    type Elasticsearch struct {
+        Address  string
+        User     string
+        Password string
+    }
+    ```
+    
+3. Add a constructor for it
+
+    ```
+    func ElasticSearch() *Elasticsearch {
+        return &Elasticsearch{
+            Address:  os.Getenv("ELASTICSEARCH_ADDRESS"),
+            User:     os.Getenv("ELASTICSEARCH_USER"),
+            Password: os.Getenv("ELASTICSEARCH_PASS"),
+        }
+    }
+    ``` 
+
+4. Add to `.env` of the new environment variables
+
+    ```
+    ELASTICSEARCH_ADDRESS=http://localhost:9200
+    ELASTICSEARCH_USER=user
+    ELASTICSEARCH_PASS=password
+    ```
+
+Limiting the number of connection pool avoids ['time-slicing' of the CPU](https://github.com/brettwooldridge/HikariCP/wiki/About-Pool-Sizing). Use the following formula to determine a suitable number
+ 
+    number of connections = ((core_count * 2) + effective_spindle_count)    
+
 ## Database
 
 Migrations files are stored in `database/migrations` folder. [golang-migrate](https://github.com/golang-migrate/migrate) library is used to perform migration using `task` commands.

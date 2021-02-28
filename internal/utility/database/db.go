@@ -17,6 +17,6 @@ func Alive(db *sql.DB) {
 			return
 		}
 		log.Println("retrying...")
-		time.Sleep(time.Second)
+		time.Sleep(1 * time.Second)
 	}
 }

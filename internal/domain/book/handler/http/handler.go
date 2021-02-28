@@ -122,20 +122,21 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} []models.Book
 // @Router /api/v1/books [get]
 func (h *Handler) All(w http.ResponseWriter, r *http.Request) {
-	filters, search := book.Filter(r.URL.Query())
+	filters := book.GetFilters(r.URL.Query())
 
 	var books []*models.Book
+	ctx := context.Background()
 
-	switch search {
+	switch filters.Base.Search {
 	case true:
-		resp, err := h.useCase.Search(context.Background(), filters)
+		resp, err := h.useCase.Search(ctx, filters)
 		if err != nil {
 			respond.Error(w, http.StatusInternalServerError, err)
 			return
 		}
 		books = resp
 	default:
-		resp, err := h.useCase.All(r.Context())
+		resp, err := h.useCase.All(ctx, filters)
 		if err != nil {
 			respond.Error(w, http.StatusInternalServerError, err)
 			return

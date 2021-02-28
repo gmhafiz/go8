@@ -23,7 +23,7 @@ func newUseCase(t *testing.T) (*BookUseCase, *mock.MockRepository) {
 	defer ctrl.Finish()
 
 	repo := mock.NewMockRepository(ctrl)
-	return NewBookUseCase(repo), repo
+	return New(repo), repo
 }
 
 func TestBookUseCase_Create(t *testing.T) {
@@ -74,7 +74,7 @@ func TestBookUseCase_All(t *testing.T) {
 
 	repo.EXPECT().All(ctx).Return(want, err).AnyTimes()
 
-	books, err := uc.All(ctx)
+	books, err := uc.All(ctx, nil)
 
 	assert.NoError(t, err)
 	assert.Nil(t, books)

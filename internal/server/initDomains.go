@@ -22,6 +22,6 @@ func (s *Server) initHealth() {
 
 func (s *Server) initBook() {
 	newBookRepo := bookRepo.New(s.db)
-	newBookUseCase := bookUseCase.New(newBookRepo, s.es)
+	newBookUseCase := bookUseCase.New(newBookRepo)
 	bookHandler.RegisterHTTPEndPoints(s.router, newBookUseCase)
 }

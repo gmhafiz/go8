@@ -3,32 +3,22 @@ package book
 import (
 	"net/url"
 
-	"github.com/gmhafiz/go8/internal/middleware"
+	"github.com/gmhafiz/go8/internal/utility/filter"
 )
 
-func Filter(queries url.Values) (*Request, bool) {
-	var isSearch bool
+type Filter struct {
+	Base          filter.Filter
+	Title         string `json:"title"`
+	Description   string `json:"description"`
+	PublishedDate string `json:"published_date"`
+}
 
-	for key := range queries {
-		if key == "search" {
-			isSearch = true
-			break
-		}
+func GetFilters(queries url.Values) *Filter {
+	f := filter.New(queries)
+	return &Filter{
+		Base:          *f,
+		Title:         queries.Get("title"),
+		Description:   queries.Get("description"),
+		PublishedDate: queries.Get("published_date"),
 	}
-
-	if isSearch {
-		f, err := middleware.Parse(queries)
-		if err != nil {
-			return nil, false
-		}
-
-		req := &Request{
-			Title:       queries.Get("title"),
-			Description: queries.Get("description"),
-			Pagination:  f,
-		}
-
-		return req, true
-	}
-	return nil, false
 }

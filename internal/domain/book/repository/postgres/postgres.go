@@ -9,7 +9,6 @@ import (
 	"github.com/jmoiron/sqlx"
 
 	"github.com/gmhafiz/go8/internal/domain/book"
-	"github.com/gmhafiz/go8/internal/middleware"
 	"github.com/gmhafiz/go8/internal/models"
 )
 
@@ -24,7 +23,8 @@ const (
 	SelectBookByID          = "SELECT * FROM books where book_id = $1"
 	UpdateBook              = "UPDATE books set title = $1, description = $2, published_date = $3, image_url = $4, updated_at = $5 where book_id = $6"
 	DeleteByID              = "DELETE FROM books where book_id = ($1)"
-	SearchBooks             = "SELECT * FROM books where title like '%' || $1 || '%' and description like '%'|| $2 || '%'"
+	SearchBooks             = "SELECT * FROM books where title like '%' || $1 || '%' and description like '%'|| $2 || '%' ORDER BY published_date DESC"
+	SearchBooksPaginate     = "SELECT * FROM books where title like '%' || '%' || $1 || '%' || '%' and description like '%'|| $2 || '%' ORDER BY published_date DESC LIMIT $3 OFFSET $4"
 )
 
 func New(db *sqlx.DB) *repository {
@@ -53,11 +53,8 @@ func (r *repository) Create(ctx context.Context, book *models.Book) (int64, erro
 	return bookID, nil
 }
 
-func (r *repository) All(ctx context.Context) ([]*models.Book, error) {
-	page := ctx.Value(middleware.PaginationKey).(middleware.Pagination).Page
-	size := ctx.Value(middleware.PaginationKey).(middleware.Pagination).Size
-
-	if page == 0 && size == 0 {
+func (r *repository) All(ctx context.Context, f *book.Filter) ([]*models.Book, error) {
+	if f.Base.DisablePaging {
 		var books []*models.Book
 		err := r.db.SelectContext(ctx, &books, SelectFromBooks)
 		if err != nil {
@@ -68,7 +65,7 @@ func (r *repository) All(ctx context.Context) ([]*models.Book, error) {
 
 	} else {
 		var books []*models.Book
-		err := r.db.SelectContext(ctx, &books, SelectFromBooksPaginate, size, size*(page-1))
+		err := r.db.SelectContext(ctx, &books, SelectFromBooksPaginate, f.Base.Size, f.Base.Size*(f.Base.Page-1))
 		if err != nil {
 			return nil, errors.Wrap(err, "error fetching books")
 		}
@@ -108,12 +105,6 @@ func (r *repository) Update(ctx context.Context, book *models.Book) error {
 	}
 
 	return nil
-	//bookDB, err := r.Find(ctx, book.BookID)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//return bookDB, nil
 }
 
 func (r *repository) Delete(ctx context.Context, bookID int64) error {
@@ -122,10 +113,11 @@ func (r *repository) Delete(ctx context.Context, bookID int64) error {
 	return err
 }
 
-func (r *repository) Search(ctx context.Context, req *book.Request) ([]*models.Book, error) {
-
+func (r *repository) Search(ctx context.Context, f *book.Filter) ([]*models.Book, error) {
 	var books []*models.Book
-	err := r.db.SelectContext(ctx, &books, SearchBooks, req.Title, req.Description)
+	err := r.db.SelectContext(ctx, &books, SearchBooksPaginate, f.Title, f.Description,
+		f.Base.Size,
+		f.Base.Size*(f.Base.Page-1))
 	if err != nil {
 		return nil, err
 	}

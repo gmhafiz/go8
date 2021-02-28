@@ -20,7 +20,6 @@ import (
 
 	"github.com/gmhafiz/go8/internal/middleware"
 	"github.com/gmhafiz/go8/third_party/database"
-	"github.com/gmhafiz/go8/third_party/elasticsearch"
 )
 
 type Server struct {
@@ -28,7 +27,6 @@ type Server struct {
 	db         *sqlx.DB
 	router     *chi.Mux
 	httpServer *http.Server
-	es         *elasticsearch.ES
 }
 
 func New(version string) *Server {
@@ -126,7 +124,7 @@ func (s *Server) Run() error {
 	}()
 
 	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt, os.Interrupt)
+	signal.Notify(quit, os.Interrupt, os.Kill)
 
 	<-quit
 

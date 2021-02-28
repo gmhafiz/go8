@@ -23,8 +23,8 @@ import (
 	"github.com/gmhafiz/go8/cmd/extmigrate/migrate"
 	"github.com/gmhafiz/go8/configs"
 	"github.com/gmhafiz/go8/internal/domain/book"
-	"github.com/gmhafiz/go8/internal/middleware"
 	"github.com/gmhafiz/go8/internal/models"
+	"github.com/gmhafiz/go8/internal/utility/filter"
 )
 
 //go:generate mockgen -package mock -source ../../repository.go -destination=../../mock/mock_repository.go
@@ -161,15 +161,19 @@ func TestRepository_Find(t *testing.T) {
 }
 
 func TestRepository_All(t *testing.T) {
-	pagination := middleware.Pagination{
-		Page:      1,
-		Size:      10,
-		Direction: "asc",
-	}
 	ctx := context.Background()
-	ctx = context.WithValue(ctx, middleware.PaginationKey, pagination)
 
-	books, err := repo.All(ctx)
+	f := &book.Filter{
+		Base: filter.Filter{
+			Page:   1,
+			Size:   10,
+			Search: false,
+		},
+		Title:         "",
+		Description:   "",
+		PublishedDate: "",
+	}
+	books, err := repo.All(ctx, f)
 
 	assert.NoError(t, err)
 	assert.Len(t, books, 2)
@@ -215,11 +219,14 @@ func TestRepository_Delete(t *testing.T) {
 func TestRepository_Search(t *testing.T) {
 	ctx := context.Background()
 
-	req := &book.Request{
-		Title: "test2",
+	re := book.Filter{
+		Base:          filter.Filter{},
+		Title:         "test2",
+		Description:   "",
+		PublishedDate: "",
 	}
 
-	got, err := repo.Search(ctx, req)
+	got, err := repo.Search(ctx, &re)
 
 	assert.NoError(t, err)
 	assert.Len(t, got, 1)

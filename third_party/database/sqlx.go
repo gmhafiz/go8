@@ -2,9 +2,10 @@ package database
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
-	"log"
 
 	"github.com/gmhafiz/go8/configs"
 	"github.com/gmhafiz/go8/internal/utility/database"

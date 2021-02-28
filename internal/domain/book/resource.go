@@ -1,13 +1,13 @@
 package book
 
 import (
+	"github.com/gmhafiz/go8/internal/utility/filter"
 	"time"
 
 	"github.com/jinzhu/copier"
 	"github.com/jinzhu/now"
 	"github.com/volatiletech/null/v8"
 
-	"github.com/gmhafiz/go8/internal/middleware"
 	"github.com/gmhafiz/go8/internal/models"
 )
 
@@ -17,7 +17,7 @@ type Request struct {
 	PublishedDate string `json:"published_date" validate:"required"`
 	ImageURL      string `json:"image_url" validate:"url"`
 	Description   string `json:"description" validate:"required"`
-	middleware.Pagination
+	filter.Filter
 }
 
 type Res struct {

@@ -8,9 +8,9 @@ import (
 
 type Repository interface {
 	Create(ctx context.Context, book *models.Book) (int64, error)
-	All(ctx context.Context) ([]*models.Book, error)
+	All(ctx context.Context, f *Filter) ([]*models.Book, error)
 	Find(ctx context.Context, bookID int64) (*models.Book, error)
 	Update(ctx context.Context, book *models.Book) error
 	Delete(ctx context.Context, bookID int64) error
-	Search(ctx context.Context, req *Request) ([]*models.Book, error)
+	Search(ctx context.Context, req *Filter) ([]*models.Book, error)
 }

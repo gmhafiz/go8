@@ -43,6 +43,7 @@ This kit is composed of standard Go library together with some well-known librar
   - [x] Cors
   - [x] Scans and auto-generate [Swagger](https://github.com/swaggo/swag) docs using a declarative comments format 
   - [x] Custom model JSON output
+  - [x] Filters
   - [x] Uses [Task](https://taskfile.dev) to simplify various tasks 
   - [x] Unit testing of repository, use case, and handler
   - [x] End-to-end test using ephemeral docker containers
@@ -235,7 +236,7 @@ Starting point of project is at `cmd/go8/main.go`
 ## Configurations
 ![configs](assets/configs.png)
 
-All environment variables are read into specific `Configs` struct initialized in `configs/configs.go`.Each of the embedded struct are defined in its own file of the same package where its fields are read from either environment variable of `.env` file.
+All environment variables are read into specific `Configs` struct initialized in `configs/configs.go`.Each of the embedded struct are defined in its own file of the same package where its fields are read from either environment variable or `.env` file.
 
 This approach allows code completion when accessing your configurations.
 
@@ -244,8 +245,13 @@ This approach allows code completion when accessing your configurations.
 
 #### .env files
 
-The `.env` file defines settings for various parts of the API including the database credentials
-.
+The `.env` file defines settings for various parts of the API including the database credentials. f you choose to export the variables into environment variables for example:
+
+    export DB_DRIVER=postgres
+    export DB_HOST=localhost
+    export DB_PORT=5432
+    etc
+
 
 To add a new type of configuration, for example for Elasticsearch
  

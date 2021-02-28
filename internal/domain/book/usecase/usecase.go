@@ -11,7 +11,7 @@ type BookUseCase struct {
 	bookRepo book.Repository
 }
 
-func NewBookUseCase(bookRepo book.Repository) *BookUseCase {
+func New(bookRepo book.Repository) *BookUseCase {
 	return &BookUseCase{
 		bookRepo: bookRepo,
 	}
@@ -30,8 +30,8 @@ func (u *BookUseCase) Create(ctx context.Context, r book.Request) (*models.Book,
 	return bookFound, err
 }
 
-func (u *BookUseCase) All(ctx context.Context) ([]*models.Book, error) {
-	return u.bookRepo.All(ctx)
+func (u *BookUseCase) All(ctx context.Context, f *book.Filter) ([]*models.Book, error) {
+	return u.bookRepo.All(ctx, f)
 }
 
 func (u *BookUseCase) Find(ctx context.Context, bookID int64) (*models.Book, error) {
@@ -50,6 +50,6 @@ func (u *BookUseCase) Delete(ctx context.Context, bookID int64) error {
 	return u.bookRepo.Delete(ctx, bookID)
 }
 
-func (u *BookUseCase) Search(ctx context.Context, req *book.Request) ([]*models.Book, error) {
+func (u *BookUseCase) Search(ctx context.Context, req *book.Filter) ([]*models.Book, error) {
 	return u.bookRepo.Search(ctx, req)
 }

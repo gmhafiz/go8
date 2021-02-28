@@ -51,7 +51,7 @@ func (mr *MockUseCaseMockRecorder) Create(ctx, book interface{}) *gomock.Call {
 }
 
 // All mocks base method
-func (m *MockUseCase) All(ctx context.Context) ([]*models.Book, error) {
+func (m *MockUseCase) All(ctx context.Context, f *book.Filter) ([]*models.Book, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "All", ctx)
 	ret0, _ := ret[0].([]*models.Book)
@@ -110,7 +110,7 @@ func (mr *MockUseCaseMockRecorder) Delete(ctx, bookID interface{}) *gomock.Call 
 }
 
 // Search mocks base method
-func (m *MockUseCase) Search(ctx context.Context, req *book.Request) ([]*models.Book, error) {
+func (m *MockUseCase) Search(ctx context.Context, req *book.Filter) ([]*models.Book, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Search", ctx, req)
 	ret0, _ := ret[0].([]*models.Book)

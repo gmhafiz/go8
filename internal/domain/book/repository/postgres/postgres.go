@@ -65,7 +65,7 @@ func (r *repository) All(ctx context.Context, f *book.Filter) ([]*models.Book, e
 
 	} else {
 		var books []*models.Book
-		err := r.db.SelectContext(ctx, &books, SelectFromBooksPaginate, f.Base.Size, f.Base.Size*(f.Base.Page-1))
+		err := r.db.SelectContext(ctx, &books, SelectFromBooksPaginate, f.Base.Size, f.Base.Page)
 		if err != nil {
 			return nil, errors.Wrap(err, "error fetching books")
 		}
@@ -117,7 +117,7 @@ func (r *repository) Search(ctx context.Context, f *book.Filter) ([]*models.Book
 	var books []*models.Book
 	err := r.db.SelectContext(ctx, &books, SearchBooksPaginate, f.Title, f.Description,
 		f.Base.Size,
-		f.Base.Size*(f.Base.Page-1))
+		f.Base.Page)
 	if err != nil {
 		return nil, err
 	}

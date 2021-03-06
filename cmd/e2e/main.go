@@ -4,13 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/gmhafiz/go8/internal/domain/book"
+	"github.com/gmhafiz/go8/internal/server"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"strconv"
-
-	"github.com/gmhafiz/go8/internal/domain/book"
-	"github.com/gmhafiz/go8/internal/server"
 )
 
 const Version = "v0.5.0-test"
@@ -37,7 +35,7 @@ func NewE2eTest(server *server.Server) *E2eTest {
 func (t *E2eTest) Run() {
 	testEmptyBook(t)
 	id := testAddOneBook(t)
-	testUpdateBook(t, strconv.FormatInt(id, 10))
+	testUpdateBook(t, id)
 	testDeleteOneBook(t, id)
 
 	log.Println("all tests passed.")
@@ -115,7 +113,7 @@ func testAddOneBook(t *E2eTest) int64 {
 	return got.BookID
 }
 
-func testUpdateBook(t *E2eTest, bookID string) {
+func testUpdateBook(t *E2eTest, bookID int64) {
 	newBook := book.Request{
 		BookID:        bookID,
 		Title:         "updated title",
@@ -131,7 +129,7 @@ func testUpdateBook(t *E2eTest, bookID string) {
 		log.Fatal(err)
 	}
 
-	url := fmt.Sprintf("http://localhost:%s/api/v1/books/%s", t.server.GetConfig().Api.Port, newBook.BookID)
+	url := fmt.Sprintf("http://localhost:%s/api/v1/books/%d", t.server.GetConfig().Api.Port, newBook.BookID)
 
 	req, err := http.NewRequest(http.MethodPut, url, bytes.NewBuffer(bR))
 	if err != nil {
@@ -159,7 +157,7 @@ func testUpdateBook(t *E2eTest, bookID string) {
 		log.Println(err)
 	}
 
-	if strconv.FormatInt(got.BookID, 10) != newBook.BookID && got.Title != newBook.Title && got.Description.String != newBook.Description && got.ImageURL.String != newBook.ImageURL {
+	if got.BookID != newBook.BookID && got.Title != newBook.Title && got.Description.String != newBook.Description && got.ImageURL.String != newBook.ImageURL {
 		if err != nil {
 			log.Fatalf("returned resource does not match. want %v, got %v", respBody, got)
 		}

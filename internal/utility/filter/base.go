@@ -18,13 +18,14 @@ func New(queries url.Values) *Filter {
 	disablePaging, _ := strconv.ParseBool(queries.Get("disable_paging"))
 	isSearch := has(queries, "search")
 
-	if !has(queries, "page") {
-		page = 1
-	}
-
 	if !has(queries, "size") {
 		size = 10
 	}
+
+	if !has(queries, "page") {
+		page = 1
+	}
+	page = size * (page - 1) // calculates offset
 
 	return &Filter{
 		Page:          page,

@@ -23,7 +23,7 @@ tasks:
     cmds:
       - migrate -path database/migrations -database $DB_DRIVER://$DB_USER:$DB_PASS@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=$DB_SSL_MODE up "{{.n}}"
 
-  rollback:
+  migrate-rollback:
     desc: Rollback the database by 'n' step(s)
     cmds:
       - migrate -path database/migrations -database $DB_DRIVER://$DB_USER:$DB_PASS@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=$DB_SSL_MODE down "{{.n}}"

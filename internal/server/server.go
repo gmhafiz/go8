@@ -124,7 +124,7 @@ func (s *Server) Run() error {
 	}()
 
 	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt, os.Kill)
+	signal.Notify(quit, os.Interrupt)
 
 	<-quit
 

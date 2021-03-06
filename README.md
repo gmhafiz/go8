@@ -138,7 +138,7 @@ To migrate one step
     
 To roll back migration
 
-    task rollback n=1
+    task migrate-rollback n=1
 
 Further `golang-migrate` commands are available in its [documentation (postgres)](https://github.com/golang-migrate/migrate/blob/master/database/postgres/TUTORIAL.md)
 

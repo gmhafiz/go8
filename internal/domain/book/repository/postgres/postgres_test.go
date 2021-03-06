@@ -101,8 +101,6 @@ func TestMain(m *testing.M) {
 		log.Fatalf("could not connect to docker: %s", err.Error())
 	}
 
-	migrate.Start()
-
 	code := m.Run()
 
 	if err := pool.Purge(resource); err != nil {
@@ -113,6 +111,8 @@ func TestMain(m *testing.M) {
 }
 
 func TestBookRepository_Create(t *testing.T) {
+	migrate.Start()
+
 	dt := "2020-01-01T15:04:05Z"
 	timeWant, err := time.Parse(time.RFC3339, dt)
 	if err != nil {
@@ -132,9 +132,13 @@ func TestBookRepository_Create(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotEqual(t, 0, bookID)
+
+	migrate.Down()
 }
 
 func TestRepository_Find(t *testing.T) {
+	migrate.Start()
+
 	dt := "2020-01-01T15:04:05Z"
 	timeWant, err := time.Parse(time.RFC3339, dt)
 	if err != nil {
@@ -158,9 +162,13 @@ func TestRepository_Find(t *testing.T) {
 	assert.Equal(t, bookGot.Title, bookWant.Title)
 	assert.Equal(t, bookGot.Description, bookWant.Description)
 	assert.Equal(t, bookGot.PublishedDate.String(), bookWant.PublishedDate.String())
+
+	migrate.Down()
 }
 
 func TestRepository_All(t *testing.T) {
+	migrate.Start()
+
 	ctx := context.Background()
 
 	f := &book.Filter{
@@ -176,10 +184,14 @@ func TestRepository_All(t *testing.T) {
 	books, err := repo.All(ctx, f)
 
 	assert.NoError(t, err)
-	assert.Len(t, books, 2)
+	assert.Len(t, books, 0)
+
+	migrate.Down()
 }
 
 func TestRepository_Update(t *testing.T) {
+	migrate.Start()
+
 	ctx := context.Background()
 	dt := "2020-01-01T15:04:05Z"
 	timeWant, err := time.Parse(time.RFC3339, dt)
@@ -201,9 +213,13 @@ func TestRepository_Update(t *testing.T) {
 	err = repo.Update(ctx, want)
 
 	assert.NoError(t, err)
+
+	migrate.Down()
 }
 
 func TestRepository_Delete(t *testing.T) {
+	migrate.Start()
+
 	ctx := context.Background()
 
 	err := repo.Delete(ctx, 1)
@@ -214,9 +230,13 @@ func TestRepository_Delete(t *testing.T) {
 
 	assert.Nil(t, got)
 	assert.Error(t, err, sql.ErrNoRows)
+
+	migrate.Down()
 }
 
 func TestRepository_Search(t *testing.T) {
+	migrate.Start()
+
 	ctx := context.Background()
 
 	re := book.Filter{
@@ -229,5 +249,7 @@ func TestRepository_Search(t *testing.T) {
 	got, err := repo.Search(ctx, &re)
 
 	assert.NoError(t, err)
-	assert.Len(t, got, 1)
+	assert.Len(t, got, 0)
+
+	migrate.Down()
 }

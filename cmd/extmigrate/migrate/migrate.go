@@ -14,6 +14,11 @@ import (
 	"github.com/gmhafiz/go8/configs"
 )
 
+var (
+	db *sql.DB
+	m  *migrate.Migrate
+)
+
 func Start() {
 	cfg := configs.New()
 	Up(cfg, ".")
@@ -24,18 +29,17 @@ func Up(cfg *configs.Configs, changeDirTo string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	dir, err := os.Getwd()
+	_, err = os.Getwd()
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(dir)
 
 	source := "file://database/migrations/"
 
 	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		cfg.DockerTest.Host, cfg.DockerTest.Port, cfg.DockerTest.User, cfg.DockerTest.Pass, cfg.DockerTest.Name)
 	log.Println(dsn)
-	db, err := sql.Open(cfg.DockerTest.Driver, dsn)
+	db, err = sql.Open(cfg.DockerTest.Driver, dsn)
 	if err != nil {
 		log.Fatalf("error opening database: %v", err)
 	}
@@ -45,7 +49,7 @@ func Up(cfg *configs.Configs, changeDirTo string) {
 		if err != nil {
 			log.Fatalf("error instantiating database: %v", err)
 		}
-		m, err := migrate.NewWithDatabaseInstance(
+		m, err = migrate.NewWithDatabaseInstance(
 			source, cfg.DockerTest.Driver, driver,
 		)
 		if err != nil {
@@ -60,4 +64,8 @@ func Up(cfg *configs.Configs, changeDirTo string) {
 	}
 
 	log.Println("done.")
+}
+
+func Down() {
+	_ = m.Down()
 }

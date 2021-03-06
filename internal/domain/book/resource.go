@@ -12,7 +12,7 @@ import (
 )
 
 type Request struct {
-	BookID        string `json:"-"`
+	BookID        int64  `json:"-"`
 	Title         string `json:"title" validate:"required"`
 	PublishedDate string `json:"published_date" validate:"required"`
 	ImageURL      string `json:"image_url" validate:"url"`

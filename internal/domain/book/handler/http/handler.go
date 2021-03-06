@@ -3,10 +3,8 @@ package http
 import (
 	"context"
 	"encoding/json"
-	"net/http"
-	"strconv"
-
 	"github.com/go-playground/validator/v10"
+	"net/http"
 
 	"github.com/gmhafiz/go8/internal/domain/book"
 	"github.com/gmhafiz/go8/internal/models"
@@ -87,7 +85,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 		respond.Error(w, http.StatusBadRequest, nil)
 		return
 	}
-	bookRequest.BookID = strconv.FormatInt(bookID, 10)
+	bookRequest.BookID = bookID
 
 	errs := respond.Validate(h.validate, bookRequest)
 	if errs != nil {

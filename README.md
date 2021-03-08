@@ -245,7 +245,7 @@ This approach allows code completion when accessing your configurations.
 
 #### .env files
 
-The `.env` file defines settings for various parts of the API including the database credentials. f you choose to export the variables into environment variables for example:
+The `.env` file defines settings for various parts of the API including the database credentials. If you choose to export the variables into environment variables for example:
 
     export DB_DRIVER=postgres
     export DB_HOST=localhost

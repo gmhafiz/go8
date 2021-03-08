@@ -10,6 +10,7 @@ require (
 	github.com/containerd/continuity v0.0.0-20201208142359-180525291bb7 // indirect
 	github.com/friendsofgo/errors v0.9.2
 	github.com/go-chi/chi v1.5.1
+	github.com/go-chi/chi/v5 v5.0.0
 	github.com/go-chi/cors v1.1.1
 	github.com/go-playground/validator/v10 v10.4.1
 	github.com/golang-migrate/migrate/v4 v4.14.1

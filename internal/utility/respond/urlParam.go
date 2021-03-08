@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
 )
 
 func GetURLParamInt64(w http.ResponseWriter, r *http.Request, param string) int64 {

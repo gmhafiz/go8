@@ -9,8 +9,8 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/go-chi/chi"
 	chiMiddleware "github.com/go-chi/chi/middleware"
+	"github.com/go-chi/chi/v5"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"

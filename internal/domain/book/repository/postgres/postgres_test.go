@@ -154,7 +154,7 @@ func TestRepository_Find(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	bookGot, err := repo.Find(context.Background(), bookID)
+	bookGot, err := repo.Read(context.Background(), bookID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -226,7 +226,7 @@ func TestRepository_Delete(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	got, err := repo.Find(ctx, 1)
+	got, err := repo.Read(ctx, 1)
 
 	assert.Nil(t, got)
 	assert.Error(t, err, sql.ErrNoRows)

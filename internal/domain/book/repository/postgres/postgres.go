@@ -74,7 +74,7 @@ func (r *repository) All(ctx context.Context, f *book.Filter) ([]*models.Book, e
 	}
 }
 
-func (r *repository) Find(ctx context.Context, bookID int64) (*models.Book, error) {
+func (r *repository) Read(ctx context.Context, bookID int64) (*models.Book, error) {
 	stmt, err := r.db.Prepare(SelectBookByID)
 	if err != nil {
 		return nil, err

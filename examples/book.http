@@ -16,7 +16,8 @@ Accept: application/json
 
 
 ### Create a new book
-# curl --location --request POST 'http://localhost:3080/api/v1/books' --header 'Authorization: Bearer {{jwt}}' --header 'Content-Type: application/json' --data-raw '{"title": "dsgs","image_url": "http://example.com","published_date": "2020-07-31T15:04:05.123499999Z","description": "test descr"}'
+# curl --location --request POST 'http://localhost:3080/api/v1/books' --header 'Authorization: Bearer INSERT_JWT' --header 'Content-Type: application/json' --data-raw '{"title": "dsgs",
+"image_url": "http://example.com","published_date": "2020-07-31T15:04:05.123499999Z","description": "test descr"}'
 POST http://localhost:3080/api/v1/books
 Content-Type: application/json
 
@@ -35,7 +36,7 @@ Accept: application/json
 
 
 ### Updates a new book
-# curl --location --request PUT 'http://localhost:3080/api/v1/books' --header 'Authorization: Bearer {{jwt}}' --header 'Content-Type: application/json' --data-raw '{"title": "dsgs","image_url": "http://example.com","published_date": "2020-07-31T15:04:05.123499999Z","description": "test descr updated"}'
+# curl --location --request PUT 'http://localhost:3080/api/v1/books' --header 'Authorization: Bearer INSERT_JWT' --header 'Content-Type: application/json' --data-raw '{"title": "dsgs","image_url": "http://example.com","published_date": "2020-07-31T15:04:05.123499999Z","description": "test descr updated"}'
 PUT  http://localhost:3080/api/v1/books/1
 Content-Type: application/json
 

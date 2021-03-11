@@ -6,10 +6,10 @@ import (
 	"github.com/gmhafiz/go8/internal/server"
 )
 
-const Version = "v0.5.0"
+const Version = "v0.7.0"
 
 // @title Go8
-// @version 0.5.0
+// @version 0.7.0
 // @description Go + Postgres + Chi Router + sqlx + Unit Testing starter kit for API development.
 
 // @contact.name Hafiz Shafruddin

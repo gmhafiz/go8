@@ -1,7 +1,6 @@
 package book
 
 import (
-	"github.com/gmhafiz/go8/internal/utility/filter"
 	"time"
 
 	"github.com/jinzhu/copier"
@@ -9,6 +8,7 @@ import (
 	"github.com/volatiletech/null/v8"
 
 	"github.com/gmhafiz/go8/internal/models"
+	"github.com/gmhafiz/go8/internal/utility/filter"
 )
 
 type Request struct {

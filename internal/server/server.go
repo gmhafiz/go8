@@ -17,7 +17,6 @@ import (
 	"github.com/jmoiron/sqlx"
 
 	"github.com/gmhafiz/go8/configs"
-
 	"github.com/gmhafiz/go8/internal/middleware"
 	"github.com/gmhafiz/go8/third_party/database"
 )
@@ -71,7 +70,7 @@ func (s *Server) newRouter() {
 func (s *Server) Migrate() {
 	source := "file://database/migrations/"
 	if s.cfg.DockerTest.Driver == "postgres" {
-		driver, err := postgres.WithInstance(s.db.DB, &postgres.Config{})
+		driver, err := postgres.WithInstance(s.GetDB().DB, &postgres.Config{})
 		if err != nil {
 			log.Fatalf("error instantiating database: %v", err)
 		}
@@ -136,6 +135,10 @@ func (s *Server) Run() error {
 
 func (s *Server) GetConfig() *configs.Configs {
 	return s.cfg
+}
+
+func (s *Server) GetDB() *sqlx.DB {
+	return s.db
 }
 
 func swaggerServer(router *chi.Mux) {

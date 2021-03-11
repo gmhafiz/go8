@@ -53,31 +53,31 @@ func (mr *MockUseCaseMockRecorder) Create(ctx, book interface{}) *gomock.Call {
 // All mocks base method
 func (m *MockUseCase) All(ctx context.Context, f *book.Filter) ([]*models.Book, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "All", ctx)
+	ret := m.ctrl.Call(m, "All", ctx, f)
 	ret0, _ := ret[0].([]*models.Book)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // All indicates an expected call of All
-func (mr *MockUseCaseMockRecorder) All(ctx interface{}) *gomock.Call {
+func (mr *MockUseCaseMockRecorder) All(ctx, f interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "All", reflect.TypeOf((*MockUseCase)(nil).All), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "All", reflect.TypeOf((*MockUseCase)(nil).All), ctx, f)
 }
 
-// Find mocks base method
-func (m *MockUseCase) Find(ctx context.Context, bookID int64) (*models.Book, error) {
+// Read mocks base method
+func (m *MockUseCase) Read(ctx context.Context, bookID int64) (*models.Book, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Find", ctx, bookID)
+	ret := m.ctrl.Call(m, "Read", ctx, bookID)
 	ret0, _ := ret[0].(*models.Book)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Find indicates an expected call of Find
-func (mr *MockUseCaseMockRecorder) Find(ctx, bookID interface{}) *gomock.Call {
+// Read indicates an expected call of Read
+func (mr *MockUseCaseMockRecorder) Read(ctx, bookID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockUseCase)(nil).Find), ctx, bookID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Read", reflect.TypeOf((*MockUseCase)(nil).Read), ctx, bookID)
 }
 
 // Update mocks base method

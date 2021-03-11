@@ -23,7 +23,7 @@ func (u *BookUseCase) Create(ctx context.Context, r book.Request) (*models.Book,
 	if err != nil {
 		return nil, err
 	}
-	bookFound, err := u.bookRepo.Find(context.Background(), bookID)
+	bookFound, err := u.bookRepo.Read(context.Background(), bookID)
 	if err != nil {
 		return nil, err
 	}
@@ -34,8 +34,8 @@ func (u *BookUseCase) All(ctx context.Context, f *book.Filter) ([]*models.Book, 
 	return u.bookRepo.All(ctx, f)
 }
 
-func (u *BookUseCase) Find(ctx context.Context, bookID int64) (*models.Book, error) {
-	return u.bookRepo.Find(ctx, bookID)
+func (u *BookUseCase) Read(ctx context.Context, bookID int64) (*models.Book, error) {
+	return u.bookRepo.Read(ctx, bookID)
 }
 
 func (u *BookUseCase) Update(ctx context.Context, book *models.Book) (*models.Book, error) {
@@ -43,7 +43,7 @@ func (u *BookUseCase) Update(ctx context.Context, book *models.Book) (*models.Bo
 	if err != nil {
 		return nil, err
 	}
-	return u.bookRepo.Find(ctx, book.BookID)
+	return u.bookRepo.Read(ctx, book.BookID)
 }
 
 func (u *BookUseCase) Delete(ctx context.Context, bookID int64) error {

@@ -1,4 +1,4 @@
-output   = "internal/model"
+output   = "internal/models"
 wipe     = true
 no-tests = true
 debug    = false
@@ -12,3 +12,20 @@ pass   = ""
 sslmode = "disable"
 schema = "public"
 blacklist = ["migrations", "schema_migrations"]
+
+[mysql]
+dbname  = ""
+host    = "localhost"
+port    = 3306
+user    = ""
+pass    = ""
+sslmode = "false"
+
+[mssql]
+dbname  = ""
+host    = "localhost"
+port    = 1433
+user    = ""
+pass    = ""
+sslmode = "disable"
+schema  = "notdbo"

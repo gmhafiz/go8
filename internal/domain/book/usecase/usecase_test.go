@@ -51,7 +51,7 @@ func TestBookUseCase_Create(t *testing.T) {
 	var err error
 	var bookID int64
 	repo.EXPECT().Create(ctx, gomock.Eq(expected)).Return(bookID, err).AnyTimes()
-	repo.EXPECT().Find(ctx, gomock.Any()).Return(expected, err).AnyTimes()
+	repo.EXPECT().Read(ctx, gomock.Any()).Return(expected, err).AnyTimes()
 
 	bookGot, err := uc.Create(ctx, request)
 	if err != nil {
@@ -71,10 +71,11 @@ func TestBookUseCase_All(t *testing.T) {
 	ctx := context.Background()
 	var err error
 	var want []*models.Book
+	filter := &book.Filter{}
 
-	repo.EXPECT().All(ctx).Return(want, err).AnyTimes()
+	repo.EXPECT().All(ctx, filter).Return(want, err).AnyTimes()
 
-	books, err := uc.All(ctx, nil)
+	books, err := uc.All(ctx, filter)
 
 	assert.NoError(t, err)
 	assert.Nil(t, books)

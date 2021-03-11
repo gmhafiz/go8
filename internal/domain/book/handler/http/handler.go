@@ -3,8 +3,9 @@ package http
 import (
 	"context"
 	"encoding/json"
-	"github.com/go-playground/validator/v10"
 	"net/http"
+
+	"github.com/go-playground/validator/v10"
 
 	"github.com/gmhafiz/go8/internal/domain/book"
 	"github.com/gmhafiz/go8/internal/models"
@@ -165,7 +166,7 @@ func (h *Handler) All(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 	bookID := respond.GetURLParamInt64(w, r, "bookID")
 
-	b, err := h.useCase.Find(context.Background(), bookID)
+	b, err := h.useCase.Read(context.Background(), bookID)
 	if err != nil {
 		respond.Error(w, http.StatusInternalServerError, nil)
 		return

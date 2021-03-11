@@ -11,7 +11,7 @@ import (
 	"net/http"
 )
 
-const Version = "v0.5.0-test"
+const Version = "v0.7.0-test"
 
 func main() {
 	s := server.New(Version)

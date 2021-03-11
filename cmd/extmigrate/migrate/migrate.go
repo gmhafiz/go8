@@ -38,7 +38,6 @@ func Up(cfg *configs.Configs, changeDirTo string) {
 
 	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		cfg.DockerTest.Host, cfg.DockerTest.Port, cfg.DockerTest.User, cfg.DockerTest.Pass, cfg.DockerTest.Name)
-	log.Println(dsn)
 	db, err = sql.Open(cfg.DockerTest.Driver, dsn)
 	if err != nil {
 		log.Fatalf("error opening database: %v", err)
@@ -62,8 +61,6 @@ func Up(cfg *configs.Configs, changeDirTo string) {
 
 		_ = m.Up()
 	}
-
-	log.Println("done.")
 }
 
 func Down() {

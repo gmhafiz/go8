@@ -1,4 +1,4 @@
-FROM golang:1.15-alpine AS src
+FROM golang:1.16-alpine AS src
 
 #RUN set -ex; \
 #    apk update; \
@@ -25,13 +25,10 @@ USER appuser
 RUN mkdir -p /home/appuser/app
 WORKDIR /home/appuser/app/
 
-
-#WORKDIR /opt/
 COPY --from=src /go/src/app/server .
 COPY .env .env
 
 EXPOSE 3080
 
 # Run Go Binary
-#CMD /opt/server
 CMD /home/appuser/app/server

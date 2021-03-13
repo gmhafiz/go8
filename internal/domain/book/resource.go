@@ -30,6 +30,7 @@ type Res struct {
 
 func ToBook(req *Request) *models.Book {
 	return &models.Book{
+		BookID:        req.BookID,
 		Title:         req.Title,
 		PublishedDate: now.MustParse(req.PublishedDate),
 		ImageURL: null.String{

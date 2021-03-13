@@ -5,6 +5,8 @@ services:
   server:
     image: "go8/server_test"
     container_name: "go8_container_test"
+    env_file:
+      - .env
     build:
       context: ../
       dockerfile: ./docker-test/Dockerfile

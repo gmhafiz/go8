@@ -83,7 +83,7 @@ tasks:
       - go fmt ./...
 
   test:
-    desc: Test all cQode
+    desc: Test all code
     cmds:
       - go test ./...
       - task: stop-dockertest

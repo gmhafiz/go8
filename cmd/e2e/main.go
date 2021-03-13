@@ -35,6 +35,7 @@ func NewE2eTest(server *server.Server) *E2eTest {
 func (t *E2eTest) Run() {
 	testEmptyBook(t)
 	id := testAddOneBook(t)
+	id = testGetOneBook(t, id)
 	testUpdateBook(t, id)
 	testDeleteOneBook(t, id)
 
@@ -110,6 +111,41 @@ func testAddOneBook(t *E2eTest) int64 {
 	}
 
 	log.Println("testAddOneBook passes")
+	return got.BookID
+}
+
+func testGetOneBook(t *E2eTest, id int64) int64 {
+	client := &http.Client{}
+
+	url := fmt.Sprintf("http://localhost:%s/api/v1/books/%d", t.server.GetConfig().Api.Port, id)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer resp.Body.Close()
+
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		log.Fatalf("error code fail, want %d, got %d\n", http.StatusOK, resp.StatusCode)
+	}
+
+	got := book.Res{}
+	err = json.Unmarshal(respBody, &got)
+	if err != nil {
+		log.Println(err)
+	}
+
+	log.Println("testGetBook passes")
+
 	return got.BookID
 }
 

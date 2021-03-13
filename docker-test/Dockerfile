@@ -1,4 +1,4 @@
-FROM golang:1.15-alpine AS src
+FROM golang:1.16-alpine AS src
 
 #RUN set -ex; \
 #    apk update; \
@@ -38,9 +38,8 @@ COPY --from=src /go/src/app/database/migrations/ database/migrations/
 COPY ./docker-test/.env .env
 RUN id -u appuser | xargs -I{} chown -R {}:{} /home/appuser/app
 
-EXPOSE 3081
+EXPOSE 3090
 
 # Run Go Binary
 CMD cd /home/appuser/app/ && /home/appuser/app/e2e
-#CMD /home/appuser/app/e2e
-#CMD echo "hello"
+

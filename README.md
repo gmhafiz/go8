@@ -377,7 +377,7 @@ Unit testing can be run with
     
 Which runs `go test -v ./...`
 
-In repository unit testing, tt makes use of [dockertest](https://github.com/ory/dockertest) from ory that spins up temporary database in a docker to run all repositories.
+In repository unit testing, it makes use of [dockertest](https://github.com/ory/dockertest) from ory that spins up temporary database in a docker to run all repositories.
 
 ### End to End Test
 

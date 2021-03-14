@@ -9,7 +9,7 @@
             "email": "gmhafiz@gmail.com"
         },
         "license": {},
-        "version": "0.5.0"
+        "version": "0.7.0"
     },
     "host": "localhost:3080",
     "basePath": "/",
@@ -210,6 +210,9 @@
                 "description": {
                     "type": "string"
                 },
+                "disable_paging": {
+                    "type": "boolean"
+                },
                 "image_url": {
                     "type": "string"
                 },
@@ -219,11 +222,11 @@
                 "published_date": {
                     "type": "string"
                 },
+                "search": {
+                    "type": "boolean"
+                },
                 "size": {
                     "type": "integer"
-                },
-                "sort": {
-                    "type": "string"
                 },
                 "title": {
                     "type": "string"

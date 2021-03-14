@@ -225,6 +225,9 @@ var doc = `{
                 "description": {
                     "type": "string"
                 },
+                "disable_paging": {
+                    "type": "boolean"
+                },
                 "image_url": {
                     "type": "string"
                 },
@@ -234,11 +237,11 @@ var doc = `{
                 "published_date": {
                     "type": "string"
                 },
+                "search": {
+                    "type": "boolean"
+                },
                 "size": {
                     "type": "integer"
-                },
-                "sort": {
-                    "type": "string"
                 },
                 "title": {
                     "type": "string"
@@ -288,7 +291,7 @@ type swaggerInfo struct {
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = swaggerInfo{
-	Version:     "0.5.0",
+	Version:     "0.7.0",
 	Host:        "localhost:3080",
 	BasePath:    "/",
 	Schemes:     []string{},

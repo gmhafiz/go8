@@ -53,8 +53,6 @@ func Resource(book *models.Book) (Res, error) {
 }
 
 func Resources(books []*models.Book) (interface{}, error) {
-	//var resource Res
-
 	if len(books) == 0 {
 		return make([]string, 0), nil
 	}

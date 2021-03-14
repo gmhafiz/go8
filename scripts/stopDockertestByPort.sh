@@ -2,7 +2,7 @@
 
 # Source: https://stackoverflow.com/a/56953427/1033134
 # usage:
-#   scripts/stopByPort.sh 5433
+#   scripts/stopByPort.sh 5434
 
 for id in $(docker ps -q)
 do

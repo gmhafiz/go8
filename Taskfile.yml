@@ -47,6 +47,7 @@ tasks:
       - task security
       - task fmt
       - task test
+    silent: true
 
   build:
     desc: Creates a compiled binary and copy configuration files
@@ -137,6 +138,7 @@ tasks:
       - docker-compose up -d
       - docker exec -t go8_container_test "/home/appuser/app/e2e"
       - task: dockertest-stop
+    silent: true
 
   dockertest-stop:
     desc: stop docker e2e test
@@ -159,6 +161,7 @@ tasks:
       - task: install-golangmigrate
       - task: install-sqlboiler
       - task: install-gosec
+    silent: true
 
   install-sqlboiler:
     desc: Install sqlboiler orm

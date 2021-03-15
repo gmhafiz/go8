@@ -117,7 +117,7 @@ func TestHandler_All(t *testing.T) {
 	ctx := context.Background()
 	var e error
 	f := &book.Filter{
-		Base:          filter.Filter{
+		Base: filter.Filter{
 			Page:          0,
 			Size:          10,
 			DisablePaging: false,
@@ -163,6 +163,7 @@ func TestHandler_Update(t *testing.T) {
 		Description: "test01",
 	}
 	body, err := json.Marshal(bookReq)
+	assert.NoError(t, err)
 	var book *models.Book
 
 	uc.EXPECT().Update(ctx, bookReq).Return(book, e).AnyTimes()

@@ -21,7 +21,6 @@ const Version = "v0.7.0"
 func main() {
 	s := server.New(Version)
 	s.Init()
-	s.StartSwagger()
 
 	if err := s.Run(); err != nil {
 		log.Fatalf("%s", err.Error())

@@ -23,8 +23,9 @@ import (
 
 const (
 	databaseMigrationPath = "file://database/migrations/"
-	swaggerDocsAssetPath = "./docs"
+	swaggerDocsAssetPath  = "./docs"
 )
+
 type Server struct {
 	cfg        *configs.Configs
 	db         *sqlx.DB
@@ -42,9 +43,10 @@ func (s *Server) Init() {
 	s.newDatabase()
 	s.newRouter()
 	s.initDomains()
+	s.startSwagger()
 }
 
-func (s *Server) StartSwagger() {
+func (s *Server) startSwagger() {
 	if s.cfg.Api.RunSwagger {
 		swaggerServer(s.router)
 	}

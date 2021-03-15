@@ -5,6 +5,16 @@ import (
 	"strconv"
 )
 
+const (
+	paginationDefaultPage = 1
+	paginationDefaultSize = 30
+
+	queryParamDisablePaging = "disable_paging"
+	queryParamPage          = "page"
+	queryParamSize          = "size"
+	queryParamSearch        = "search"
+)
+
 type Filter struct {
 	Page          int  `json:"page"`
 	Size          int  `json:"size"`
@@ -13,17 +23,17 @@ type Filter struct {
 }
 
 func New(queries url.Values) *Filter {
-	page, _ := strconv.Atoi(queries.Get("page"))
-	size, _ := strconv.Atoi(queries.Get("size"))
-	disablePaging, _ := strconv.ParseBool(queries.Get("disable_paging"))
-	isSearch := has(queries, "search")
+	page, _ := strconv.Atoi(queries.Get(queryParamPage))
+	size, _ := strconv.Atoi(queries.Get(queryParamSize))
+	disablePaging, _ := strconv.ParseBool(queries.Get(queryParamDisablePaging))
+	isSearch := has(queries, queryParamSearch)
 
-	if !has(queries, "size") {
-		size = 10
+	if !has(queries, queryParamSize) {
+		size = paginationDefaultSize
 	}
 
-	if !has(queries, "page") {
-		page = 1
+	if !has(queries, queryParamPage) {
+		page = paginationDefaultPage
 	}
 	page = size * (page - 1) // calculates offset
 

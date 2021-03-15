@@ -21,6 +21,10 @@ import (
 	"github.com/gmhafiz/go8/third_party/database"
 )
 
+const (
+	databaseMigrationPath = "file://database/migrations/"
+	swaggerDocsAssetPath = "./docs"
+)
 type Server struct {
 	cfg        *configs.Configs
 	db         *sqlx.DB
@@ -68,14 +72,13 @@ func (s *Server) newRouter() {
 }
 
 func (s *Server) Migrate() {
-	source := "file://database/migrations/"
 	if s.cfg.DockerTest.Driver == "postgres" {
 		driver, err := postgres.WithInstance(s.GetDB().DB, &postgres.Config{})
 		if err != nil {
 			log.Fatalf("error instantiating database: %v", err)
 		}
 		m, err := migrate.NewWithDatabaseInstance(
-			source, s.cfg.DockerTest.Driver, driver,
+			databaseMigrationPath, s.cfg.DockerTest.Driver, driver,
 		)
 		if err != nil {
 			log.Fatalf("error connecting to database: %v", err)
@@ -142,11 +145,10 @@ func (s *Server) GetDB() *sqlx.DB {
 }
 
 func swaggerServer(router *chi.Mux) {
-	root := "./docs"
-	fs := http.FileServer(http.Dir(root))
+	fs := http.FileServer(http.Dir(swaggerDocsAssetPath))
 
 	router.Get("/*", func(w http.ResponseWriter, r *http.Request) {
-		if _, err := os.Stat(root + r.RequestURI); os.IsNotExist(err) {
+		if _, err := os.Stat(swaggerDocsAssetPath + r.RequestURI); os.IsNotExist(err) {
 			http.StripPrefix(r.RequestURI, fs).ServeHTTP(w, r)
 		} else {
 			fs.ServeHTTP(w, r)

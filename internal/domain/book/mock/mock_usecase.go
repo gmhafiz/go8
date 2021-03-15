@@ -36,7 +36,7 @@ func (m *MockUseCase) EXPECT() *MockUseCaseMockRecorder {
 }
 
 // Create mocks base method
-func (m *MockUseCase) Create(ctx context.Context, book book.Request) (*models.Book, error) {
+func (m *MockUseCase) Create(ctx context.Context, book *models.Book) (*models.Book, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", ctx, book)
 	ret0, _ := ret[0].(*models.Book)

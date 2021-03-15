@@ -7,7 +7,7 @@ import (
 )
 
 type UseCase interface {
-	Create(ctx context.Context, book Request) (*models.Book, error)
+	Create(ctx context.Context, book *models.Book) (*models.Book, error)
 	All(ctx context.Context, f *Filter) ([]*models.Book, error)
 	Read(ctx context.Context, bookID int64) (*models.Book, error)
 	Update(ctx context.Context, book *models.Book) (*models.Book, error)

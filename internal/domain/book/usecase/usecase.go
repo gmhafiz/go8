@@ -17,9 +17,8 @@ func New(bookRepo book.Repository) *BookUseCase {
 	}
 }
 
-func (u *BookUseCase) Create(ctx context.Context, r book.Request) (*models.Book, error) {
-	bk := book.ToBook(&r)
-	bookID, err := u.bookRepo.Create(ctx, bk)
+func (u *BookUseCase) Create(ctx context.Context, book *models.Book) (*models.Book, error) {
+	bookID, err := u.bookRepo.Create(ctx, book)
 	if err != nil {
 		return nil, err
 	}

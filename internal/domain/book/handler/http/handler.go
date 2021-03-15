@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"net/http"
 
@@ -46,7 +47,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bk, err := h.useCase.Create(context.Background(), bookRequest)
+	bk, err := h.useCase.Create(context.Background(), book.ToBook(&bookRequest))
 	if err != nil {
 		respond.Error(w, http.StatusInternalServerError, err)
 		return
@@ -60,45 +61,31 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	respond.Render(w, http.StatusCreated, b)
 }
 
-// Update a book
-// @Summary Update a Book
-// @Description Update a book by its model.
+// Get a book by its ID
+// @Summary Get a Book
+// @Description Get a book by its id.
 // @Accept json
 // @Produce json
-// @Param Book body book.Request true "Book Request"
-// @Success 200 "Ok"
-// @Failure 500 "Internal Server error"
-// @Router /api/v1/books/{bookID} [put]
-func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
+// @Param bookID path int true "book ID"
+// @Success 200 {object} models.Book
+// @Router /api/v1/books/{bookID} [get]
+func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 	bookID := respond.GetURLParamInt64(w, r, "bookID")
 
-	var bookRequest book.Request
-	err := json.NewDecoder(r.Body).Decode(&bookRequest)
+	b, err := h.useCase.Read(context.Background(), bookID)
 	if err != nil {
-		respond.Error(w, http.StatusBadRequest, nil)
+		if err == sql.ErrNoRows {
+			respond.Error(w, http.StatusNoContent, nil)
+		}
+		respond.Error(w, http.StatusInternalServerError, nil)
 		return
 	}
-	bookRequest.BookID = bookID
-
-	errs := respond.Validate(h.validate, bookRequest)
-	if errs != nil {
-		respond.Error(w, http.StatusBadRequest, map[string][]string{"errors": errs})
-		return
-	}
-
-	resp, err := h.useCase.Update(context.Background(), book.ToBook(&bookRequest))
+	list, err := book.Resource(b)
 	if err != nil {
-		respond.Error(w, http.StatusInternalServerError, err)
+		respond.Error(w, http.StatusInternalServerError, nil)
 		return
 	}
-
-	res, err := book.Resource(resp)
-	if err != nil {
-		respond.Error(w, http.StatusInternalServerError, err)
-		return
-	}
-
-	respond.Render(w, http.StatusOK, res)
+	respond.Render(w, http.StatusOK, list)
 }
 
 // All will fetch the article based on given params
@@ -147,28 +134,45 @@ func (h *Handler) All(w http.ResponseWriter, r *http.Request) {
 	respond.Render(w, http.StatusOK, list)
 }
 
-// Get a book by its ID
-// @Summary Get a Book
-// @Description Get a book by its id.
+// Update a book
+// @Summary Update a Book
+// @Description Update a book by its model.
 // @Accept json
 // @Produce json
-// @Param bookID path int true "book ID"
-// @Success 200 {object} models.Book
-// @Router /api/v1/books/{bookID} [get]
-func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
+// @Param Book body book.Request true "Book Request"
+// @Success 200 "Ok"
+// @Failure 500 "Internal Server error"
+// @Router /api/v1/books/{bookID} [put]
+func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	bookID := respond.GetURLParamInt64(w, r, "bookID")
 
-	b, err := h.useCase.Read(context.Background(), bookID)
+	var bookRequest book.Request
+	err := json.NewDecoder(r.Body).Decode(&bookRequest)
 	if err != nil {
-		respond.Error(w, http.StatusInternalServerError, nil)
+		respond.Error(w, http.StatusBadRequest, nil)
 		return
 	}
-	list, err := book.Resource(b)
-	if err != nil {
-		respond.Error(w, http.StatusInternalServerError, nil)
+	bookRequest.BookID = bookID
+
+	errs := respond.Validate(h.validate, bookRequest)
+	if errs != nil {
+		respond.Error(w, http.StatusBadRequest, map[string][]string{"errors": errs})
 		return
 	}
-	respond.Render(w, http.StatusOK, list)
+
+	resp, err := h.useCase.Update(context.Background(), book.ToBook(&bookRequest))
+	if err != nil {
+		respond.Error(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	res, err := book.Resource(resp)
+	if err != nil {
+		respond.Error(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	respond.Render(w, http.StatusOK, res)
 }
 
 // Delete a book by its ID

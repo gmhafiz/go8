@@ -30,7 +30,6 @@ func Render(w http.ResponseWriter, statusCode int, payload interface{}) {
 
 func Error(w http.ResponseWriter, statusCode int, payload interface{}) {
 	w.WriteHeader(statusCode)
-
 	if payload == nil {
 		_, err := w.Write(nil)
 		if err != nil {
@@ -46,19 +45,34 @@ func Error(w http.ResponseWriter, statusCode int, payload interface{}) {
 			if err != nil {
 				log.Println(err)
 			}
-			_, err = w.Write(data)
+			write(w, data)
+		} else if reflect.TypeOf(payload).Kind() == reflect.Slice {
+			var errors []string
+			s := reflect.ValueOf(payload)
+			for i := 0; i < s.Len(); i++ {
+				errors = append(errors, s.Index(i).String())
+			}
+			p := map[string][]string{
+				"error": errors,
+			}
+			data, err := json.Marshal(p)
 			if err != nil {
 				log.Println(err)
 			}
+			write(w, data)
 		} else {
 			data, err := json.Marshal(payload)
 			if err != nil {
 				log.Println(err)
 			}
-			_, err = w.Write(data)
-			if err != nil {
-				log.Println(err)
-			}
+			write(w, data)
 		}
+	}
+}
+
+func write(w http.ResponseWriter, data []byte) {
+	_, err := w.Write(data)
+	if err != nil {
+		log.Println(err)
 	}
 }

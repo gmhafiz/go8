@@ -1,6 +1,8 @@
 package book
 
 import (
+	"encoding/json"
+	"io"
 	"time"
 
 	"github.com/jinzhu/copier"
@@ -26,6 +28,10 @@ type Res struct {
 	PublishedDate time.Time   `json:"published_date" deepcopier:"field:force" db:"published_date"`
 	ImageURL      null.String `json:"image_url" deepcopier:"field:image_url" db:"image_url"`
 	Description   null.String `json:"description" deepcopier:"field:description"`
+}
+
+func Decode(body io.ReadCloser, b *Request) error {
+	return json.NewDecoder(body).Decode(b)
 }
 
 func ToBook(req *Request) *models.Book {

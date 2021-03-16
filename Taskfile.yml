@@ -36,7 +36,9 @@ tasks:
   run:
     desc: Runs the app
     cmds:
+      - task: swagger
       - go run cmd/go8/main.go
+    silent: true
 
   check:
     desc: Checks integrity of program
@@ -53,10 +55,12 @@ tasks:
     desc: Creates a compiled binary and copy configuration files
     cmds:
       - task: check
+      - task: swagger
       - go mod download && CGO_ENABLED=0 GOOS=linux && go build -v -i -o go8 cmd/go8/main.go
       - mkdir -p bin
       - mv go8 bin/
       - cp .env bin
+    silent: false
 
   tidy:
     desc: Downloads dependencies and removes unused ones

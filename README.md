@@ -34,6 +34,7 @@ This is the idea behind [Clean Architecture](https://blog.cleancoder.com/uncle-b
 
 This kit is composed of standard Go library together with some well-known libraries to manage things like router, database query and migration support.
 
+  - [x] Framework-less and net/http compatible handler
   - [x] Router/Mux with [Chi Router](https://github.com/go-chi/chi)
   - [x] Database Operations with [sqlx](https://github.com/jmoiron/sqlx)
   - [x] Database migration with [golang-migrate](https://github.com/golang-migrate/migrate/)
@@ -120,7 +121,7 @@ Migration is a good step towards having a versioned database and makes publishin
 
 Using `Task`, creating a migration file is done by the following command. Name the file after `NAME=`.
 
-    task migrate-create NAME=create_a_tablename
+    task migrate:create NAME=create_a_tablename
 
 Write your schema in pure sql in the 'up' version and any reversal in the 'down' version of the files.
  
@@ -132,13 +133,13 @@ After you are satisfied with your `.sql` files, run the following command to mig
 
 To migrate one step
 
-    task migrate-step n=1
+    task migrate:step n=1
       
 ### Rollback
     
 To roll back migration
 
-    task migrate-rollback n=1
+    task migrate:rollback n=1
 
 Further `golang-migrate` commands are available in its [documentation (postgres)](https://github.com/golang-migrate/migrate/blob/master/database/postgres/TUTORIAL.md)
 
@@ -160,18 +161,18 @@ or without `Task`, just like in quick start section:
 
 You can build a docker image with the app with its config files. Docker needs to be installed beforehand.
 
-     task docker-build
+     task docker:build
 
 Run the following command to build a container from this image. `--net=host` tells the container to use local's network so that it can access host database.
 
     docker-compose up -d postgres # If you haven't run this from quick start 
-    task docker-run
+    task docker:run
 
 ### docker-compose
 
 If you prefer to use docker-compose instead, both server and the database can be run with:
 
-    task docker-compose-start
+    task docker-compose:start
 
 # Tooling
 
@@ -397,7 +398,6 @@ Stop container
 # TODO
 
  - [ ] Complete HTTP integration test
- - [x] better control of json output formatting
 
 # Acknowledgements
 

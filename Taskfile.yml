@@ -8,7 +8,7 @@ tasks:
     cmds:
       - task -l
 
-  migrate-create:
+  migrate:create:
     desc: Creates .sql migration files (Up and Down). Set name by appending with 'NAME=name_of_file'
     cmds:
       - migrate create -ext sql -dir database/migrations -format unix "{{.NAME}}"
@@ -18,17 +18,17 @@ tasks:
     cmds:
       - migrate -path database/migrations -database $DB_DRIVER://$DB_USER:$DB_PASS@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=$DB_SSL_MODE up
 
-  migrate-step:
+  migrate:step:
     desc: Migrates UP the database
     cmds:
       - migrate -path database/migrations -database $DB_DRIVER://$DB_USER:$DB_PASS@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=$DB_SSL_MODE up "{{.n}}"
 
-  migrate-rollback:
+  migrate:rollback:
     desc: Rollback the database by 'n' step(s)
     cmds:
       - migrate -path database/migrations -database $DB_DRIVER://$DB_USER:$DB_PASS@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=$DB_SSL_MODE down "{{.n}}"
 
-  gen-orm:
+  gen:orm:
     desc: Reads your current database schema and creates models as well as orm.
     cmds:
       - sqlboiler --wipe --add-soft-deletes -t db psql
@@ -91,7 +91,7 @@ tasks:
     desc: Test all code
     cmds:
       - go test ./...
-      - task: stop-dockertest
+      - task: stop:dockertest
 
   coverage:
     desc: Peform test coverage
@@ -113,22 +113,22 @@ tasks:
     cmds:
       - swag init -g cmd/go8/main.go
 
-  docker-build:
+  docker:build:
     desc: Builds a Docker image a server container
     cmds:
       - docker build -t go8/server -f Dockerfile .
 
-  docker-run:
+  docker:run:
     desc: Runs the app Docker image as a Docker container
     cmds:
       - docker run -p 3080:3080 --rm -it --net=host --name go8container go8/server
 
-  docker-compose-start:
+  docker-compose:start:
     desc: Runs server and database using docker-compose
     cmds:
       - docker-compose -f docker-compose.yml up --build --abort-on-container-exit
 
-  docker-compose-stop:
+  docker-compose:stop:
     desc: Stops server and database using docker-compose
     cmds:
       - docker-compose -f docker-compose.yml down --volumes
@@ -144,18 +144,18 @@ tasks:
       - task: dockertest-stop
     silent: true
 
-  dockertest-stop:
+  dockertest:stop:
     desc: stop docker e2e test
     dir: docker-test
     cmds:
       - docker-compose down -v
 
-  stop-dockertest:
+  stop:dockertest:
     desc: Stop hanging dockertest container
     cmds:
       - scripts/stopDockertestByPort.sh 5434
 
-  install-tools:
+  install:tools:
     desc: Install all optional cli tools
     cmds:
       - task: install-golangci
@@ -167,40 +167,40 @@ tasks:
       - task: install-gosec
     silent: true
 
-  install-sqlboiler:
+  install:sqlboiler:
     desc: Install sqlboiler orm
     cmds:
       - GO111MODULE=off go get -u -t github.com/volatiletech/sqlboiler
       - GO111MODULE=off go get github.com/volatiletech/sqlboiler/drivers/sqlboiler-psql
 
-  install-golangci:
+  install:golangci:
     desc: Install golangci linter
     cmds:
       - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin
 
-  install-swagger:
+  install:swagger:
     desc: Install swagger cli
     cmds:
       - go get github.com/swaggo/swag/cmd/swag
 
-  install-testify:
+  install:testify:
     desc: Install testify testing suite
     cmds:
       - go get github.com/stretchr/testify
 
-  install-gomock:
+  install:gomock:
     desc: Install gomock test framework
     cmds:
       - GO111MODULE=on go get github.com/golang/mock/mockgen@v1.4.4
 
-  install-golangmigrate:
+  install:golangmigrate:
     desc: Install golang migration tool
     cmds:
       - curl -L https://github.com/golang-migrate/migrate/releases/download/v4.14.1/migrate.linux-amd64.tar.gz | tar xvz
       - mkdir -p ~/.local/bin
       - mv migrate.linux-amd64 ~/.local/bin/migrate
 
-  install-gosec:
+  install:gosec:
     desc: Install golang security check. https://github.com/securego/gosec
     cmds:
       - go get github.com/securego/gosec/v2/cmd/gosec

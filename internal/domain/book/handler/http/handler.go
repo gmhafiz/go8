@@ -6,10 +6,12 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/friendsofgo/errors"
 	"github.com/go-playground/validator/v10"
 
 	"github.com/gmhafiz/go8/internal/domain/book"
 	"github.com/gmhafiz/go8/internal/models"
+	"github.com/gmhafiz/go8/internal/utility/message"
 	"github.com/gmhafiz/go8/internal/utility/respond"
 )
 
@@ -31,11 +33,13 @@ func NewHandler(useCase book.UseCase) *Handler {
 // @Accept json
 // @Produce json
 // @Param Book body book.Request true "Book Request"
-// @Success 201 {object} models.Book
+// @Success 201 {object} book.Res
+// @Failure 400 {string} Bad Request
+// @Failure 500 {string} Internal Server Error
 // @Router /api/v1/books [post]
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	var bookRequest book.Request
-	err := json.NewDecoder(r.Body).Decode(&bookRequest)
+	err := book.Decode(r.Body, &bookRequest)
 	if err != nil {
 		respond.Error(w, http.StatusBadRequest, nil)
 		return
@@ -43,12 +47,16 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 
 	errs := respond.Validate(h.validate, bookRequest)
 	if errs != nil {
-		respond.Error(w, http.StatusBadRequest, map[string][]string{"errors": errs})
+		respond.Error(w, http.StatusBadRequest, errs)
 		return
 	}
 
 	bk, err := h.useCase.Create(context.Background(), book.ToBook(&bookRequest))
 	if err != nil {
+		if err == sql.ErrNoRows {
+			respond.Error(w, http.StatusBadRequest, message.ErrBadRequest)
+			return
+		}
 		respond.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -67,7 +75,9 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param bookID path int true "book ID"
-// @Success 200 {object} models.Book
+// @Success 200 {object} book.Res
+// @Failure 400 {string} Bad Request
+// @Failure 500 {string} Internal Server Error
 // @Router /api/v1/books/{bookID} [get]
 func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 	bookID := respond.GetURLParamInt64(w, r, "bookID")
@@ -75,7 +85,8 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 	b, err := h.useCase.Read(context.Background(), bookID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			respond.Error(w, http.StatusNoContent, nil)
+			respond.Error(w, http.StatusBadRequest, sql.ErrNoRows)
+			return
 		}
 		respond.Error(w, http.StatusInternalServerError, nil)
 		return
@@ -97,7 +108,8 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 // @Param size query string false "size"
 // @Param title query string false "term"
 // @Param description query string false "term"
-// @Success 200 {object} []models.Book
+// @Success 200 {object} []book.Res
+// @Failure 500 {string} Internal Server Error
 // @Router /api/v1/books [get]
 func (h *Handler) All(w http.ResponseWriter, r *http.Request) {
 	filters := book.GetFilters(r.URL.Query())
@@ -109,6 +121,10 @@ func (h *Handler) All(w http.ResponseWriter, r *http.Request) {
 	case true:
 		resp, err := h.useCase.Search(ctx, filters)
 		if err != nil {
+			if errors.Is(err, message.ErrFetchingBook) {
+				respond.Error(w, http.StatusInternalServerError, err)
+				return
+			}
 			respond.Error(w, http.StatusInternalServerError, err)
 			return
 		}
@@ -116,6 +132,10 @@ func (h *Handler) All(w http.ResponseWriter, r *http.Request) {
 	default:
 		resp, err := h.useCase.All(ctx, filters)
 		if err != nil {
+			if errors.Is(err, message.ErrFetchingBook) {
+				respond.Error(w, http.StatusInternalServerError, err)
+				return
+			}
 			respond.Error(w, http.StatusInternalServerError, err)
 			return
 		}
@@ -124,7 +144,7 @@ func (h *Handler) All(w http.ResponseWriter, r *http.Request) {
 
 	list, err := book.Resources(books)
 	if err != nil {
-		respond.Render(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		respond.Error(w, http.StatusInternalServerError, message.ErrFormingResponse)
 		return
 	} else if list == nil {
 		respond.Error(w, http.StatusNoContent, nil)
@@ -140,8 +160,9 @@ func (h *Handler) All(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param Book body book.Request true "Book Request"
-// @Success 200 "Ok"
-// @Failure 500 "Internal Server error"
+// @Success 200 {object} []book.Res
+// @Failure 400 {string} Bad Request
+// @Failure 500 {string} Internal Server Error
 // @Router /api/v1/books/{bookID} [put]
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	bookID := respond.GetURLParamInt64(w, r, "bookID")
@@ -182,14 +203,14 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Param id path int true "book ID"
 // @Success 200 "Ok"
-// @Failure 500 "Internal Server error"
+// @Failure 500 {string} Internal Server Error
 // @Router /api/v1/books/{bookID} [delete]
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 	bookID := respond.GetURLParamInt64(w, r, "bookID")
 
 	err := h.useCase.Delete(context.Background(), bookID)
 	if err != nil {
-		respond.Error(w, http.StatusInternalServerError, nil)
+		respond.Error(w, http.StatusInternalServerError, message.ErrInternalError)
 		return
 	}
 

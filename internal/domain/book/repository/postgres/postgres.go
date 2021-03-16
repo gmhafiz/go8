@@ -5,11 +5,11 @@ import (
 	"log"
 	"time"
 
-	"github.com/friendsofgo/errors"
 	"github.com/jmoiron/sqlx"
 
 	"github.com/gmhafiz/go8/internal/domain/book"
 	"github.com/gmhafiz/go8/internal/models"
+	"github.com/gmhafiz/go8/internal/utility/message"
 )
 
 type repository struct {
@@ -58,16 +58,15 @@ func (r *repository) All(ctx context.Context, f *book.Filter) ([]*models.Book, e
 		var books []*models.Book
 		err := r.db.SelectContext(ctx, &books, SelectFromBooks)
 		if err != nil {
-			return nil, errors.Wrap(err, "error fetching books")
+			return nil, message.ErrFetchingBook
 		}
 
 		return books, nil
-
 	} else {
 		var books []*models.Book
 		err := r.db.SelectContext(ctx, &books, SelectFromBooksPaginate, f.Base.Size, f.Base.Page)
 		if err != nil {
-			return nil, errors.Wrap(err, "error fetching books")
+			return nil, message.ErrFetchingBook
 		}
 
 		return books, nil

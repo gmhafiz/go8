@@ -23,14 +23,10 @@ definitions:
     - published_date
     - title
     type: object
-  models.Book:
+  book.Res:
     properties:
       book_id:
         type: integer
-      created_at:
-        type: string
-      deleted_at:
-        type: string
       description:
         type: string
       image_url:
@@ -38,8 +34,6 @@ definitions:
       published_date:
         type: string
       title:
-        type: string
-      updated_at:
         type: string
     type: object
 host: localhost:3080
@@ -51,7 +45,7 @@ info:
   description: Go + Postgres + Chi Router + sqlx + Unit Testing starter kit for API development.
   license: {}
   title: Go8
-  version: 0.7.0
+  version: 0.8.0
 paths:
   /api/v1/books:
     get:
@@ -82,8 +76,12 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/models.Book'
+              $ref: '#/definitions/book.Res'
             type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
       summary: Show all books
     post:
       consumes:
@@ -102,7 +100,15 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/models.Book'
+            $ref: '#/definitions/book.Res'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
       summary: Create a Book
   /api/v1/books/{bookID}:
     delete:
@@ -121,7 +127,9 @@ paths:
         "200":
           description: Ok
         "500":
-          description: Internal Server error
+          description: Internal Server Error
+          schema:
+            type: string
       summary: Delete a Book
     get:
       consumes:
@@ -139,7 +147,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.Book'
+            $ref: '#/definitions/book.Res'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
       summary: Get a Book
     put:
       consumes:
@@ -156,9 +172,19 @@ paths:
       - application/json
       responses:
         "200":
-          description: Ok
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/book.Res'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: string
         "500":
-          description: Internal Server error
+          description: Internal Server Error
+          schema:
+            type: string
       summary: Update a Book
   /health/liveness:
     get:

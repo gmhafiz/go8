@@ -66,6 +66,10 @@ func (s *Server) newDatabase() {
 
 func (s *Server) newRouter() {
 	s.router = chi.NewRouter()
+	s.setGlobalMiddleware()
+}
+
+func (s *Server) setGlobalMiddleware() {
 	s.router.Use(middleware.Cors)
 	if s.cfg.Api.RequestLog {
 		s.router.Use(chiMiddleware.Logger)

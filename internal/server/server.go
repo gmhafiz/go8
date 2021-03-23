@@ -34,7 +34,7 @@ type Server struct {
 }
 
 func New(version string) *Server {
-	log.Printf("staring API version: %s\n", version)
+	log.Printf("Starting API version: %s\n", version)
 	return &Server{}
 }
 
@@ -79,7 +79,7 @@ func (s *Server) setGlobalMiddleware() {
 
 func (s *Server) Migrate() {
 	if s.cfg.DockerTest.Driver == "postgres" {
-		driver, err := postgres.WithInstance(s.Db().DB, &postgres.Config{})
+		driver, err := postgres.WithInstance(s.DB().DB, &postgres.Config{})
 		if err != nil {
 			log.Fatalf("error instantiating database: %v", err)
 		}
@@ -123,7 +123,7 @@ func (s *Server) Run() error {
          .*/###%%%%%%%###(/,      .,/##%%%%%##(/,.      .*(##%%%%%%##(*,
               .........                ......                .......`)
 	go func() {
-		log.Printf("serving at %s:%s\n", s.cfg.Api.Host, s.cfg.Api.Port)
+		log.Printf("Serving at %s:%s\n", s.cfg.Api.Host, s.cfg.Api.Port)
 		printAllRegisteredRoutes(s.router)
 		err := s.httpServer.ListenAndServe()
 		if err != nil {
@@ -146,7 +146,7 @@ func (s *Server) Config() *configs.Configs {
 	return s.cfg
 }
 
-func (s *Server) Db() *sqlx.DB {
+func (s *Server) DB() *sqlx.DB {
 	return s.db
 }
 

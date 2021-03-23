@@ -108,7 +108,7 @@ func TestHandler_Get(t *testing.T) {
 	assert.Equal(t, ucResp.ImageURL, gotBook.ImageURL)
 }
 
-func TestHandler_All(t *testing.T) {
+func TestHandler_List(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -126,7 +126,7 @@ func TestHandler_All(t *testing.T) {
 	}
 	var books []*models.Book
 
-	uc.EXPECT().All(ctx, f).Return(books, e).AnyTimes()
+	uc.EXPECT().List(ctx, f).Return(books, e).AnyTimes()
 
 	router := chi.NewRouter()
 
@@ -137,7 +137,7 @@ func TestHandler_All(t *testing.T) {
 	rr, err := http.NewRequest(http.MethodGet, "/api/v1/books?page=1&size=10", nil)
 	assert.NoError(t, err)
 
-	h.All(ww, rr)
+	h.List(ww, rr)
 
 	var gotBook []book.Res
 	err = json.NewDecoder(ww.Body).Decode(&gotBook)

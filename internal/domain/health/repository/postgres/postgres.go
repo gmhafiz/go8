@@ -8,7 +8,7 @@ type repository struct {
 	db *sqlx.DB
 }
 
-func NewHealthRepository(db *sqlx.DB) *repository {
+func New(db *sqlx.DB) *repository {
 	return &repository{
 		db: db,
 	}

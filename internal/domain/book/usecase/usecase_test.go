@@ -69,7 +69,7 @@ func TestBookUseCase_Create(t *testing.T) {
 	assert.Equal(t, bookGot.ImageURL.String, request.ImageURL.String)
 }
 
-func TestBookUseCase_All(t *testing.T) {
+func TestBookUseCase_List(t *testing.T) {
 	uc, repo := newUseCase(t)
 
 	ctx := context.Background()
@@ -77,9 +77,9 @@ func TestBookUseCase_All(t *testing.T) {
 	var want []*models.Book
 	filter := &book.Filter{}
 
-	repo.EXPECT().All(ctx, filter).Return(want, err).AnyTimes()
+	repo.EXPECT().List(ctx, filter).Return(want, err).AnyTimes()
 
-	books, err := uc.All(ctx, filter)
+	books, err := uc.List(ctx, filter)
 
 	assert.NoError(t, err)
 	assert.Nil(t, books)

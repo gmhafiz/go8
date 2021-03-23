@@ -29,8 +29,8 @@ func (u *BookUseCase) Create(ctx context.Context, book *models.Book) (*models.Bo
 	return bookFound, err
 }
 
-func (u *BookUseCase) All(ctx context.Context, f *book.Filter) ([]*models.Book, error) {
-	return u.bookRepo.All(ctx, f)
+func (u *BookUseCase) List(ctx context.Context, f *book.Filter) ([]*models.Book, error) {
+	return u.bookRepo.List(ctx, f)
 }
 
 func (u *BookUseCase) Read(ctx context.Context, bookID int64) (*models.Book, error) {

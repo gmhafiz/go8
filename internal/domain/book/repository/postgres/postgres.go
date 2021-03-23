@@ -53,7 +53,7 @@ func (r *repository) Create(ctx context.Context, book *models.Book) (int64, erro
 	return bookID, nil
 }
 
-func (r *repository) All(ctx context.Context, f *book.Filter) ([]*models.Book, error) {
+func (r *repository) List(ctx context.Context, f *book.Filter) ([]*models.Book, error) {
 	if f.Base.DisablePaging {
 		var books []*models.Book
 		err := r.db.SelectContext(ctx, &books, SelectFromBooks)

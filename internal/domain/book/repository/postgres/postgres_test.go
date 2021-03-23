@@ -166,7 +166,7 @@ func TestRepository_Find(t *testing.T) {
 	migrate.Down()
 }
 
-func TestRepository_All(t *testing.T) {
+func TestRepository_List(t *testing.T) {
 	migrate.Start()
 
 	ctx := context.Background()
@@ -181,7 +181,7 @@ func TestRepository_All(t *testing.T) {
 		Description:   "",
 		PublishedDate: "",
 	}
-	books, err := repo.All(ctx, f)
+	books, err := repo.List(ctx, f)
 
 	assert.NoError(t, err)
 	assert.Len(t, books, 0)

@@ -15,13 +15,13 @@ func (s *Server) initDomains() {
 }
 
 func (s *Server) initHealth() {
-	newHealthRepo := healthRepo.NewHealthRepository(s.Db())
-	newHealthUseCase := healthUseCase.NewHealthUseCase(newHealthRepo)
+	newHealthRepo := healthRepo.New(s.DB())
+	newHealthUseCase := healthUseCase.New(newHealthRepo)
 	healthHandler.RegisterHTTPEndPoints(s.router, newHealthUseCase)
 }
 
 func (s *Server) initBook() {
-	newBookRepo := bookRepo.New(s.Db())
+	newBookRepo := bookRepo.New(s.DB())
 	newBookUseCase := bookUseCase.New(newBookRepo)
 	bookHandler.RegisterHTTPEndPoints(s.router, newBookUseCase)
 }

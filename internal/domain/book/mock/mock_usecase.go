@@ -50,19 +50,19 @@ func (mr *MockUseCaseMockRecorder) Create(ctx, book interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockUseCase)(nil).Create), ctx, book)
 }
 
-// All mocks base method
-func (m *MockUseCase) All(ctx context.Context, f *book.Filter) ([]*models.Book, error) {
+// List mocks base method
+func (m *MockUseCase) List(ctx context.Context, f *book.Filter) ([]*models.Book, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "All", ctx, f)
+	ret := m.ctrl.Call(m, "List", ctx, f)
 	ret0, _ := ret[0].([]*models.Book)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// All indicates an expected call of All
-func (mr *MockUseCaseMockRecorder) All(ctx, f interface{}) *gomock.Call {
+// List indicates an expected call of List
+func (mr *MockUseCaseMockRecorder) List(ctx, f interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "All", reflect.TypeOf((*MockUseCase)(nil).All), ctx, f)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockUseCase)(nil).List), ctx, f)
 }
 
 // Read mocks base method

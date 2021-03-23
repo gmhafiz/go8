@@ -50,19 +50,19 @@ func (mr *MockRepositoryMockRecorder) Create(ctx, book interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockRepository)(nil).Create), ctx, book)
 }
 
-// All mocks base method
-func (m *MockRepository) All(ctx context.Context, f *book.Filter) ([]*models.Book, error) {
+// List mocks base method
+func (m *MockRepository) List(ctx context.Context, f *book.Filter) ([]*models.Book, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "All", ctx, f)
+	ret := m.ctrl.Call(m, "List", ctx, f)
 	ret0, _ := ret[0].([]*models.Book)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// All indicates an expected call of All
-func (mr *MockRepositoryMockRecorder) All(ctx, f interface{}) *gomock.Call {
+// List indicates an expected call of List
+func (mr *MockRepositoryMockRecorder) List(ctx, f interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "All", reflect.TypeOf((*MockRepository)(nil).All), ctx, f)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockRepository)(nil).List), ctx, f)
 }
 
 // Read mocks base method

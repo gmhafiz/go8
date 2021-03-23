@@ -57,16 +57,16 @@ func (mr *MockHTTPMockRecorder) Update(w, r interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockHTTP)(nil).Update), w, r)
 }
 
-// All mocks base method
-func (m *MockHTTP) All(w http.ResponseWriter, r *http.Request) {
+// List mocks base method
+func (m *MockHTTP) List(w http.ResponseWriter, r *http.Request) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "All", w, r)
+	m.ctrl.Call(m, "List", w, r)
 }
 
-// All indicates an expected call of All
-func (mr *MockHTTPMockRecorder) All(w, r interface{}) *gomock.Call {
+// List indicates an expected call of List
+func (mr *MockHTTPMockRecorder) List(w, r interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "All", reflect.TypeOf((*MockHTTP)(nil).All), w, r)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockHTTP)(nil).List), w, r)
 }
 
 // Get mocks base method

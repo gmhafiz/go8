@@ -14,13 +14,13 @@ Content-Type: application/json
 }
 
 
-### Get All books, by default gets the first 10 books when ordered desc
+### List all books, by default gets the first 10 books when ordered desc
 # curl --location --request GET 'http://localhost:3080/api/v1/books'
 GET http://localhost:3080/api/v1/books
 Accept: application/json
 
 
-### Get paginated books
+### List paginated books
 # curl --location --request GET 'http://localhost:3080/api/v1/books?page=2&size=10'
 GET http://localhost:3080/api/v1/books?page=1&size=10
 Accept: application/json

@@ -8,7 +8,7 @@ import (
 
 type Repository interface {
 	Create(ctx context.Context, book *models.Book) (int64, error)
-	All(ctx context.Context, f *Filter) ([]*models.Book, error)
+	List(ctx context.Context, f *Filter) ([]*models.Book, error)
 	Read(ctx context.Context, bookID int64) (*models.Book, error)
 	Update(ctx context.Context, book *models.Book) error
 	Delete(ctx context.Context, bookID int64) error

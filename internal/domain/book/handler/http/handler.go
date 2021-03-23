@@ -99,7 +99,7 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 	respond.Render(w, http.StatusOK, list)
 }
 
-// All will fetch the article based on given params
+// List will fetch the article based on given params
 // @Summary Show all books
 // @Description Get all books. By default it gets first page with 10 items.
 // @Accept json
@@ -111,7 +111,7 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} []book.Res
 // @Failure 500 {string} Internal Server Error
 // @Router /api/v1/books [get]
-func (h *Handler) All(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 	filters := book.Filters(r.URL.Query())
 
 	var books []*models.Book
@@ -130,7 +130,7 @@ func (h *Handler) All(w http.ResponseWriter, r *http.Request) {
 		}
 		books = resp
 	default:
-		resp, err := h.useCase.All(ctx, filters)
+		resp, err := h.useCase.List(ctx, filters)
 		if err != nil {
 			if errors.Is(err, message.ErrFetchingBook) {
 				respond.Error(w, http.StatusInternalServerError, err)

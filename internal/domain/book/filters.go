@@ -13,7 +13,7 @@ type Filter struct {
 	PublishedDate string `json:"published_date"`
 }
 
-func GetFilters(queries url.Values) *Filter {
+func Filters(queries url.Values) *Filter {
 	f := filter.New(queries)
 	return &Filter{
 		Base:          *f,

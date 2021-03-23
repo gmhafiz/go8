@@ -44,7 +44,7 @@ func (t *E2eTest) Run() {
 
 func testEmptyBook(t *E2eTest) {
 	resp, err := http.Get(fmt.Sprintf("http://localhost:%s/api/v1/books",
-		t.server.GetConfig().Api.Port))
+		t.server.Config().Api.Port))
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -81,7 +81,7 @@ func testAddOneBook(t *E2eTest) int64 {
 
 	resp, err := http.Post(
 		fmt.Sprintf("http://localhost:%s/api/v1/books",
-			t.server.GetConfig().Api.Port),
+			t.server.Config().Api.Port),
 		"Content-Type: application/json",
 		bytes.NewBuffer(bR),
 	)
@@ -117,7 +117,7 @@ func testAddOneBook(t *E2eTest) int64 {
 func testGetOneBook(t *E2eTest, id int64) int64 {
 	client := &http.Client{}
 
-	url := fmt.Sprintf("http://localhost:%s/api/v1/books/%d", t.server.GetConfig().Api.Port, id)
+	url := fmt.Sprintf("http://localhost:%s/api/v1/books/%d", t.server.Config().Api.Port, id)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		log.Fatalln(err)
@@ -165,7 +165,7 @@ func testUpdateBook(t *E2eTest, bookID int64) {
 		log.Fatal(err)
 	}
 
-	url := fmt.Sprintf("http://localhost:%s/api/v1/books/%d", t.server.GetConfig().Api.Port, newBook.BookID)
+	url := fmt.Sprintf("http://localhost:%s/api/v1/books/%d", t.server.Config().Api.Port, newBook.BookID)
 
 	req, err := http.NewRequest(http.MethodPut, url, bytes.NewBuffer(bR))
 	if err != nil {
@@ -206,7 +206,7 @@ func testDeleteOneBook(t *E2eTest, id int64) {
 	client := &http.Client{}
 
 	req, err := http.NewRequest(
-		http.MethodDelete, fmt.Sprintf("http://localhost:%s/api/v1/books/%d", t.server.GetConfig().Api.Port, id),
+		http.MethodDelete, fmt.Sprintf("http://localhost:%s/api/v1/books/%d", t.server.Config().Api.Port, id),
 		nil,
 	)
 	if err != nil {

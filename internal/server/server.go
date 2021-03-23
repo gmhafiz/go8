@@ -79,7 +79,7 @@ func (s *Server) setGlobalMiddleware() {
 
 func (s *Server) Migrate() {
 	if s.cfg.DockerTest.Driver == "postgres" {
-		driver, err := postgres.WithInstance(s.GetDB().DB, &postgres.Config{})
+		driver, err := postgres.WithInstance(s.Db().DB, &postgres.Config{})
 		if err != nil {
 			log.Fatalf("error instantiating database: %v", err)
 		}
@@ -142,11 +142,11 @@ func (s *Server) Run() error {
 	return s.httpServer.Shutdown(ctx)
 }
 
-func (s *Server) GetConfig() *configs.Configs {
+func (s *Server) Config() *configs.Configs {
 	return s.cfg
 }
 
-func (s *Server) GetDB() *sqlx.DB {
+func (s *Server) Db() *sqlx.DB {
 	return s.db
 }
 

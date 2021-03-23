@@ -112,7 +112,7 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {string} Internal Server Error
 // @Router /api/v1/books [get]
 func (h *Handler) All(w http.ResponseWriter, r *http.Request) {
-	filters := book.GetFilters(r.URL.Query())
+	filters := book.Filters(r.URL.Query())
 
 	var books []*models.Book
 	ctx := context.Background()

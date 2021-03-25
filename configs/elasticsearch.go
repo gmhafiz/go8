@@ -1,6 +1,8 @@
 package configs
 
-import "os"
+import (
+	"github.com/kelseyhightower/envconfig"
+)
 
 type Elasticsearch struct {
 	Address  string
@@ -8,10 +10,9 @@ type Elasticsearch struct {
 	Password string
 }
 
-func ElasticSearch() *Elasticsearch {
-	return &Elasticsearch{
-		Address:  os.Getenv("ELASTICSEARCH_ADDRESS"),
-		User:     os.Getenv("ELASTICSEARCH_USER"),
-		Password: os.Getenv("ELASTICSEARCH_PASS"),
-	}
+func ElasticSearch() Elasticsearch {
+	var elasticsearch Elasticsearch
+	envconfig.MustProcess("ELASTICSEARCH", &elasticsearch)
+
+	return elasticsearch
 }

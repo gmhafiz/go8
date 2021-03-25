@@ -61,7 +61,7 @@ func (s *Server) newDatabase() {
 		log.Fatal("please fill in database credentials in .env file")
 	}
 	s.db = database.NewSqlx(s.cfg)
-	s.db.SetMaxOpenConns(s.cfg.Database.MaxConnPool)
+	s.db.SetMaxOpenConns(s.cfg.Database.MaxConnectionPool)
 }
 
 func (s *Server) newRouter() {
@@ -103,10 +103,10 @@ func (s *Server) Migrate() {
 
 func (s *Server) Run() error {
 	s.httpServer = &http.Server{
-		Addr:           ":" + s.cfg.Api.Port,
+		Addr:           s.cfg.Api.Host.String() + ":" + s.cfg.Api.Port,
 		Handler:        s.router,
-		ReadTimeout:    s.cfg.Api.ReadTimeout * time.Second,
-		WriteTimeout:   s.cfg.Api.WriteTimeout * time.Second,
+		ReadTimeout:    s.cfg.Api.ReadTimeout,
+		WriteTimeout:   s.cfg.Api.WriteTimeout,
 		MaxHeaderBytes: 1 << 20,
 	}
 

@@ -27,7 +27,7 @@ func NewSqlx(cfg *configs.Configs) *sqlx.DB {
 
 	database.Alive(db.DB)
 
-	db.DB.SetMaxOpenConns(cfg.Database.MaxConnPool)
+	db.DB.SetMaxOpenConns(cfg.Database.MaxConnectionPool)
 
 	return db
 }

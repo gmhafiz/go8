@@ -7,11 +7,11 @@ import (
 )
 
 type Configs struct {
-	Api           *Api
-	Database      *Database
-	Cache         *Cache
-	Elasticsearch *Elasticsearch
-	DockerTest    *DockerTest
+	Api           Api
+	Database      Database
+	Cache         Cache
+	Elasticsearch Elasticsearch
+	DockerTest    DockerTest
 }
 
 func New() *Configs {

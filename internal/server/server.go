@@ -11,6 +11,7 @@ import (
 
 	chiMiddleware "github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-playground/validator/v10"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -19,6 +20,7 @@ import (
 	"github.com/gmhafiz/go8/configs"
 	"github.com/gmhafiz/go8/internal/middleware"
 	"github.com/gmhafiz/go8/third_party/database"
+	"github.com/gmhafiz/go8/third_party/validate"
 )
 
 const (
@@ -31,6 +33,7 @@ type Server struct {
 	db         *sqlx.DB
 	router     *chi.Mux
 	httpServer *http.Server
+	validator  *validator.Validate
 }
 
 func New(version string) *Server {
@@ -41,7 +44,9 @@ func New(version string) *Server {
 func (s *Server) Init() {
 	s.newConfig()
 	s.newDatabase()
+	s.newValidator()
 	s.newRouter()
+	s.setGlobalMiddleware()
 	s.initDomains()
 	s.startSwagger()
 }
@@ -64,12 +69,16 @@ func (s *Server) newDatabase() {
 	s.db.SetMaxOpenConns(s.cfg.Database.MaxConnectionPool)
 }
 
+func (s *Server) newValidator() {
+	s.validator = validate.New()
+}
+
 func (s *Server) newRouter() {
 	s.router = chi.NewRouter()
-	s.setGlobalMiddleware()
 }
 
 func (s *Server) setGlobalMiddleware() {
+	s.router.Use(middleware.Json)
 	s.router.Use(middleware.Cors)
 	if s.cfg.Api.RequestLog {
 		s.router.Use(chiMiddleware.Logger)

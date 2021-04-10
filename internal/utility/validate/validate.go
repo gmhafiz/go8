@@ -1,4 +1,4 @@
-package respond
+package validate
 
 import (
 	"fmt"

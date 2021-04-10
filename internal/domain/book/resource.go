@@ -6,21 +6,10 @@ import (
 	"time"
 
 	"github.com/jinzhu/copier"
-	"github.com/jinzhu/now"
 	"github.com/volatiletech/null/v8"
 
 	"github.com/gmhafiz/go8/internal/models"
-	"github.com/gmhafiz/go8/internal/utility/filter"
 )
-
-type Request struct {
-	BookID        int64  `json:"-"`
-	Title         string `json:"title" validate:"required"`
-	PublishedDate string `json:"published_date" validate:"required"`
-	ImageURL      string `json:"image_url" validate:"url"`
-	Description   string `json:"description" validate:"required"`
-	filter.Filter
-}
 
 type Res struct {
 	BookID        int64       `json:"book_id" deepcopier:"field:book_id" db:"id"`
@@ -32,19 +21,6 @@ type Res struct {
 
 func Decode(body io.ReadCloser, b *Request) error {
 	return json.NewDecoder(body).Decode(b)
-}
-
-func ToBook(req *Request) *models.Book {
-	return &models.Book{
-		BookID:        req.BookID,
-		Title:         req.Title,
-		PublishedDate: now.MustParse(req.PublishedDate),
-		ImageURL: null.String{
-			String: req.ImageURL,
-			Valid:  true,
-		},
-		Description: req.Description,
-	}
 }
 
 func Resource(book *models.Book) (Res, error) {

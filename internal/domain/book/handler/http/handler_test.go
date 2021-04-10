@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"github.com/go-playground/validator/v10"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -48,8 +49,9 @@ func TestHandler_Create(t *testing.T) {
 
 	router := chi.NewRouter()
 
-	h := NewHandler(uc)
-	RegisterHTTPEndPoints(router, uc)
+	val := validator.New()
+	h := NewHandler(uc, val)
+	RegisterHTTPEndPoints(router, val, uc)
 
 	ww := httptest.NewRecorder()
 	rr, _ := http.NewRequest(http.MethodPost, "/api/v1/books", bytes.NewBuffer(body))
@@ -89,8 +91,8 @@ func TestHandler_Get(t *testing.T) {
 
 	router := chi.NewRouter()
 
-	h := NewHandler(uc)
-	RegisterHTTPEndPoints(router, uc)
+	h := NewHandler(uc, nil)
+	RegisterHTTPEndPoints(router, nil, uc)
 
 	ww := httptest.NewRecorder()
 	rr, err := http.NewRequest(http.MethodGet, "/api/v1/books/1", nil)
@@ -130,8 +132,9 @@ func TestHandler_List(t *testing.T) {
 
 	router := chi.NewRouter()
 
-	h := NewHandler(uc)
-	RegisterHTTPEndPoints(router, uc)
+	val := validator.New()
+	h := NewHandler(uc, val)
+	RegisterHTTPEndPoints(router, val, uc)
 
 	ww := httptest.NewRecorder()
 	rr, err := http.NewRequest(http.MethodGet, "/api/v1/books?page=1&size=10", nil)
@@ -170,8 +173,9 @@ func TestHandler_Update(t *testing.T) {
 
 	router := chi.NewRouter()
 
-	h := NewHandler(uc)
-	RegisterHTTPEndPoints(router, uc)
+	val := validator.New()
+	h := NewHandler(uc, val)
+	RegisterHTTPEndPoints(router, val, uc)
 
 	ww := httptest.NewRecorder()
 	rr, err := http.NewRequest(http.MethodGet, "/api/v1/books/1", bytes.NewBuffer(body))
@@ -200,8 +204,9 @@ func TestHandler_Delete(t *testing.T) {
 
 	router := chi.NewRouter()
 
-	h := NewHandler(uc)
-	RegisterHTTPEndPoints(router, uc)
+	val := validator.New()
+	h := NewHandler(uc, val)
+	RegisterHTTPEndPoints(router, val, uc)
 
 	ww := httptest.NewRecorder()
 	rr, err := http.NewRequest(http.MethodGet, "/api/v1/books/1", nil)

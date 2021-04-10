@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"github.com/gmhafiz/go8/internal/utility/validate"
 	"net/http"
 
 	"github.com/friendsofgo/errors"
@@ -20,10 +21,10 @@ type Handler struct {
 	validate *validator.Validate
 }
 
-func NewHandler(useCase book.UseCase) *Handler {
+func NewHandler(useCase book.UseCase, validate *validator.Validate) *Handler {
 	return &Handler{
 		useCase:  useCase,
-		validate: validator.New(),
+		validate: validate,
 	}
 }
 
@@ -45,7 +46,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	errs := respond.Validate(h.validate, bookRequest)
+	errs := validate.Validate(h.validate, bookRequest)
 	if errs != nil {
 		respond.Error(w, http.StatusBadRequest, errs)
 		return
@@ -175,7 +176,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 	bookRequest.BookID = bookID
 
-	errs := respond.Validate(h.validate, bookRequest)
+	errs := validate.Validate(h.validate, bookRequest)
 	if errs != nil {
 		respond.Error(w, http.StatusBadRequest, map[string][]string{"errors": errs})
 		return

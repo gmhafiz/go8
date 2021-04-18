@@ -40,15 +40,10 @@ tasks:
       - go run cmd/go8/main.go
     silent: true
 
-  check:
-    desc: Checks integrity of program
+  dev:
+    desc: Hot reload. Watch for file changes and rebuild binary.
     cmds:
-      - task tidy
-      - task vet
-      - task golint
-      - task security
-      - task fmt
-      - task test
+      - air
     silent: true
 
   build:
@@ -61,6 +56,16 @@ tasks:
       - mv go8 bin/
       - cp .env bin
     silent: false
+  check:
+    desc: Checks integrity of program
+    cmds:
+      - task tidy
+      - task vet
+      - task golint
+      - task security
+      - task fmt
+      - task test
+    silent: true
 
   tidy:
     desc: Downloads dependencies and removes unused ones
@@ -158,13 +163,14 @@ tasks:
   install:tools:
     desc: Install all optional cli tools
     cmds:
-      - task: install-golangci
-      - task: install-swagger
-      - task: install-testify
-      - task: install-gomock
-      - task: install-golangmigrate
-      - task: install-sqlboiler
-      - task: install-gosec
+      - task: install:golangci
+      - task: install:swagger
+      - task: install:testify
+      - task: install:gomock
+      - task: install:golangmigrate
+      - task: install:sqlboiler
+      - task: install:gosec
+      - task: install:air
     silent: true
 
   install:sqlboiler:
@@ -204,3 +210,8 @@ tasks:
     desc: Install golang security check. https://github.com/securego/gosec
     cmds:
       - go get github.com/securego/gosec/v2/cmd/gosec
+
+  install:air:
+    desc: Install a hot reloader. Watch for file changes and automatically rebuilds binary
+    cmds:
+      - go get -u github.com/cosmtrek/air

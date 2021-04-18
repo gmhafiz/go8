@@ -4,3 +4,4 @@ bin
 vendor
 .env
 sqlboiler.toml
+tmp

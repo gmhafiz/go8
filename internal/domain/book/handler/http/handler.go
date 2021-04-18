@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"github.com/gmhafiz/go8/internal/utility/validate"
 	"net/http"
 
 	"github.com/friendsofgo/errors"
@@ -14,6 +13,7 @@ import (
 	"github.com/gmhafiz/go8/internal/models"
 	"github.com/gmhafiz/go8/internal/utility/message"
 	"github.com/gmhafiz/go8/internal/utility/respond"
+	"github.com/gmhafiz/go8/internal/utility/validate"
 )
 
 type Handler struct {

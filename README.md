@@ -128,6 +128,8 @@ Various tooling can be installed automatically by running which includes
     * Migration tool
  * [gosec](https://github.com/securego/gosec)
     * Security Checker
+ * [air](https://github.com/cosmtrek/air)
+    * Hot reload app 
 
 ### Install
 
@@ -166,20 +168,20 @@ Quickly catches compile error.
 
     task test
 
-Runs unit tests
+Runs unit tests.
 
 
 ### golangci Linter
 
     task golint
 
-Runs [https://golangci-lint.run](https://golangci-lint.run/) linter
+Runs [https://golangci-lint.run](https://golangci-lint.run/) linter.
 
 ### Security Checks
 
     task security
 
-Runs opinionated security checks from [https://github.com/securego/gosec](https://github.com/securego/gosec)
+Runs opinionated security checks from [https://github.com/securego/gosec](https://github.com/securego/gosec).
 
 ### Check
 
@@ -187,6 +189,11 @@ Runs opinionated security checks from [https://github.com/securego/gosec](https:
 
 Runs all of the above tasks (Format Code until Security Checks)
 
+### Hot reload
+
+    task air
+
+Runs, watch for file changes and rebuilds binary. Configure in `.air.toml` file.
 
 ### Generate Model/ORM
 

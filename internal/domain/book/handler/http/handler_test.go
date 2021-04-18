@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"github.com/go-playground/validator/v10"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -20,6 +19,7 @@ import (
 	"github.com/gmhafiz/go8/internal/domain/book/mock"
 	"github.com/gmhafiz/go8/internal/models"
 	"github.com/gmhafiz/go8/internal/utility/filter"
+	"github.com/go-playground/validator/v10"
 )
 
 //go:generate mockgen -package mock -source ../../handler.go -destination=../../mock/mock_handler.go

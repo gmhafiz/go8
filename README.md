@@ -123,9 +123,9 @@ Various tooling can be installed automatically by running which includes
  * [gomock](https://github.com/golang/mock/mockgen)
     * Mock dependencies inside unit test
  * [golang-migrate](https://github.com/golang-migrate/migrate)
-    * Database Migration tool
- * [sqlboiler](https://github.com/volatiletech/sqlboiler)
     * Migration tool
+ * [sqlboiler](https://github.com/volatiletech/sqlboiler)
+    * Database Migration tool
  * [gosec](https://github.com/securego/gosec)
     * Security Checker
  * [air](https://github.com/cosmtrek/air)
@@ -191,9 +191,9 @@ Runs all of the above tasks (Format Code until Security Checks)
 
 ### Hot reload
 
-    task air
+    task dev
 
-Runs, watch for file changes and rebuilds binary. Configure in `.air.toml` file.
+Runs `air` which watches for file changes and rebuilds binary. Configure in `.air.toml` file.
 
 ### Generate Model/ORM
 
@@ -220,7 +220,7 @@ Runs `go generate ./...` all //go:generate commands found in .go files. Useful f
 
     task coverage
 
-Runs unit test coverage.
+Runs unit test coverage with `go test -cover ./...`
 
 ### Build
 

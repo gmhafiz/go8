@@ -17,17 +17,17 @@ func NewHandler(useCase health.UseCase) *Handler {
 	}
 }
 
-// Alive API
+// Health checks if api is up
 // @Summary Checks if API is up
 // @Description Hits this API to see if API is running in the server
 // @Success 200
 // @Failure 500
-// @Router /health/liveness [get]
-func (h *Handler) Liveness(w http.ResponseWriter, r *http.Request) {
+// @Router /health [get]
+func (h *Handler) Health(w http.ResponseWriter, r *http.Request) {
 	respond.Render(w, http.StatusOK, nil)
 }
 
-// Alive Database
+// Readiness checks if database is alive
 // @Summary Checks if both API and Database are up
 // @Description Hits this API to see if both API and Database are running in the server
 // @Success 200

@@ -44,7 +44,7 @@ This kit is composed of standard Go library together with some well-known librar
   - [x] Scans and auto-generate [Swagger](https://github.com/swaggo/swag) docs using a declarative comments format 
   - [x] Custom model JSON output
   - [x] Filters (input port), Resource (output port) for pagination and custom response respectively.
-  - [x] Uses [Task](https://taskfile.dev) to simplify various tasks like testify, go mock, go-sec, swag, linting, test coverage etc
+  - [x] Uses [Task](https://taskfile.dev) to simplify various tasks like testify, go mock, go-sec, swag, linting, test coverage, hot reload etc
   - [x] Unit testing of repository, use case, and handler
   - [x] End-to-end test using ephemeral docker containers
 
@@ -89,6 +89,74 @@ You will see the address the API is running at as well as all registered routes.
 To use, follow examples in the `examples/` folder
 
     curl --location --request GET 'http://localhost:3080/api/v1/books'
+
+# Table of Contents
+
+- [Introduction](#introduction)
+- [Motivation](#motivation)
+- [Features](#features)
+- [Quick Start](#quick-start)
+- [Tooling](#tooling)
+   * [Tools](#tools)
+      + [Install](#install)
+   * [Tasks](#tasks)
+      + [Format Code](#format-code)
+      + [Sync Dependencies](#sync-dependencies)
+      + [Compile Check](#compile-check)
+      + [Unit tests](#unit-tests)
+      + [golangci Linter](#golangci-linter)
+      + [Security Checks](#security-checks)
+      + [Check](#check)
+      + [Hot reload](#hot-reload)
+      + [Generate Model/ORM](#generate-model-orm)
+      + [Generate Swagger Documentation](#generate-swagger-documentation)
+      + [Go generate](#go-generate)
+      + [Test Coverage](#test-coverage)
+      + [Build](#build)
+- [Migration](#migration)
+   * [Using Task](#using-task)
+      + [Create Migration](#create-migration)
+      + [Migrate up](#migrate-up)
+      + [Rollback](#rollback)
+   * [Without Task](#without-task)
+      + [Create Migration](#create-migration-1)
+      + [Migrate Up](#migrate-up)
+      + [Rollback](#rollback-1)
+- [Run](#run)
+   * [Local](#local)
+   * [Docker](#docker)
+      + [docker-compose](#docker-compose)
+- [Build](#build-1)
+   * [With Task](#with-task)
+   * [Without Task](#without-task-1)
+- [Swagger docs](#swagger-docs)
+- [Structure](#structure)
+   * [Starting Point](#starting-point)
+   * [Configurations](#configurations)
+      - [.env files](#env-files)
+   * [Database](#database)
+   * [Router](#router)
+   * [Domain](#domain)
+      + [Repository](#repository)
+      + [Use Case](#use-case)
+      + [Handler](#handler)
+      + [Initialize Domain](#initialize-domain)
+      + [Models](#models)
+         - [Generate Models](#generate-models)
+   * [Middleware](#middleware)
+   * [Dependency Injection](#dependency-injection)
+   * [Libraries](#libraries)
+   * [Utility](#utility)
+   * [Testing](#testing)
+      + [Unit Testing](#unit-testing)
+         - [Handler](#handler-1)
+         - [Use Case](#use-case-1)
+         - [Repository](#repository-1)
+      + [End to End Test](#end-to-end-test)
+- [TODO](#todo)
+- [Acknowledgements](#acknowledgements)
+- [Appendix](#appendix)
+   * [Dev Environment Installation](#dev-environment-installation)
 
 
 # Tooling
@@ -373,11 +441,18 @@ This project mostly follows the structure documented at [Standard Go Project Lay
 In addition, this project also tries to follow [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) where each functionality are separated into different files.
 
 ## Starting Point
+
 Starting point of project is at `cmd/go8/main.go`
 
 ![main](assets/main.png)
 
-`s.Init()` in `internal/server/server.go` simply creates a new server, initializes server configuration, database, input validator, router, global middleware, domains, and swagger. Lastly`s.Run()` starts the server.
+
+The `Server` struct in `internal/server/server.go` is where all important dependencies are 
+registered and to give a quick glance on what your server needs.
+
+![server](assets/server.png)
+
+`s.Init()` in `internal/server/server.go` simply initializes server configuration, database, input validator, router, global middleware, domains, and swagger. Any new dependency added to the `Server` struct can be initialized here too.
 
 ![init](assets/init.png)
 
@@ -385,7 +460,7 @@ Starting point of project is at `cmd/go8/main.go`
 ## Configurations
 ![configs](assets/configs.png)
 
-All environment variables are read into specific `Configs` struct initialized in `configs/configs.go`.Each of the embedded struct are defined in its own file of the same package where its fields are read from either environment variable or `.env` file.
+All environment variables are read into specific `Configs` struct initialized in `configs/configs.go`. Each of the embedded struct are defined in its own file of the same package where its fields are read from either environment variable or `.env` file.
 
 This approach allows code completion when accessing your configurations.
 
@@ -451,10 +526,7 @@ Migrations files are stored in `database/migrations` folder. [golang-migrate](ht
 
 ## Router
 
-Router or mux is created for use by `Domain`.
-
-Middleware that affects all routes such as CORS, request log and panic recoverer can be 
-registered inside the `setGlobalMiddleware()` function from `server.go` file.
+Router multiplexer or mux is created for use by `Domain`. While [chi](https://github.com/go-chi/chi) library is being used here, you can swap out the router tto an alternative one when assigning `s.router` field. However, you will need to adjust how you register your handlers in each domain.
 
 ## Domain
 
@@ -549,7 +621,7 @@ Without `task`
       sqlboiler --wipe --add-soft-deletes -t db psql
 
 
-### Middleware
+## Middleware
 
 A middleware is just a handler that returns a handler as can bee seen in the `internal/middleware/cors.go`
 
@@ -593,7 +665,7 @@ func Auth(cfg configs.Configs) Adapter {
 }
 ```
 
-### Dependency Injection
+## Dependency Injection
 
 How does dependency injection happens? It starts with `InitDomains()` method. 
 
@@ -603,14 +675,14 @@ healthHandler.RegisterHTTPEndPoints(s.router, usecase.NewHealthUseCase(postgres.
 
 The repository gets access a pointer to `sql.DB` to perform database operations. This layer also knows nothing of layers above it. `NewBookUseCase` depends on that repository and finally the handler depends on the use case.
 
-### Libraries
+## Libraries
 
 Initialization of external libraries are located in `third_party/`
 
 Since `sqlx` is a third party library, it is initialized in `/third_party/database/sqlx.go`
 
 
-### Utility
+## Utility
 
 Common tasks like retrieving query parameters or `filters` are done inside `utility` folder. It serves as one place abstract functionalities used across packages.
 

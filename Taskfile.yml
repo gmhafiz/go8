@@ -51,7 +51,7 @@ tasks:
     cmds:
       - task: check
       - task: swagger
-      - go mod download && CGO_ENABLED=0 GOOS=linux && go build -v -i -o go8 cmd/go8/main.go
+      - go mod download && CGO_ENABLED=0 GOOS=linux && go build -w -s -v -i -o go8 cmd/go8/main.go
       - mkdir -p bin
       - mv go8 bin/
       - cp .env bin

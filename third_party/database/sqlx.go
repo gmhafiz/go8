@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 
+	_ "github.com/jackc/pgx/stdlib"
 	"github.com/jmoiron/sqlx"
-	_ "github.com/lib/pq"
 
 	"github.com/gmhafiz/go8/configs"
 	"github.com/gmhafiz/go8/internal/utility/database"

@@ -194,7 +194,7 @@ Various tooling can be installed automatically by running which includes
  * [golang-migrate](https://github.com/golang-migrate/migrate)
     * Migration tool
  * [sqlboiler](https://github.com/volatiletech/sqlboiler)
-    * Database Migration tool
+    * Database ORM tool
  * [gosec](https://github.com/securego/gosec)
     * Security Checker
  * [air](https://github.com/cosmtrek/air)

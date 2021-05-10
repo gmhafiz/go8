@@ -83,7 +83,7 @@ func (s *Server) setGlobalMiddleware() {
 	if s.cfg.Api.RequestLog {
 		s.router.Use(chiMiddleware.Logger)
 	}
-	s.router.Use(chiMiddleware.Recoverer)
+	s.router.Use(middleware.Recovery)
 }
 
 func (s *Server) Migrate() {

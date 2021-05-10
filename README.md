@@ -797,6 +797,9 @@ Stop container
  * https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html
  * https://github.com/moemoe89/integration-test-golang
  * https://github.com/george-e-shaw-iv/integration-tests-example
+ * https://gist.github.com/Oxyrus/b63f51929d687c1e20cda3447f834147
+ * https://github.com/sno6/gosane
+ * https://github.com/AleksK1NG/Go-Clean-Architecture-REST-API
  
 # Appendix
 

@@ -148,7 +148,7 @@ tasks:
     desc: Run e2e test
     dir: docker-test
     cmds:
-      - task: dockertest-stop
+      - task: dockertest:stop
       - docker-compose build
       - docker-compose up -d
       - docker exec -t go8_container_test "/home/appuser/app/e2e"
@@ -184,6 +184,7 @@ tasks:
     cmds:
       - GO111MODULE=off go get -u -t github.com/volatiletech/sqlboiler
       - GO111MODULE=off go get github.com/volatiletech/sqlboiler/drivers/sqlboiler-psql
+      - GO111MODULE=off go get github.com/volatiletech/sqlboiler/drivers/sqlboiler-mysql
 
   install:golangci:
     desc: Install golangci linter

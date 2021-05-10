@@ -67,6 +67,12 @@ tasks:
       - task test
     silent: true
 
+  clean:
+    desc: Clears built files
+    cmds:
+      - rm -rf ./bin/*
+      - rm -rf ./bin/.*
+
   tidy:
     desc: Downloads dependencies and removes unused ones
     cmds:

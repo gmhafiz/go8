@@ -113,6 +113,7 @@ To use, follow examples in the `examples/` folder
       + [Go generate](#go-generate)
       + [Test Coverage](#test-coverage)
       + [Build](#build)
+      + [Clean](#clean)
 - [Migration](#migration)
    * [Using Task](#using-task)
       + [Create Migration](#create-migration)
@@ -295,6 +296,12 @@ Runs unit test coverage with `go test -cover ./...`
     task build
 
 Create a statically linked executable for linux.
+
+### Clean
+
+    task clean
+
+Clears all files inside `bin` directory.
 
 # Migration
 

@@ -11,7 +11,7 @@ type Database struct {
 	Name              string
 	User              string
 	Pass              string
-	SslMode           string
+	SslMode           string `default:"disable"`
 	MaxConnectionPool int
 }
 

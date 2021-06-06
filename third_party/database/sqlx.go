@@ -12,14 +12,14 @@ import (
 )
 
 func NewSqlx(cfg *configs.Configs) *sqlx.DB {
-	dsn := fmt.Sprintf("%s://%s/%s?sslmode=%s&user=%s&password=%s",
+	dsn := fmt.Sprintf("%s://%s:%s/%s?user=%s&password=%s&sslmode=disable",
 		cfg.Database.Driver,
 		cfg.Database.Host,
+		cfg.Database.Port,
 		cfg.Database.Name,
-		cfg.Database.SslMode,
 		cfg.Database.User,
-		cfg.Database.Pass)
-
+		cfg.Database.Pass,
+	)
 	db, err := sqlx.Open(cfg.Database.Driver, dsn)
 	if err != nil {
 		log.Fatal(err)

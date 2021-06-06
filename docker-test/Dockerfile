@@ -35,7 +35,7 @@ RUN mkdir -p database/migrations
 COPY --from=src /go/src/app/server .
 COPY --from=src /go/src/app/e2e .
 COPY --from=src /go/src/app/database/migrations/ database/migrations/
-COPY ./docker-test/.env .env
+COPY ./docker-test/dockertest.env .env
 RUN id -u appuser | xargs -I{} chown -R {}:{} /home/appuser/app
 
 EXPOSE 3090

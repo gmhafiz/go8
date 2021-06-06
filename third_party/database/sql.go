@@ -12,13 +12,14 @@ import (
 )
 
 func New(cfg *configs.Configs) *sql.DB {
-	dsn := fmt.Sprintf("%s://%s/%s?sslmode=%s&user=%s&password=%s",
+	dsn := fmt.Sprintf("%s://%s:%s/%s?user=%s&password=%s&sslmode=%s",
 		cfg.Database.Driver,
 		cfg.Database.Host,
+		cfg.Database.Port,
 		cfg.Database.Name,
-		cfg.Database.SslMode,
 		cfg.Database.User,
 		cfg.Database.Pass,
+		cfg.Database.SslMode,
 	)
 
 	db, err := sql.Open(cfg.Database.Driver, dsn)

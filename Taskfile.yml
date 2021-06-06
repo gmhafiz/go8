@@ -102,7 +102,11 @@ tasks:
     desc: Test all code
     cmds:
       - go test ./...
-      - task: stop:dockertest
+
+  test:verbose:
+    desc: Test all code with verbose mode
+    cmds:
+      - go test -v ./...
 
   coverage:
     desc: Peform test coverage
@@ -149,10 +153,10 @@ tasks:
     dir: docker-test
     cmds:
       - task: dockertest:stop
-      - docker-compose build
+      - docker-compose build --no-cache
       - docker-compose up -d
       - docker exec -t go8_container_test "/home/appuser/app/e2e"
-      - task: dockertest-stop
+      - task: dockertest:stop
     silent: true
 
   dockertest:stop:
@@ -160,11 +164,6 @@ tasks:
     dir: docker-test
     cmds:
       - docker-compose down -v
-
-  stop:dockertest:
-    desc: Stop hanging dockertest container
-    cmds:
-      - scripts/stopDockertestByPort.sh 5434
 
   install:tools:
     desc: Install all optional cli tools
@@ -204,7 +203,7 @@ tasks:
   install:gomock:
     desc: Install gomock test framework
     cmds:
-      - GO111MODULE=on go get github.com/golang/mock/mockgen@v1.4.4
+      - go install github.com/golang/mock/mockgen@v1.5.0
 
   install:golangmigrate:
     desc: Install golang migration tool

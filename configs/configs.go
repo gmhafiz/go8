@@ -11,7 +11,6 @@ type Configs struct {
 	Database      Database
 	Cache         Cache
 	Elasticsearch Elasticsearch
-	DockerTest    DockerTest
 }
 
 func New() *Configs {
@@ -25,6 +24,5 @@ func New() *Configs {
 		Database:      DataStore(),
 		Cache:         NewCache(),
 		Elasticsearch: ElasticSearch(),
-		DockerTest:    DockerTestCfg(),
 	}
 }

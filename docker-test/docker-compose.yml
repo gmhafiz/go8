@@ -6,7 +6,7 @@ services:
     image: "go8/server_test"
     container_name: "go8_container_test"
     env_file:
-      - .env
+      - dockertest.env
     build:
       context: ../
       dockerfile: ./docker-test/Dockerfile
@@ -15,22 +15,22 @@ services:
       - ${API_PORT}:${API_PORT}
     depends_on:
       - postgres
-#    network_mode: "host"
+    network_mode: "host"
 
   postgres:
     image: "postgres:13"
     restart: "no"
+    env_file:
+      - dockertest.env
     container_name: "go8_postgres_e2e"
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASS}
       POSTGRES_DB: ${DB_NAME}
     ports:
-      - 5434:5432
-#    expose:
-#      - 5434
+      - 5435:5432
     volumes:
-    - go8_dockertest
+      - go8_dockertest
 
 volumes:
   go8_dockertest: {}

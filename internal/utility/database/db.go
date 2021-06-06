@@ -17,6 +17,7 @@ func Alive(db *sql.DB) {
 			log.Println("Database connected")
 			return
 		}
+		log.Println(err)
 		log.Println("retrying...")
 		time.Sleep(1 * time.Second)
 	}

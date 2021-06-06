@@ -87,18 +87,19 @@ func (s *Server) setGlobalMiddleware() {
 }
 
 func (s *Server) Migrate() {
-	if s.cfg.DockerTest.Driver == "postgres" {
+	log.Println("migrating...")
+	if s.cfg.Database.Driver == "postgres" {
 		driver, err := postgres.WithInstance(s.DB().DB, &postgres.Config{})
 		if err != nil {
 			log.Fatalf("error instantiating database: %v", err)
 		}
 		m, err := migrate.NewWithDatabaseInstance(
-			databaseMigrationPath, s.cfg.DockerTest.Driver, driver,
+			databaseMigrationPath, s.cfg.Database.Driver, driver,
 		)
 		if err != nil {
 			log.Fatalf("error connecting to database: %v", err)
 		}
-		log.Println("migrating...")
+
 		err = m.Up()
 		if err != nil {
 			if err != migrate.ErrNoChange {

@@ -3,7 +3,6 @@ package postgres
 import (
 	"context"
 	"log"
-	"time"
 
 	"github.com/jmoiron/sqlx"
 
@@ -21,7 +20,7 @@ const (
 	SelectFromBooks         = "SELECT * FROM books ORDER BY created_at DESC"
 	SelectFromBooksPaginate = "SELECT * FROM books ORDER BY created_at DESC LIMIT $1 OFFSET $2"
 	SelectBookByID          = "SELECT * FROM books where book_id = $1"
-	UpdateBook              = "UPDATE books set title = $1, description = $2, published_date = $3, image_url = $4, updated_at = $5 where book_id = $6"
+	UpdateBook              = "UPDATE books set title = $1, description = $2, published_date = $3, image_url = $4 where book_id = $5"
 	DeleteByID              = "DELETE FROM books where book_id = ($1)"
 	SearchBooks             = "SELECT * FROM books where title like '%' || $1 || '%' and description like '%'|| $2 || '%' ORDER BY published_date DESC"
 	SearchBooksPaginate     = "SELECT * FROM books where title like '%' || '%' || $1 || '%' || '%' and description like '%'|| $2 || '%' ORDER BY published_date DESC LIMIT $3 OFFSET $4"
@@ -74,19 +73,8 @@ func (r *repository) List(ctx context.Context, f *book.Filter) ([]*models.Book, 
 }
 
 func (r *repository) Read(ctx context.Context, bookID int64) (*models.Book, error) {
-	stmt, err := r.db.Prepare(SelectBookByID)
-	if err != nil {
-		return nil, err
-	}
-	defer func() {
-		err = stmt.Close()
-		if err != nil {
-			log.Println(err)
-		}
-	}()
-
 	var b models.Book
-	err = r.db.GetContext(ctx, &b, SelectBookByID, bookID)
+	err := r.db.GetContext(ctx, &b, SelectBookByID, bookID)
 	if err != nil {
 		return nil, err
 	}
@@ -95,10 +83,8 @@ func (r *repository) Read(ctx context.Context, bookID int64) (*models.Book, erro
 }
 
 func (r *repository) Update(ctx context.Context, book *models.Book) error {
-	now := time.Now()
-
 	_, err := r.db.ExecContext(ctx, UpdateBook, book.Title, book.Description,
-		book.PublishedDate, book.ImageURL, now, book.BookID)
+		book.PublishedDate, book.ImageURL, book.BookID)
 	if err != nil {
 		return err
 	}

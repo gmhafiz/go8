@@ -39,19 +39,19 @@ func Up(cfg *configs.Configs, changeDirTo string) {
 	}
 
 	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		cfg.DockerTest.Host, cfg.DockerTest.Port, cfg.DockerTest.User, cfg.DockerTest.Pass, cfg.DockerTest.Name)
-	db, err = sql.Open(cfg.DockerTest.Driver, dsn)
+		cfg.Database.Host, cfg.Database.Port, cfg.Database.User, cfg.Database.Pass, cfg.Database.Name)
+	db, err = sql.Open(cfg.Database.Driver, dsn)
 	if err != nil {
 		log.Fatalf("error opening database: %v", err)
 	}
 
-	if cfg.DockerTest.Driver == "postgres" {
+	if cfg.Database.Driver == "postgres" {
 		driver, err := postgres.WithInstance(db, &postgres.Config{})
 		if err != nil {
 			log.Fatalf("error instantiating database: %v", err)
 		}
 		m, err = migrate.NewWithDatabaseInstance(
-			databaseMigrationPath, cfg.DockerTest.Driver, driver,
+			databaseMigrationPath, cfg.Database.Driver, driver,
 		)
 		if err != nil {
 			log.Fatalf("error connecting to database: %v", err)

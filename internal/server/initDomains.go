@@ -1,6 +1,9 @@
 package server
 
 import (
+	authorHandler "github.com/gmhafiz/go8/internal/domain/author/handler/http"
+	authorRepo "github.com/gmhafiz/go8/internal/domain/author/repository/database"
+	authorUseCase "github.com/gmhafiz/go8/internal/domain/author/usecase"
 	"github.com/gmhafiz/go8/internal/domain/book/handler/http"
 	bookRepo "github.com/gmhafiz/go8/internal/domain/book/repository/postgres"
 	bookUseCase "github.com/gmhafiz/go8/internal/domain/book/usecase"
@@ -10,6 +13,7 @@ import (
 )
 
 func (s *Server) initDomains() {
+    s.initAuthor()
 	s.initHealth()
 	s.initBook()
 }
@@ -24,4 +28,12 @@ func (s *Server) initBook() {
 	newBookRepo := bookRepo.New(s.DB())
 	newBookUseCase := bookUseCase.New(newBookRepo)
 	http.RegisterHTTPEndPoints(s.router, s.validator, newBookUseCase)
+}
+
+
+func (s *Server) initAuthor() {
+	newAuthorRepo := authorRepo.New(s.DB())
+	newBookRepo := bookRepo.New(s.DB())
+	newAuthorUseCase := authorUseCase.New(newAuthorRepo, newBookRepo)
+	authorHandler.RegisterHTTPEndPoints(s.router, newAuthorUseCase)
 }

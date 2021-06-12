@@ -13,13 +13,15 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
 	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database"
+	"github.com/golang-migrate/migrate/v4/database/mysql"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
 
 	"github.com/gmhafiz/go8/configs"
 	"github.com/gmhafiz/go8/internal/middleware"
-	"github.com/gmhafiz/go8/third_party/database"
+	db "github.com/gmhafiz/go8/third_party/database"
 	"github.com/gmhafiz/go8/third_party/validate"
 )
 
@@ -65,7 +67,7 @@ func (s *Server) newDatabase() {
 	if s.cfg.Database.Driver == "" {
 		log.Fatal("please fill in database credentials in .env file")
 	}
-	s.db = database.NewSqlx(s.cfg)
+	s.db = db.NewSqlx(s.cfg)
 	s.db.SetMaxOpenConns(s.cfg.Database.MaxConnectionPool)
 }
 
@@ -88,27 +90,38 @@ func (s *Server) setGlobalMiddleware() {
 
 func (s *Server) Migrate() {
 	log.Println("migrating...")
-	if s.cfg.Database.Driver == "postgres" {
-		driver, err := postgres.WithInstance(s.DB().DB, &postgres.Config{})
+
+	var driver database.Driver
+	switch s.cfg.Database.Driver {
+	case "postgres":
+		d, err := postgres.WithInstance(s.DB().DB, &postgres.Config{})
 		if err != nil {
 			log.Fatalf("error instantiating database: %v", err)
 		}
-		m, err := migrate.NewWithDatabaseInstance(
-			databaseMigrationPath, s.cfg.Database.Driver, driver,
-		)
+		driver = d
+	case "mysql":
+		d, err := mysql.WithInstance(s.DB().DB, &mysql.Config{})
 		if err != nil {
-			log.Fatalf("error connecting to database: %v", err)
+			log.Fatalf("error instantiating database: %v", err)
 		}
-
-		err = m.Up()
-		if err != nil {
-			if err != migrate.ErrNoChange {
-				log.Panicf("error migrating: %v", err)
-			}
-		}
-
-		log.Println("done migration.")
+		driver = d
 	}
+
+	m, err := migrate.NewWithDatabaseInstance(
+		databaseMigrationPath, s.cfg.Database.Driver, driver,
+	)
+	if err != nil {
+		log.Fatalf("error connecting to database: %v", err)
+	}
+
+	err = m.Up()
+	if err != nil {
+		if err != migrate.ErrNoChange {
+			log.Panicf("error migrating: %v", err)
+		}
+	}
+
+	log.Println("done migration.")
 }
 
 func (s *Server) Run() error {

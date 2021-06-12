@@ -3,6 +3,8 @@ package migrate
 import (
 	"database/sql"
 	"fmt"
+	"github.com/golang-migrate/migrate/v4/database"
+	"github.com/golang-migrate/migrate/v4/database/mysql"
 	"log"
 	"os"
 
@@ -45,24 +47,34 @@ func Up(cfg *configs.Configs, changeDirTo string) {
 		log.Fatalf("error opening database: %v", err)
 	}
 
-	if cfg.Database.Driver == "postgres" {
-		driver, err := postgres.WithInstance(db, &postgres.Config{})
+	var driver database.Driver
+	switch cfg.Database.Driver {
+	case "postgres":
+		d, err := postgres.WithInstance(db, &postgres.Config{})
 		if err != nil {
 			log.Fatalf("error instantiating database: %v", err)
 		}
-		m, err = migrate.NewWithDatabaseInstance(
-			databaseMigrationPath, cfg.Database.Driver, driver,
-		)
+		driver = d
+	case "mysql":
+		d, err := mysql.WithInstance(db, &mysql.Config{})
 		if err != nil {
-			log.Fatalf("error connecting to database: %v", err)
+			log.Fatalf("error instantiating database: %v", err)
 		}
-
-		if len(os.Args) < 2 {
-			log.Fatal("usage:")
-		}
-
-		_ = m.Up()
+		driver = d
 	}
+
+	m, err = migrate.NewWithDatabaseInstance(
+		databaseMigrationPath, cfg.Database.Driver, driver,
+	)
+	if err != nil {
+		log.Fatalf("error connecting to database: %v", err)
+	}
+
+	if len(os.Args) < 2 {
+		log.Fatal("usage:")
+	}
+
+	_ = m.Up()
 }
 
 func Down() {

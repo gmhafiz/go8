@@ -13,7 +13,7 @@ import (
 )
 
 func (s *Server) initDomains() {
-    s.initAuthor()
+	s.initAuthor()
 	s.initHealth()
 	s.initBook()
 }
@@ -27,9 +27,8 @@ func (s *Server) initHealth() {
 func (s *Server) initBook() {
 	newBookRepo := bookRepo.New(s.DB())
 	newBookUseCase := bookUseCase.New(newBookRepo)
-	http.RegisterHTTPEndPoints(s.router, s.validator, newBookUseCase)
+	_ = http.RegisterHTTPEndPoints(s.router, s.validator, newBookUseCase)
 }
-
 
 func (s *Server) initAuthor() {
 	newAuthorRepo := authorRepo.New(s.DB())

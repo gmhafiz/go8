@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
+	_ "github.com/jackc/pgx/stdlib"
 	"github.com/jinzhu/now"
 	_ "github.com/joho/godotenv/autoload"
-	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
 	"github.com/volatiletech/null/v8"
 
@@ -43,7 +43,16 @@ func TestBookUseCase_Create(t *testing.T) {
 	ctx := context.Background()
 
 	expected := &models.Book{
-		BookID:        0,
+		Title:         request.Title,
+		PublishedDate: request.PublishedDate,
+		ImageURL: null.String{
+			String: request.ImageURL.String,
+			Valid:  true,
+		},
+		Description: request.Description,
+	}
+	expectedCreated := &models.Book{
+		BookID:        1,
 		Title:         request.Title,
 		PublishedDate: request.PublishedDate,
 		ImageURL: null.String{
@@ -53,9 +62,10 @@ func TestBookUseCase_Create(t *testing.T) {
 		Description: request.Description,
 	}
 	var err error
-	var bookID int64
-	repo.EXPECT().Create(ctx, gomock.Eq(expected)).Return(bookID, err).AnyTimes()
-	repo.EXPECT().Read(ctx, gomock.Any()).Return(expected, err).AnyTimes()
+	bookID := int64(1)
+
+	repo.EXPECT().Create(ctx, gomock.Eq(expected)).Return(bookID, err).Times(1)
+	repo.EXPECT().Read(ctx, gomock.Eq(bookID)).Return(expectedCreated, err).Times(1)
 
 	bookGot, err := uc.Create(ctx, request)
 	if err != nil {
@@ -93,7 +103,7 @@ func TestBookUseCase_Read(t *testing.T) {
 	var id int64
 	var want *models.Book
 
-	repo.EXPECT().Read(ctx, id).Return(want, err).AnyTimes()
+	repo.EXPECT().Read(ctx, id).Return(want, err).Times(1)
 
 	_, err = uc.Read(ctx, id)
 
@@ -114,7 +124,7 @@ func TestBookUseCase_Update(t *testing.T) {
 	}
 
 	repo.EXPECT().Update(ctx, request).Return(err).AnyTimes()
-	repo.EXPECT().Read(ctx, gomock.Any()).Return(request, err).AnyTimes()
+	repo.EXPECT().Read(ctx, gomock.Any()).Return(request, err).Times(1)
 
 	got, err := uc.Update(ctx, request)
 
@@ -129,7 +139,7 @@ func TestBookUseCase_Delete(t *testing.T) {
 	ctx := context.Background()
 	var id int64
 
-	repo.EXPECT().Delete(ctx, gomock.Any()).Return(nil).AnyTimes()
+	repo.EXPECT().Delete(ctx, gomock.Any()).Return(nil).Times(1)
 
 	err := uc.Delete(ctx, id)
 

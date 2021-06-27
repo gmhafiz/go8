@@ -6,36 +6,37 @@ package mock
 
 import (
 	context "context"
+	reflect "reflect"
+
 	book "github.com/gmhafiz/go8/internal/domain/book"
 	models "github.com/gmhafiz/go8/internal/models"
 	gomock "github.com/golang/mock/gomock"
-	reflect "reflect"
 )
 
-// MockUseCase is a mock of UseCase interface
+// MockUseCase is a mock of UseCase interface.
 type MockUseCase struct {
 	ctrl     *gomock.Controller
 	recorder *MockUseCaseMockRecorder
 }
 
-// MockUseCaseMockRecorder is the mock recorder for MockUseCase
+// MockUseCaseMockRecorder is the mock recorder for MockUseCase.
 type MockUseCaseMockRecorder struct {
 	mock *MockUseCase
 }
 
-// NewMockUseCase creates a new mock instance
+// NewMockUseCase creates a new mock instance.
 func NewMockUseCase(ctrl *gomock.Controller) *MockUseCase {
 	mock := &MockUseCase{ctrl: ctrl}
 	mock.recorder = &MockUseCaseMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockUseCase) EXPECT() *MockUseCaseMockRecorder {
 	return m.recorder
 }
 
-// Create mocks base method
+// Create mocks base method.
 func (m *MockUseCase) Create(ctx context.Context, book *models.Book) (*models.Book, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", ctx, book)
@@ -44,13 +45,27 @@ func (m *MockUseCase) Create(ctx context.Context, book *models.Book) (*models.Bo
 	return ret0, ret1
 }
 
-// Create indicates an expected call of Create
+// Create indicates an expected call of Create.
 func (mr *MockUseCaseMockRecorder) Create(ctx, book interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockUseCase)(nil).Create), ctx, book)
 }
 
-// List mocks base method
+// Delete mocks base method.
+func (m *MockUseCase) Delete(ctx context.Context, bookID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, bookID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockUseCaseMockRecorder) Delete(ctx, bookID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockUseCase)(nil).Delete), ctx, bookID)
+}
+
+// List mocks base method.
 func (m *MockUseCase) List(ctx context.Context, f *book.Filter) ([]*models.Book, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "List", ctx, f)
@@ -59,13 +74,13 @@ func (m *MockUseCase) List(ctx context.Context, f *book.Filter) ([]*models.Book,
 	return ret0, ret1
 }
 
-// List indicates an expected call of List
+// List indicates an expected call of List.
 func (mr *MockUseCaseMockRecorder) List(ctx, f interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockUseCase)(nil).List), ctx, f)
 }
 
-// Read mocks base method
+// Read mocks base method.
 func (m *MockUseCase) Read(ctx context.Context, bookID int64) (*models.Book, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Read", ctx, bookID)
@@ -74,42 +89,13 @@ func (m *MockUseCase) Read(ctx context.Context, bookID int64) (*models.Book, err
 	return ret0, ret1
 }
 
-// Read indicates an expected call of Read
+// Read indicates an expected call of Read.
 func (mr *MockUseCaseMockRecorder) Read(ctx, bookID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Read", reflect.TypeOf((*MockUseCase)(nil).Read), ctx, bookID)
 }
 
-// Update mocks base method
-func (m *MockUseCase) Update(ctx context.Context, book *models.Book) (*models.Book, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", ctx, book)
-	ret0, _ := ret[0].(*models.Book)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Update indicates an expected call of Update
-func (mr *MockUseCaseMockRecorder) Update(ctx, book interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockUseCase)(nil).Update), ctx, book)
-}
-
-// Delete mocks base method
-func (m *MockUseCase) Delete(ctx context.Context, bookID int64) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", ctx, bookID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Delete indicates an expected call of Delete
-func (mr *MockUseCaseMockRecorder) Delete(ctx, bookID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockUseCase)(nil).Delete), ctx, bookID)
-}
-
-// Search mocks base method
+// Search mocks base method.
 func (m *MockUseCase) Search(ctx context.Context, req *book.Filter) ([]*models.Book, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Search", ctx, req)
@@ -118,8 +104,23 @@ func (m *MockUseCase) Search(ctx context.Context, req *book.Filter) ([]*models.B
 	return ret0, ret1
 }
 
-// Search indicates an expected call of Search
+// Search indicates an expected call of Search.
 func (mr *MockUseCaseMockRecorder) Search(ctx, req interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Search", reflect.TypeOf((*MockUseCase)(nil).Search), ctx, req)
+}
+
+// Update mocks base method.
+func (m *MockUseCase) Update(ctx context.Context, book *models.Book) (*models.Book, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, book)
+	ret0, _ := ret[0].(*models.Book)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockUseCaseMockRecorder) Update(ctx, book interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockUseCase)(nil).Update), ctx, book)
 }

@@ -20,6 +20,7 @@ port    = 3306
 user    = ""
 pass    = ""
 sslmode = "false"
+blacklist = ["migrations", "schema_migrations"]
 
 [mssql]
 dbname  = ""
@@ -29,3 +30,4 @@ user    = ""
 pass    = ""
 sslmode = "disable"
 schema  = "notdbo"
+blacklist = ["migrations", "schema_migrations"]

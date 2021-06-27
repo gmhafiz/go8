@@ -2,12 +2,10 @@ package book
 
 import (
 	"encoding/json"
-	"io"
-
+	"github.com/gmhafiz/go8/internal/models"
 	"github.com/jinzhu/now"
 	"github.com/volatiletech/null/v8"
-
-	"github.com/gmhafiz/go8/internal/models"
+	"io"
 )
 
 type Request struct {
@@ -19,7 +17,7 @@ type Request struct {
 	Filter
 }
 
-func (r *Request) Decode(body io.ReadCloser, b *Request) error {
+func Bind(body io.ReadCloser, b *Request) error {
 	return json.NewDecoder(body).Decode(b)
 }
 

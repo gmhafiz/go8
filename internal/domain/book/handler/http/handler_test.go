@@ -34,9 +34,14 @@ func TestHandler_Create(t *testing.T) {
 		},
 		Description: "test01",
 	}
+
 	body, err := json.Marshal(testBookRequest)
 	assert.NoError(t, err)
 	ctrl := gomock.NewController(t)
+	// If you are using a Go version of 1.14+, a mockgen version of 1.5.0+, and
+	// are passing a *testing.T into gomock.NewController(t) you no longer need
+	// to call ctrl.Finish() explicitly. It will be called for you automatically
+	// from a self registered Cleanup function.
 	defer ctrl.Finish()
 
 	uc := mock.NewMockUseCase(ctrl)
@@ -44,17 +49,22 @@ func TestHandler_Create(t *testing.T) {
 	ctx := context.Background()
 	var e error
 
-	var ucResp *models.Book
-	uc.EXPECT().Create(ctx, testBookRequest).Return(ucResp, e).AnyTimes()
+	ucResp := &models.Book{
+		BookID:        1,
+		Title:         testBookRequest.Title,
+		PublishedDate: testBookRequest.PublishedDate,
+		ImageURL:      testBookRequest.ImageURL,
+		Description:   testBookRequest.Description,
+	}
+	uc.EXPECT().Create(ctx, testBookRequest).Return(ucResp, e).Times(1)
 
 	router := chi.NewRouter()
 
 	val := validator.New()
-	h := NewHandler(uc, val)
-	RegisterHTTPEndPoints(router, val, uc)
+	h := RegisterHTTPEndPoints(router, val, uc)
 
 	ww := httptest.NewRecorder()
-	rr, _ := http.NewRequest(http.MethodPost, "/api/v1/books", bytes.NewBuffer(body))
+	rr := httptest.NewRequest(http.MethodPost, "/api/v1/books", bytes.NewBuffer(body))
 
 	h.Create(ww, rr)
 
@@ -65,6 +75,10 @@ func TestHandler_Create(t *testing.T) {
 	}
 
 	assert.Equal(t, http.StatusCreated, ww.Code)
+	assert.Equal(t, gotBook.Title, ucResp.Title)
+	assert.Equal(t, gotBook.Description.String, ucResp.Description)
+	assert.Equal(t, gotBook.PublishedDate.String(), ucResp.PublishedDate.String())
+	assert.Equal(t, gotBook.ImageURL.String, ucResp.ImageURL.String)
 }
 
 func TestHandler_Get(t *testing.T) {
@@ -87,7 +101,7 @@ func TestHandler_Get(t *testing.T) {
 		DeletedAt:     null.Time{},
 	}
 
-	uc.EXPECT().Read(ctx, id).Return(ucResp, e).AnyTimes()
+	uc.EXPECT().Read(ctx, id).Return(ucResp, e).Times(1)
 
 	router := chi.NewRouter()
 
@@ -169,7 +183,7 @@ func TestHandler_Update(t *testing.T) {
 	assert.NoError(t, err)
 	var book *models.Book
 
-	uc.EXPECT().Update(ctx, bookReq).Return(book, e).AnyTimes()
+	uc.EXPECT().Update(ctx, bookReq).Return(book, e).Times(1)
 
 	router := chi.NewRouter()
 
@@ -200,7 +214,7 @@ func TestHandler_Delete(t *testing.T) {
 	var e error
 	var id int64
 
-	uc.EXPECT().Delete(ctx, id).Return(e).AnyTimes()
+	uc.EXPECT().Delete(ctx, id).Return(e).Times(1)
 
 	router := chi.NewRouter()
 

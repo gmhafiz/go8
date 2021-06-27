@@ -40,7 +40,7 @@ func NewHandler(useCase book.UseCase, validate *validator.Validate) *Handler {
 // @Router /api/v1/books [post]
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	var bookRequest book.Request
-	err := book.Decode(r.Body, &bookRequest)
+	err := book.Bind(r.Body, &bookRequest)
 	if err != nil {
 		respond.Error(w, http.StatusBadRequest, nil)
 		return
@@ -116,7 +116,7 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 	filters := book.Filters(r.URL.Query())
 
 	var books []*models.Book
-	ctx := context.Background()
+	ctx := r.Context()
 
 	switch filters.Base.Search {
 	case true:
@@ -182,7 +182,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := h.useCase.Update(context.Background(), book.ToBook(&bookRequest))
+	resp, err := h.useCase.Update(r.Context(), book.ToBook(&bookRequest))
 	if err != nil {
 		respond.Error(w, http.StatusInternalServerError, err)
 		return
@@ -209,7 +209,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 	bookID := respond.GetURLParamInt64(w, r, "bookID")
 
-	err := h.useCase.Delete(context.Background(), bookID)
+	err := h.useCase.Delete(r.Context(), bookID)
 	if err != nil {
 		respond.Error(w, http.StatusInternalServerError, message.ErrInternalError)
 		return

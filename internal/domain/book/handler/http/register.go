@@ -7,7 +7,7 @@ import (
 	"github.com/gmhafiz/go8/internal/domain/book"
 )
 
-func RegisterHTTPEndPoints(router *chi.Mux, validator *validator.Validate, uc book.UseCase) {
+func RegisterHTTPEndPoints(router *chi.Mux, validator *validator.Validate, uc book.UseCase) *Handler {
 	h := NewHandler(uc, validator)
 
 	router.Route("/api/v1/books", func(router chi.Router) {
@@ -17,4 +17,5 @@ func RegisterHTTPEndPoints(router *chi.Mux, validator *validator.Validate, uc bo
 		router.Put("/{bookID}", h.Update)
 		router.Delete("/{bookID}", h.Delete)
 	})
+	return h
 }

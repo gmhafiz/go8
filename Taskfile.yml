@@ -47,7 +47,7 @@ tasks:
     silent: true
 
   build:
-    desc: Creates a compiled binary and copy configuration files
+    desc: Creates a compiled binary and copy configuration files into ./bin
     cmds:
       - task: check
       - task: swagger
@@ -56,14 +56,15 @@ tasks:
       - mv go8 bin/
       - cp .env bin
     silent: false
+
   check:
     desc: Checks integrity of program
     cmds:
+      - task fmt
       - task tidy
       - task vet
       - task golint
       - task security
-      - task fmt
       - task test
     silent: true
 
@@ -172,6 +173,7 @@ tasks:
       - task: install:swagger
       - task: install:testify
       - task: install:gomock
+      - task: install:sqlmock
       - task: install:golangmigrate
       - task: install:sqlboiler
       - task: install:gosec
@@ -201,9 +203,14 @@ tasks:
       - go get github.com/stretchr/testify
 
   install:gomock:
-    desc: Install gomock test framework
+    desc: Install gomock testing framework
     cmds:
-      - go install github.com/golang/mock/mockgen@v1.5.0
+      - ./scripts/install_gomock.sh
+
+  install:sqlmock:
+    desc: Install sqlmock for database mocking
+    cmds:
+      - go get github.com/DATA-DOG/go-sqlmock
 
   install:golangmigrate:
     desc: Install golang migration tool

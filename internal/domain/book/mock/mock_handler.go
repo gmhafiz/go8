@@ -5,90 +5,91 @@
 package mock
 
 import (
-	gomock "github.com/golang/mock/gomock"
 	http "net/http"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
 )
 
-// MockHTTP is a mock of HTTP interface
+// MockHTTP is a mock of HTTP interface.
 type MockHTTP struct {
 	ctrl     *gomock.Controller
 	recorder *MockHTTPMockRecorder
 }
 
-// MockHTTPMockRecorder is the mock recorder for MockHTTP
+// MockHTTPMockRecorder is the mock recorder for MockHTTP.
 type MockHTTPMockRecorder struct {
 	mock *MockHTTP
 }
 
-// NewMockHTTP creates a new mock instance
+// NewMockHTTP creates a new mock instance.
 func NewMockHTTP(ctrl *gomock.Controller) *MockHTTP {
 	mock := &MockHTTP{ctrl: ctrl}
 	mock.recorder = &MockHTTPMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockHTTP) EXPECT() *MockHTTPMockRecorder {
 	return m.recorder
 }
 
-// Create mocks base method
+// Create mocks base method.
 func (m *MockHTTP) Create(w http.ResponseWriter, r *http.Request) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Create", w, r)
 }
 
-// Create indicates an expected call of Create
+// Create indicates an expected call of Create.
 func (mr *MockHTTPMockRecorder) Create(w, r interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockHTTP)(nil).Create), w, r)
 }
 
-// Update mocks base method
-func (m *MockHTTP) Update(w http.ResponseWriter, r *http.Request) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Update", w, r)
-}
-
-// Update indicates an expected call of Update
-func (mr *MockHTTPMockRecorder) Update(w, r interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockHTTP)(nil).Update), w, r)
-}
-
-// List mocks base method
-func (m *MockHTTP) List(w http.ResponseWriter, r *http.Request) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "List", w, r)
-}
-
-// List indicates an expected call of List
-func (mr *MockHTTPMockRecorder) List(w, r interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockHTTP)(nil).List), w, r)
-}
-
-// Get mocks base method
-func (m *MockHTTP) Get(w http.ResponseWriter, r *http.Request) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Get", w, r)
-}
-
-// Get indicates an expected call of Get
-func (mr *MockHTTPMockRecorder) Get(w, r interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockHTTP)(nil).Get), w, r)
-}
-
-// Delete mocks base method
+// Delete mocks base method.
 func (m *MockHTTP) Delete(w http.ResponseWriter, r *http.Request) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Delete", w, r)
 }
 
-// Delete indicates an expected call of Delete
+// Delete indicates an expected call of Delete.
 func (mr *MockHTTPMockRecorder) Delete(w, r interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockHTTP)(nil).Delete), w, r)
+}
+
+// Get mocks base method.
+func (m *MockHTTP) Get(w http.ResponseWriter, r *http.Request) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Get", w, r)
+}
+
+// Get indicates an expected call of Get.
+func (mr *MockHTTPMockRecorder) Get(w, r interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockHTTP)(nil).Get), w, r)
+}
+
+// List mocks base method.
+func (m *MockHTTP) List(w http.ResponseWriter, r *http.Request) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "List", w, r)
+}
+
+// List indicates an expected call of List.
+func (mr *MockHTTPMockRecorder) List(w, r interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockHTTP)(nil).List), w, r)
+}
+
+// Update mocks base method.
+func (m *MockHTTP) Update(w http.ResponseWriter, r *http.Request) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Update", w, r)
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockHTTPMockRecorder) Update(w, r interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockHTTP)(nil).Update), w, r)
 }

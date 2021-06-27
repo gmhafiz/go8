@@ -1,8 +1,6 @@
 package book
 
 import (
-	"encoding/json"
-	"io"
 	"time"
 
 	"github.com/jinzhu/copier"
@@ -19,9 +17,9 @@ type Res struct {
 	Description   null.String `json:"description" deepcopier:"field:description"`
 }
 
-func Decode(body io.ReadCloser, b *Request) error {
-	return json.NewDecoder(body).Decode(b)
-}
+//func Bind(body io.ReadCloser, b *Request) error {
+//	return json.NewDecoder(body).Decode(b)
+//}
 
 func Resource(book *models.Book) (Res, error) {
 	var resource Res

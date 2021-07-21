@@ -12,5 +12,5 @@ type UseCase interface {
 	Read(ctx context.Context, authorID uint64) (*models.Author, error)
 	Update(ctx context.Context, author *models.Author) (*models.Author, error)
 	Delete(ctx context.Context, authorID uint64) error
-	ReadWithBooks(ctx context.Context, u uint64) (*models.Author, error)
+	ReadWithBooks(ctx context.Context, u uint64) (*AuthorB, error)
 }

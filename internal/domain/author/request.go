@@ -9,8 +9,8 @@ import (
 
 type Request struct {
 	Filter
-	FirstName     string `json:"first_name" validate:"required"`
-	LastName     string `json:"last_name" validate:"required"`
+	FirstName string `json:"first_name" validate:"required"`
+	LastName  string `json:"last_name" validate:"required"`
 }
 
 func (r *Request) Decode(body io.ReadCloser) error {
@@ -19,7 +19,7 @@ func (r *Request) Decode(body io.ReadCloser) error {
 
 func ToAuthor(req *Request) *models.Author {
 	return &models.Author{
-		FirstName:         req.FirstName,
-		LastName:         req.LastName,
+		FirstName: req.FirstName,
+		LastName:  req.LastName,
 	}
 }

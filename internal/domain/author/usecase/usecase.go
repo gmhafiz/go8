@@ -6,15 +6,14 @@ import (
 
 	"github.com/gmhafiz/go8/internal/domain/author"
 	"github.com/gmhafiz/go8/internal/models"
-
 )
 
 type useCase struct {
-	repo author.Repository
+	repo     author.Repository
 	bookRepo book.Repository
 }
 
-func (u *useCase) ReadWithBooks(ctx context.Context, authorID uint64) (*models.Author, error) {
+func (u *useCase) ReadWithBooks(ctx context.Context, authorID uint64) (*author.AuthorB, error) {
 	books, err := u.repo.ReadWithBooks(ctx, authorID)
 	if err != nil {
 		return nil, err
@@ -24,8 +23,8 @@ func (u *useCase) ReadWithBooks(ctx context.Context, authorID uint64) (*models.A
 }
 
 func New(repo author.Repository, bookRepo book.Repository) *useCase {
-	return &useCase {
-		repo: repo,
+	return &useCase{
+		repo:     repo,
 		bookRepo: bookRepo,
 	}
 }

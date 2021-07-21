@@ -147,13 +147,13 @@ To use, follow examples in the `examples/` folder
    * [Middleware](#middleware)
    * [Dependency Injection](#dependency-injection)
    * [Libraries](#libraries)
-   * [Utility](#utility)
-   * [Testing](#testing)
-      + [Unit Testing](#unit-testing)
-         - [Handler](#handler-1)
-         - [Use Case](#use-case-1)
-         - [Repository](#repository-1)
-      + [End to End Test](#end-to-end-test)
+- [Utility](#utility)
+- [Testing](#testing)
+   * [Unit Testing](#unit-testing)
+      - [Handler](#handler-1)
+      - [Use Case](#use-case-1)
+      - [Repository](#repository-1)
+   * [End to End Test](#end-to-end-test)
 - [TODO](#todo)
 - [Acknowledgements](#acknowledgements)
 - [Appendix](#appendix)
@@ -696,9 +696,9 @@ Since `sqlx` is a third party library, it is initialized in `/third_party/databa
 
 Common tasks like retrieving query parameters or `filters` are done inside `utility` folder. It serves as one place abstract functionalities used across packages.
 
-## Testing
+# Testing
 
-### Unit Testing
+## Unit Testing
 
 Unit testing can be run with
 
@@ -718,7 +718,7 @@ To perform a unit test we take advantage of go's interface. Our interfaces are d
 The implementation if these interfaces are in separate files. For example our concrete 
 implementation for use case of `Create` is in `internal/book/usecase/http/usecase.go`.
 
-#### Repository
+### Repository
 
 In this database unit test, we only concern with the behaviour of our database operations, not the actual interaction with a real database. Mocking a database call allows us to simulate that interaction. Here, we use a library from Data Dog called [go-sqlmock](github.com/DATA-DOG/go-sqlmock). It, can be installed with:
 
@@ -772,7 +772,7 @@ To mock these,
 
 Next, call the `repo.Create()` function and perform assertions.
 
-#### Use Case
+### Use Case
 
 Our use case unit tests may need to retrieve or store data from and into a database with the help of repository (or repositories). Thus there isn't any direct usage of database object. So instead, we need to mock our repository with the help of [gomock](https://github.com/golang/mock/). It can be installed with
 
@@ -835,7 +835,7 @@ assert.Equal(t, bookGot.ImageURL.String, request.ImageURL.String)
 ```
 
 
-#### Handler
+### Handler
 
 Handler unit testing is done by mocking any use cases done in it. The interface we are testing against is defined in `internal/domain/book.handler.go` file.
 
@@ -861,7 +861,7 @@ In general, these are the steps to make a handler unit test:
 
 Whew, this is a lot of steps! Let's dive in. 
 
-##### Generate stubs using `mockgen`
+#### Generate stubs using `mockgen`
 
 Mocks are generated using `mockgen` and is generated with either running `go generate ./...` or `task generate`.
 The `//go:generate mockgen <options>...` tag tells `go generate` command to run this specific command in all `.go` files.
@@ -872,7 +872,7 @@ The `mockgen` can take relative path like so:
 //go:generate mockgen -package mock -source ../../handler.go -destination=../../mock/mock_handler.go
 ```
 
-##### `gomock` controller
+#### `gomock` controller
 
 For our usecase, we need to create a mock controller from the library. `defer ctrl.Finish()` can be omitted if you are using Go >= 1.14 and `mockgen` >= 1.5.0.
 
@@ -881,7 +881,7 @@ ctrl := gomock.NewController(t)
 defer ctrl.Finish()
 ```
 
-##### Mock use case
+#### Mock use case
 
 Since our handler calls one use case, specifically `h.useCase.Create()`, we need to be able to mock the input and output. We don't want to call the actual implementation because this unit test should only concern with the handler. We use usecase stubs generated in the [Usecase](Use Case) section.  
 
@@ -889,7 +889,7 @@ Since our handler calls one use case, specifically `h.useCase.Create()`, we need
 uc := mock.NewMockUseCase(ctrl)
 ```
 
-##### EXPECT()
+#### EXPECT()
 
 We expect the use case to accept a context and a `model.Book` and also return `model.Book`, error tuple once. Thus,
 
@@ -924,7 +924,7 @@ var e error
 ```
 
 
-##### Test Handler
+#### Test Handler
 
 One more thing left before we call our API is to create a handler which is going to be used to call our API endpoint. API registration is done from `RegisterHTTPEndPoints()`. 
 
@@ -934,7 +934,7 @@ h := RegisterHTTPEndPoints(router, val, uc)
 
 For the other dependencies, they can be simply new instances of router and validation library.
 
-##### Test Request
+#### Test Request
 
 All preparation is in place. What's left is to make a request to our endpoint `/api/v1/books`.  Our `Create()` method has the standard http handler which takes a `http.ResponseWriter` and `*http.Request`. We make use of `httptest` library. Form the request with the http method, path and any payload. Result will be written into `ww`.
 
@@ -948,7 +948,7 @@ Finally, we can call our `Create()` function.
 h.Create(ww, rr)
 ```
 
-##### Assert Results
+#### Assert Results
 
 Decode the json response into a `book.Res` struct - because that is what the handler ultimate turn our response from use case thanks to `book.Resource()` method.
 
@@ -967,7 +967,7 @@ assert.Equal(t, gotBook.PublishedDate.String(), ucResp.PublishedDate.String())
 assert.Equal(t, gotBook.ImageURL.String, ucResp.ImageURL.String)
 ```
 
-### End to End Test
+## End to End Test
 
 Technically End to End test (e2e test) can be done separately in another program and language. Having e2e binary integrated in the project has the advantage of reusing structs and migration which will be explained down below. 
 
@@ -993,7 +993,7 @@ func testEmptyBook(t *E2eTest) {
 }
 ```
 
-#### Run e2e test
+### Run e2e test
 
 Start
 

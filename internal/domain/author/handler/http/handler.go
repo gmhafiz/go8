@@ -43,9 +43,12 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 	}
 
 	list, err := author.Resources(authors)
+	if err != nil {
+		respond.Error(w, http.StatusInternalServerError, err)
+		return
+	}
 
 	respond.Render(w, http.StatusOK, list)
-	return
 }
 
 func (h *Handler) Read(w http.ResponseWriter, r *http.Request) {

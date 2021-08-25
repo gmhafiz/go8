@@ -147,9 +147,6 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		respond.Error(w, http.StatusInternalServerError, message.ErrFormingResponse)
 		return
-	} else if list == nil {
-		respond.Error(w, http.StatusNoContent, nil)
-		return
 	}
 
 	respond.Render(w, http.StatusOK, list)

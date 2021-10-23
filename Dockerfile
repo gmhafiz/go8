@@ -1,10 +1,12 @@
-FROM golang:1.16-alpine AS src
-
-#RUN set -ex; \
-#    apk update; \
-#    apk --no-cache add ca-certificates git
+FROM golang:1.17-buster AS src
 
 WORKDIR /go/src/app/
+
+COPY go.mod ./
+COPY go.sum ./
+
+RUN go mod download
+
 COPY . ./
 
 # Build Go Binary
@@ -12,23 +14,14 @@ RUN set -ex; \
     CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o ./server ./cmd/go8/main.go;
 
 
-#FROM debian:buster-slim
-FROM alpine
-LABEL MAINTAINER Hafiz <author@example.com>
+FROM scratch
+LABEL MAINTAINER User <author@example.com>
 
-#RUN apt update
-#RUN apt install net-tools htop
-
-# Add new user 'appuser'. App should be run without root privileges as a security measure
-RUN adduser --home "/home/appuser" --disabled-password appuser --gecos "appuser,-,-,-"
-USER appuser
-RUN mkdir -p /home/appuser/app
 WORKDIR /home/appuser/app/
 
-COPY --from=src /go/src/app/server .
-COPY .env .env
+COPY --from=src /go/src/app/server /home/appuser/app/server
+COPY --from=src /go/src/app/.env /home/appuser/app/.env
 
 EXPOSE 3080
 
-# Run Go Binary
-CMD /home/appuser/app/server
+ENTRYPOINT ["/home/appuser/app/server"]

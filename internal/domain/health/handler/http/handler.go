@@ -22,9 +22,9 @@ func NewHandler(useCase health.UseCase) *Handler {
 // @Description Hits this API to see if API is running in the server
 // @Success 200
 // @Failure 500
-// @Router /health [get]
-func (h *Handler) Health(w http.ResponseWriter, r *http.Request) {
-	respond.Render(w, http.StatusOK, nil)
+// @router /health [get]
+func (h *Handler) Health(w http.ResponseWriter, _ *http.Request) {
+	respond.Status(w, http.StatusOK)
 }
 
 // Readiness checks if database is alive
@@ -32,12 +32,12 @@ func (h *Handler) Health(w http.ResponseWriter, r *http.Request) {
 // @Description Hits this API to see if both API and Database are running in the server
 // @Success 200
 // @Failure 500
-// @Router /health/readiness [get]
-func (h *Handler) Readiness(w http.ResponseWriter, r *http.Request) {
+// @router /health/readiness [get]
+func (h *Handler) Readiness(w http.ResponseWriter, _ *http.Request) {
 	err := h.useCase.Readiness()
 	if err != nil {
 		respond.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	respond.Render(w, http.StatusOK, nil)
+	respond.Status(w, http.StatusOK)
 }

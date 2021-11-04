@@ -4,18 +4,21 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/gmhafiz/go8/internal/domain/book"
-	"github.com/gmhafiz/go8/internal/server"
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"github.com/gmhafiz/go8/internal/domain/book"
+	"github.com/gmhafiz/go8/internal/server"
 )
 
+// Version is injected using ldflags during build time
 const Version = "v0.7.0-test"
 
 func main() {
-	s := server.New(Version)
-	s.Init()
+	log.Printf("Starting API version: %s\n", Version)
+	s := server.New()
+	s.Init(Version)
 	s.Migrate()
 
 	t := NewE2eTest(s)
@@ -73,7 +76,7 @@ func testAddOneBook(t *E2eTest) int64 {
 	want := &book.Request{
 		Title:         "test01",
 		PublishedDate: "2020-02-02",
-		ImageURL:      "http://example.com/image.png",
+		ImageURL:      "https://example.com/image.png",
 		Description:   "test01",
 	}
 

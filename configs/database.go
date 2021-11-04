@@ -12,7 +12,7 @@ type Database struct {
 	User              string
 	Pass              string
 	SslMode           string `default:"disable"`
-	MaxConnectionPool int
+	MaxConnectionPool int    `default:"4"`
 }
 
 func DataStore() Database {

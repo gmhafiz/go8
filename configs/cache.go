@@ -9,10 +9,10 @@ import (
 type Cache struct {
 	Host      net.IP `default:"0.0.0.0"`
 	Port      string `default:"6379"`
-	Name      int
+	Name      int    `default:"1"`
 	User      string
 	Pass      string
-	CacheTime int
+	CacheTime int `default:"5"`
 }
 
 func NewCache() Cache {

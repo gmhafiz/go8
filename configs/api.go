@@ -1,15 +1,14 @@
 package configs
 
 import (
-	"net"
 	"time"
 
 	"github.com/kelseyhightower/envconfig"
 )
 
 type Api struct {
-	Name              string        `default:"go8"`
-	Host              net.IP        `default:"0.0.0.0"`
+	Name              string        `default:"go8_api"`
+	Host              string        `default:"0.0.0.0"`
 	Port              string        `default:"3080"`
 	ReadTimeout       time.Duration `default:"5s"`
 	ReadHeaderTimeout time.Duration `default:"5s"`

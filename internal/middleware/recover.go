@@ -19,7 +19,7 @@ func Recovery(next http.Handler) http.Handler {
 				if logEntry != nil {
 					logEntry.Panic(rvr, debug.Stack())
 				} else {
-					chiMiddleware.PrintPrettyStack(rvr)
+					debug.PrintStack()
 				}
 
 				log.Println("PANIC")

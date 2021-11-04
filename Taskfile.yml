@@ -3,6 +3,11 @@ version: '3'
 dotenv: ['.env']
 
 tasks:
+  default:
+    desc: Lists available commands
+    cmds:
+      - task -l
+
   list:
     desc: Lists available commands
     cmds:
@@ -46,12 +51,16 @@ tasks:
       - air
     silent: true
 
+  routes:
+    desc: List all registered routes.
+    cmds:
+      - go run cmd/route/route.go
+
   build:
     desc: Creates a compiled binary and copy configuration files into ./bin
     cmds:
       - task: check
-      - task: swagger
-      - go mod download && CGO_ENABLED=0 GOOS=linux && go build -w -s -v -i -o go8 cmd/go8/main.go
+      - go mod download && CGO_ENABLED=0 GOOS=linux && go build -ldflags="-X main.Version=$(git describe --abbrev=0 --tags)-$(git rev-list -1 HEAD) -w -s"  -o go8 cmd/go8/main.go
       - mkdir -p bin
       - mv go8 bin/
       - cp .env bin
@@ -60,6 +69,8 @@ tasks:
   check:
     desc: Checks integrity of program
     cmds:
+      - task generate
+      - task swagger
       - task fmt
       - task tidy
       - task vet
@@ -132,12 +143,13 @@ tasks:
   docker:build:
     desc: Builds a Docker image a server container
     cmds:
+      - cp .env env.prod
       - docker build -t go8/server -f Dockerfile .
 
   docker:run:
     desc: Runs the app Docker image as a Docker container
     cmds:
-      - docker run -p 3080:3080 --rm -it --net=host --name go8container go8/server
+      - docker run -p 3080:3080 --rm -it --net=host --name go8_container go8/server
 
   docker-compose:start:
     desc: Runs server and database using docker-compose
@@ -171,9 +183,7 @@ tasks:
     cmds:
       - task: install:golangci
       - task: install:swagger
-      - task: install:testify
       - task: install:gomock
-      - task: install:sqlmock
       - task: install:golangmigrate
       - task: install:sqlboiler
       - task: install:gosec
@@ -183,9 +193,9 @@ tasks:
   install:sqlboiler:
     desc: Install sqlboiler orm
     cmds:
-      - GO111MODULE=off go get -u -t github.com/volatiletech/sqlboiler
-      - GO111MODULE=off go get github.com/volatiletech/sqlboiler/drivers/sqlboiler-psql
-      - GO111MODULE=off go get github.com/volatiletech/sqlboiler/drivers/sqlboiler-mysql
+      - go install github.com/volatiletech/sqlboiler/v4@latest
+      - go install github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-psql@latest
+      - go install github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mysql@latest
 
   install:golangci:
     desc: Install golangci linter
@@ -195,36 +205,26 @@ tasks:
   install:swagger:
     desc: Install swagger cli
     cmds:
-      - go get github.com/swaggo/swag/cmd/swag
-
-  install:testify:
-    desc: Install testify testing suite
-    cmds:
-      - go get github.com/stretchr/testify
+      - go install  github.com/swaggo/swag/cmd/swag@latest
 
   install:gomock:
     desc: Install gomock testing framework
     cmds:
-      - ./scripts/install_gomock.sh
-
-  install:sqlmock:
-    desc: Install sqlmock for database mocking
-    cmds:
-      - go get github.com/DATA-DOG/go-sqlmock
+      - go install github.com/golang/mock/mockgen@latest
 
   install:golangmigrate:
     desc: Install golang migration tool
     cmds:
-      - curl -L https://github.com/golang-migrate/migrate/releases/download/v4.14.1/migrate.linux-amd64.tar.gz | tar xvz
+      - curl -L https://github.com/golang-migrate/migrate/releases/download/v4.15.1/migrate.linux-amd64.tar.gz | tar xvz
       - mkdir -p ~/.local/bin
       - mv migrate.linux-amd64 ~/.local/bin/migrate
 
   install:gosec:
     desc: Install golang security check. https://github.com/securego/gosec
     cmds:
-      - go get github.com/securego/gosec/v2/cmd/gosec
+      - go install github.com/securego/gosec/v2/cmd/gosec@latest
 
   install:air:
     desc: Install a hot reloader. Watch for file changes and automatically rebuilds binary
     cmds:
-      - go get -u github.com/cosmtrek/air
+      - go install github.com/cosmtrek/air@latest

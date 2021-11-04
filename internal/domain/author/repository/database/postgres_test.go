@@ -4,10 +4,9 @@ import (
 	"testing"
 
 	_ "github.com/jackc/pgx/stdlib"
-	_ "github.com/joho/godotenv/autoload"
 )
 
-//go:generate mockgen -package mock -source ../../repository.go -destination=../../mock/mock_repository.go
+//go:generate mockgen -package mock -source ./postgres.go -destination=../../mock/mock_postgres.go
 
 func TestAuthorRepository_Create(t *testing.T) {}
 

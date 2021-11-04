@@ -16,7 +16,7 @@ RUN set -ex; \
 
 FROM debian:buster-slim
 #FROM alpine
-LABEL MAINTAINER Hafiz <author@example.com>
+LABEL com.gmhafiz.maintainers="User <author@example.com>"
 
 RUN apt update
 RUN apt install -y net-tools htop postgresql-client nano curl

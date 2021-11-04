@@ -18,7 +18,7 @@ services:
     network_mode: "host"
 
   postgres:
-    image: "postgres:13"
+    image: "postgres:14"
     restart: "no"
     env_file:
       - dockertest.env
@@ -28,7 +28,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASS}
       POSTGRES_DB: ${DB_NAME}
     ports:
-      - 5435:5432
+      - "5435:5432"
     volumes:
       - go8_dockertest
 

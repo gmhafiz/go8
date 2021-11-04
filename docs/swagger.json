@@ -1,51 +1,252 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "Go + Postgres + Chi Router + sqlx + Unit Testing starter kit for API development.",
+        "description": "Go + Postgres + Chi router + sqlx + sqlboiler + Unit Testing starter kit for API development.",
         "title": "Go8",
         "contact": {
             "name": "Hafiz Shafruddin",
             "url": "https://github.com/gmhafiz/go8",
             "email": "gmhafiz@gmail.com"
         },
-        "license": {},
-        "version": "0.8.0"
+        "version": "0.11.0"
     },
     "host": "localhost:3080",
     "basePath": "/",
     "paths": {
-        "/api/v1/books": {
+        "/api/v1/author": {
             "get": {
-                "description": "Get all books. By default it gets first page with 10 items.",
+                "description": "Lists all authors. By default, it gets first page with 30 items.",
                 "consumes": [
                     "application/json"
                 ],
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Show all books",
+                "summary": "Shows all authors",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "page",
+                        "description": "page number",
                         "name": "page",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "size",
+                        "description": "size of result",
                         "name": "size",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "term",
+                        "description": "search by name",
+                        "name": "name",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/respond.Standard"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create an author using JSON payload",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create an Author",
+                "parameters": [
+                    {
+                        "description": "Create an author using the following format",
+                        "name": "Author",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/author.CreateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/author.CreateResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/author/{id}": {
+            "get": {
+                "description": "Get an author by its id.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get an Author",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "author ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/author.ResWithBooks"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update an author by its model.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update n Author",
+                "parameters": [
+                    {
+                        "description": "Author Request",
+                        "name": "Author",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/author.Update"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/author.Res"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete an author by its id.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete an Author",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "author ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ok"
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/book": {
+            "get": {
+                "description": "Lists all books. By default, it gets first page with 30 items.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Shows all books",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "size of result",
+                        "name": "size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "search by title",
                         "name": "title",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "term",
+                        "description": "search by description",
                         "name": "description",
                         "in": "query"
                     }
@@ -69,7 +270,7 @@
                 }
             },
             "post": {
-                "description": "Get a book with JSON payload",
+                "description": "Create a book using JSON payload",
                 "consumes": [
                     "application/json"
                 ],
@@ -79,7 +280,7 @@
                 "summary": "Create a Book",
                 "parameters": [
                     {
-                        "description": "Book Request",
+                        "description": "Create a book using the following format",
                         "name": "Book",
                         "in": "body",
                         "required": true,
@@ -110,7 +311,7 @@
                 }
             }
         },
-        "/api/v1/books/{bookID}": {
+        "/api/v1/book/{bookID}": {
             "get": {
                 "description": "Get a book by its id.",
                 "consumes": [
@@ -225,13 +426,17 @@
                 }
             }
         },
-        "/health/liveness": {
+        "/health": {
             "get": {
                 "description": "Hits this API to see if API is running in the server",
                 "summary": "Checks if API is up",
                 "responses": {
-                    "200": {},
-                    "500": {}
+                    "200": {
+                        "description": ""
+                    },
+                    "500": {
+                        "description": ""
+                    }
                 }
             }
         },
@@ -240,13 +445,146 @@
                 "description": "Hits this API to see if both API and Database are running in the server",
                 "summary": "Checks if both API and Database are up",
                 "responses": {
-                    "200": {},
-                    "500": {}
+                    "200": {
+                        "description": ""
+                    },
+                    "500": {
+                        "description": ""
+                    }
                 }
             }
         }
     },
     "definitions": {
+        "author.Book": {
+            "type": "object",
+            "required": [
+                "description",
+                "published_date",
+                "title"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "image_url": {
+                    "type": "string"
+                },
+                "published_date": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "author.CreateRequest": {
+            "type": "object",
+            "required": [
+                "first_name",
+                "last_name"
+            ],
+            "properties": {
+                "books": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/author.Book"
+                    }
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "middle_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "author.CreateResponse": {
+            "type": "object",
+            "properties": {
+                "books": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/author.Book"
+                    }
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "middle_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "author.Res": {
+            "type": "object",
+            "properties": {
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "middle_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "author.ResWithBooks": {
+            "type": "object",
+            "properties": {
+                "books": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/book.Res"
+                    }
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "middle_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "author.Update": {
+            "type": "object",
+            "properties": {
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "middle_name": {
+                    "type": "string"
+                }
+            }
+        },
         "book.Request": {
             "type": "object",
             "required": [
@@ -258,23 +596,11 @@
                 "description": {
                     "type": "string"
                 },
-                "disable_paging": {
-                    "type": "boolean"
-                },
                 "image_url": {
                     "type": "string"
                 },
-                "page": {
-                    "type": "integer"
-                },
                 "published_date": {
                     "type": "string"
-                },
-                "search": {
-                    "type": "boolean"
-                },
-                "size": {
-                    "type": "integer"
                 },
                 "title": {
                     "type": "string"
@@ -298,6 +624,26 @@
                 },
                 "title": {
                     "type": "string"
+                }
+            }
+        },
+        "respond.Meta": {
+            "type": "object",
+            "properties": {
+                "size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "respond.Standard": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "meta": {
+                    "$ref": "#/definitions/respond.Meta"
                 }
             }
         }

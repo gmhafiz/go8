@@ -2,8 +2,8 @@ package postgres
 
 import (
 	"context"
-	"log"
 
+	"github.com/friendsofgo/errors"
 	"github.com/jmoiron/sqlx"
 
 	"github.com/gmhafiz/go8/internal/domain/book"
@@ -16,7 +16,7 @@ type repository struct {
 }
 
 const (
-	InsertIntoBooks         = "INSERT INTO books (title, published_date, image_url, description) VALUES ($1, $2, $3, $4) RETURNING book_id"
+	InsertIntoBooks         = "INSERT INTO \"books\" (title, published_date, image_url, description) VALUES ($1, $2, $3, $4) RETURNING book_id"
 	SelectFromBooks         = "SELECT * FROM books ORDER BY created_at DESC"
 	SelectFromBooksPaginate = "SELECT * FROM books ORDER BY created_at DESC LIMIT $1 OFFSET $2"
 	SelectBookByID          = "SELECT * FROM books where book_id = $1"
@@ -31,20 +31,11 @@ func New(db *sqlx.DB) *repository {
 }
 
 func (r *repository) Create(ctx context.Context, book *models.Book) (int64, error) {
-	stmt, err := r.db.PrepareContext(ctx, InsertIntoBooks)
-
+	res, err := r.db.ExecContext(ctx, InsertIntoBooks, book.Title, book.PublishedDate, book.ImageURL, book.Description)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrapf(err, "book.repository.Create")
 	}
-	defer func() {
-		err = stmt.Close()
-		if err != nil {
-			log.Println(err)
-		}
-	}()
-
-	var bookID int64
-	err = stmt.QueryRowContext(ctx, book.Title, book.PublishedDate, book.ImageURL, book.Description).Scan(&bookID)
+	bookID, err := res.LastInsertId()
 	if err != nil {
 		return 0, err
 	}
@@ -63,11 +54,10 @@ func (r *repository) List(ctx context.Context, f *book.Filter) ([]*models.Book, 
 		return books, nil
 	} else {
 		var books []*models.Book
-		err := r.db.SelectContext(ctx, &books, SelectFromBooksPaginate, f.Base.Size, f.Base.Page)
+		err := r.db.SelectContext(ctx, &books, SelectFromBooksPaginate, f.Base.Limit, f.Base.Offset)
 		if err != nil {
 			return nil, message.ErrFetchingBook
 		}
-
 		return books, nil
 	}
 }
@@ -101,8 +91,8 @@ func (r *repository) Delete(ctx context.Context, bookID int64) error {
 func (r *repository) Search(ctx context.Context, f *book.Filter) ([]*models.Book, error) {
 	var books []*models.Book
 	err := r.db.SelectContext(ctx, &books, SearchBooksPaginate, f.Title, f.Description,
-		f.Base.Size,
-		f.Base.Page)
+		f.Base.Limit,
+		f.Base.Offset)
 	if err != nil {
 		return nil, err
 	}

@@ -9,7 +9,6 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	_ "github.com/jackc/pgx/stdlib"
 	"github.com/jmoiron/sqlx"
-	_ "github.com/joho/godotenv/autoload"
 	"github.com/stretchr/testify/assert"
 	"github.com/volatiletech/null/v8"
 
@@ -37,6 +36,7 @@ func TestRepository_Create(t *testing.T) {
 
 	expectID := int64(1)
 	ctx := context.Background()
+	//ctx := getContext()
 
 	bookTest := &models.Book{
 		Title:         "test1",
@@ -47,10 +47,14 @@ func TestRepository_Create(t *testing.T) {
 			Valid:  true,
 		},
 	}
-	mock.ExpectPrepare("^INSERT INTO books").
-		ExpectQuery().
+	mock.ExpectExec("^INSERT INTO \"books.*").
 		WithArgs(bookTest.Title, bookTest.PublishedDate, bookTest.ImageURL, bookTest.Description).
-		WillReturnRows(sqlmock.NewRows([]string{"book_id"}).AddRow(expectID))
+		WillReturnResult(sqlmock.NewResult(1, 1))
+
+	//mock.ExpectPrepare("^INSERT INTO \"books.*").
+	//	ExpectQuery().
+	//	WithArgs(bookTest.Title, bookTest.PublishedDate, bookTest.ImageURL, bookTest.Description).
+	//	WillReturnRows(sqlmock.NewRows([]string{"book_id"}).AddRow(expectID))
 
 	gotID, err := repo.Create(ctx, bookTest)
 	if err != nil {
@@ -81,8 +85,8 @@ func testDisablePaging(t *testing.T) {
 	}
 	f := &book.Filter{
 		Base: filter.Filter{
-			Page:          1,
-			Size:          10,
+			Offset:        1,
+			Limit:         10,
 			DisablePaging: true,
 			Search:        false,
 		},
@@ -114,14 +118,14 @@ func testPaginate(t *testing.T) {
 	}
 	f := &book.Filter{
 		Base: filter.Filter{
-			Page:          1,
-			Size:          10,
+			Offset:        1,
+			Limit:         10,
 			DisablePaging: false,
 			Search:        false,
 		},
 	}
 	mock.ExpectQuery("SELECT (.+) FROM books ORDER BY").
-		WithArgs(f.Base.Size, f.Base.Page).
+		WithArgs(f.Base.Limit, f.Base.Offset).
 		WillReturnRows(sqlmock.NewRows([]string{"book_id", "title", "published_date", "image_url", "description"}).
 			AddRow(mockBook.BookID, mockBook.Title, mockBook.PublishedDate, mockBook.ImageURL.String, mockBook.Description),
 		)

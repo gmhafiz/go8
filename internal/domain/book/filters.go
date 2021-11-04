@@ -15,6 +15,13 @@ type Filter struct {
 
 func Filters(queries url.Values) *Filter {
 	f := filter.New(queries)
+	switch {
+	case queries.Has("title"):
+		fallthrough
+	case queries.Has("description"):
+		f.Search = true
+	}
+
 	return &Filter{
 		Base:          *f,
 		Title:         queries.Get("title"),

@@ -2,10 +2,12 @@ package book
 
 import (
 	"encoding/json"
-	"github.com/gmhafiz/go8/internal/models"
+	"io"
+
 	"github.com/jinzhu/now"
 	"github.com/volatiletech/null/v8"
-	"io"
+
+	"github.com/gmhafiz/go8/internal/models"
 )
 
 type Request struct {
@@ -14,7 +16,6 @@ type Request struct {
 	PublishedDate string `json:"published_date" validate:"required"`
 	ImageURL      string `json:"image_url" validate:"url"`
 	Description   string `json:"description" validate:"required"`
-	Filter
 }
 
 func Bind(body io.ReadCloser, b *Request) error {

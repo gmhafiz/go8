@@ -1,8 +1,7 @@
 # Examples of using this resource API
 # for vscode users, install `REST Client` to use these example.
 
-### Get List author, by default gets the first 10 author when
-ordered desc
+### Get List author, by default gets the first 10 author when ordered desc
 # curl --location --request GET 'http://localhost:3080/api/v1/author'
 GET http://localhost:3080/api/v1/author
 Accept: application/json
@@ -22,10 +21,10 @@ POST http://localhost:3080/api/v1/author
 Content-Type: application/json
 
 {
-  "title": "dsgs",
-  "image_url": "http://example.com",
+  "title": "test Title 1",
+  "image_url": "https://example.com",
   "published_date": "2020-07-31T15:04:05.123499999Z",
-  "description": "test descr"
+  "description": "test Description 1"
 }
 
 
@@ -41,10 +40,10 @@ PUT  http://localhost:3080/api/v1/author/1
 Content-Type: application/json
 
 {
-  "title": "dsgs",
-  "image_url": "http://example.com",
+  "title": "test Title 2",
+  "image_url": "https://example.com",
   "published_date": "2020-07-31T15:04:05.123499999Z",
-  "description": "test descr updated"
+  "description": "Test Description updated"
 }
 
 ### Delete a resource

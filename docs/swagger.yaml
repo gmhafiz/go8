@@ -1,21 +1,98 @@
 basePath: /
 definitions:
+  author.Book:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      image_url:
+        type: string
+      published_date:
+        type: string
+      title:
+        type: string
+    required:
+    - description
+    - published_date
+    - title
+    type: object
+  author.CreateRequest:
+    properties:
+      books:
+        items:
+          $ref: '#/definitions/author.Book'
+        type: array
+      first_name:
+        type: string
+      last_name:
+        type: string
+      middle_name:
+        type: string
+    required:
+    - first_name
+    - last_name
+    type: object
+  author.CreateResponse:
+    properties:
+      books:
+        items:
+          $ref: '#/definitions/author.Book'
+        type: array
+      first_name:
+        type: string
+      id:
+        type: integer
+      last_name:
+        type: string
+      middle_name:
+        type: string
+    type: object
+  author.Res:
+    properties:
+      first_name:
+        type: string
+      id:
+        type: integer
+      last_name:
+        type: string
+      middle_name:
+        type: string
+    type: object
+  author.ResWithBooks:
+    properties:
+      books:
+        items:
+          $ref: '#/definitions/book.Res'
+        type: array
+      first_name:
+        type: string
+      id:
+        type: integer
+      last_name:
+        type: string
+      middle_name:
+        type: string
+    type: object
+  author.Update:
+    properties:
+      first_name:
+        type: string
+      id:
+        type: integer
+      last_name:
+        type: string
+      middle_name:
+        type: string
+    type: object
   book.Request:
     properties:
       description:
         type: string
-      disable_paging:
-        type: boolean
       image_url:
         type: string
-      page:
-        type: integer
       published_date:
         type: string
-      search:
-        type: boolean
-      size:
-        type: integer
       title:
         type: string
     required:
@@ -36,36 +113,182 @@ definitions:
       title:
         type: string
     type: object
+  respond.Meta:
+    properties:
+      size:
+        type: integer
+      total:
+        type: integer
+    type: object
+  respond.Standard:
+    properties:
+      data: {}
+      meta:
+        $ref: '#/definitions/respond.Meta'
+    type: object
 host: localhost:3080
 info:
   contact:
     email: gmhafiz@gmail.com
     name: Hafiz Shafruddin
     url: https://github.com/gmhafiz/go8
-  description: Go + Postgres + Chi Router + sqlx + Unit Testing starter kit for API development.
-  license: {}
+  description: Go + Postgres + Chi router + sqlx + sqlboiler + Unit Testing starter
+    kit for API development.
   title: Go8
-  version: 0.8.0
+  version: 0.11.0
 paths:
-  /api/v1/books:
+  /api/v1/author:
     get:
       consumes:
       - application/json
-      description: Get all books. By default it gets first page with 10 items.
+      description: Lists all authors. By default, it gets first page with 30 items.
       parameters:
-      - description: page
+      - description: page number
         in: query
         name: page
         type: string
-      - description: size
+      - description: size of result
         in: query
         name: size
         type: string
-      - description: term
+      - description: search by name
+        in: query
+        name: name
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/respond.Standard'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Shows all authors
+    post:
+      consumes:
+      - application/json
+      description: Create an author using JSON payload
+      parameters:
+      - description: Create an author using the following format
+        in: body
+        name: Author
+        required: true
+        schema:
+          $ref: '#/definitions/author.CreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/author.CreateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Create an Author
+  /api/v1/author/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an author by its id.
+      parameters:
+      - description: author ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Ok
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Delete an Author
+    get:
+      consumes:
+      - application/json
+      description: Get an author by its id.
+      parameters:
+      - description: author ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/author.ResWithBooks'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Get an Author
+    put:
+      consumes:
+      - application/json
+      description: Update an author by its model.
+      parameters:
+      - description: Author Request
+        in: body
+        name: Author
+        required: true
+        schema:
+          $ref: '#/definitions/author.Update'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/author.Res'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Update n Author
+  /api/v1/book:
+    get:
+      consumes:
+      - application/json
+      description: Lists all books. By default, it gets first page with 30 items.
+      parameters:
+      - description: page number
+        in: query
+        name: page
+        type: string
+      - description: size of result
+        in: query
+        name: size
+        type: string
+      - description: search by title
         in: query
         name: title
         type: string
-      - description: term
+      - description: search by description
         in: query
         name: description
         type: string
@@ -82,13 +305,13 @@ paths:
           description: Internal Server Error
           schema:
             type: string
-      summary: Show all books
+      summary: Shows all books
     post:
       consumes:
       - application/json
-      description: Get a book with JSON payload
+      description: Create a book using JSON payload
       parameters:
-      - description: Book Request
+      - description: Create a book using the following format
         in: body
         name: Book
         required: true
@@ -110,7 +333,7 @@ paths:
           schema:
             type: string
       summary: Create a Book
-  /api/v1/books/{bookID}:
+  /api/v1/book/{bookID}:
     delete:
       consumes:
       - application/json
@@ -186,18 +409,23 @@ paths:
           schema:
             type: string
       summary: Update a Book
-  /health/liveness:
+  /health:
     get:
       description: Hits this API to see if API is running in the server
       responses:
-        "200": {}
-        "500": {}
+        "200":
+          description: ""
+        "500":
+          description: ""
       summary: Checks if API is up
   /health/readiness:
     get:
-      description: Hits this API to see if both API and Database are running in the server
+      description: Hits this API to see if both API and Database are running in the
+        server
       responses:
-        "200": {}
-        "500": {}
+        "200":
+          description: ""
+        "500":
+          description: ""
       summary: Checks if both API and Database are up
 swagger: "2.0"

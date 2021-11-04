@@ -1,34 +1,38 @@
-FROM golang:1.16-alpine AS src
-
-#RUN set -ex; \
-#    apk update; \
-#    apk --no-cache add ca-certificates git
+FROM golang:1.17-buster AS src
 
 WORKDIR /go/src/app/
+
+# Copy dependencies first to take advantage of Docker caching
+COPY go.mod ./
+COPY go.sum ./
+RUN go mod download
+
 COPY . ./
 
+# Insert version using git tag and latest commit hash
 # Build Go Binary
 RUN set -ex; \
-    CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o ./server ./cmd/go8/main.go;
+    CGO_ENABLED=0 GOOS=linux go build -ldflags="-X main.Version=$(git describe --abbrev=0 --tags)-$(git rev-list -1 HEAD) -w -s" -o ./server ./cmd/go8/main.go;
 
+# Compress binary using upx https://upx.github.io/
+RUN apt update
+RUN apt install -y upx-ucl
+RUN upx ./server
 
-#FROM debian:buster-slim
-FROM alpine
-LABEL MAINTAINER Hafiz <author@example.com>
+FROM scratch
+LABEL com.gmhafiz.maintainers="User <author@example.com>"
 
-#RUN apt update
-#RUN apt install net-tools htop
+WORKDIR /App
 
-# Add new user 'appuser'. App should be run without root privileges as a security measure
-RUN adduser --home "/home/appuser" --disabled-password appuser --gecos "appuser,-,-,-"
-USER appuser
-RUN mkdir -p /home/appuser/app
-WORKDIR /home/appuser/app/
+COPY --from=src /go/src/app/server /App/server
 
-COPY --from=src /go/src/app/server .
-COPY .env .env
+# Docker cannot copy hidden .env file. So in Taskfile.yml, we make a copy of it.
+COPY --from=src /go/src/app/env.prod /App/.env
+
+# Copies the folder containing swagger assets and our openapi specs.
+# Todo: embed the folder using embed tag
+COPY --from=src /go/src/app/docs /App/docs
 
 EXPOSE 3080
 
-# Run Go Binary
-CMD /home/appuser/app/server
+ENTRYPOINT ["/App/server"]

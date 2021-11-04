@@ -2,15 +2,15 @@
 # for vscode users, install `REST Client` to use these example.
 
 ### Create a new book
-# curl --location --request POST 'http://localhost:3080/api/v1/books'--header 'Content-Type: application/json' --data-raw '{"title": "dsgs","image_url": "http://example.com","published_date": "2020-07-31T15:04:05.123499999Z","description": "test descr"}'
+# curl --location --request POST 'http://localhost:3080/api/v1/books' --header 'Content-Type: application/json' --data-raw '{"title": "Test title","image_url": "https://example.com","published_date": "2020-07-31T15:04:05.123499999Z","description": "test description"}'
 POST http://localhost:3080/api/v1/books
 Content-Type: application/json
 
 {
-  "title": "dsgs",
-  "image_url": "http://example.com",
+  "title": "Test Title",
+  "image_url": "https://example.com",
   "published_date": "2020-07-31T15:04:05.123499999Z",
-  "description": "test descr"
+  "description": "test description"
 }
 
 
@@ -38,10 +38,10 @@ PUT  http://localhost:3080/api/v1/books/1
 Content-Type: application/json
 
 {
-  "title": "dsgs",
-  "image_url": "http://example.com",
+  "title": "Test Title 1",
+  "image_url": "https://example.com",
   "published_date": "2020-07-31T15:04:05.123499999Z",
-  "description": "test descr updated"
+  "description": "Test Description updated"
 }
 
 

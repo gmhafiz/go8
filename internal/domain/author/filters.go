@@ -7,16 +7,17 @@ import (
 )
 
 type Filter struct {
-	Base      filter.Filter
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
+	Base filter.Filter
+	Name string `json:"name"`
 }
 
 func Filters(queries url.Values) *Filter {
 	f := filter.New(queries)
+	if queries.Has("name") {
+		f.Search = true
+	}
 	return &Filter{
-		Base:      *f,
-		FirstName: queries.Get("first_name"),
-		LastName:  queries.Get("last_name"),
+		Base: *f,
+		Name: queries.Get("name"),
 	}
 }

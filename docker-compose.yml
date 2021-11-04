@@ -8,12 +8,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    entrypoint: ["/home/appuser/app/server"]
+    entrypoint: ["/App/server"]
     ports:
       - ${API_PORT}:${API_PORT}
 
   postgres:
-    image: "postgres:13"
+    image: "postgres:14"
     restart: always
     container_name: "go8_postgres"
     environment:
@@ -25,7 +25,7 @@ services:
     expose:
       - "5432"
     volumes:
-      - postgres13go8db:/var/lib/postgresql/data
+      - postgres14go8db:/var/lib/postgresql/data
 
 volumes:
-  postgres13go8db:
+  postgres14go8db:

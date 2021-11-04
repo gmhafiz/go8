@@ -22,10 +22,10 @@ func Alive(db *sql.DB) {
 			return
 		}
 
-		base, cap := time.Second, time.Minute
+		base, capacity := time.Second, time.Minute
 		for backoff := base; err != nil; backoff <<= 1 {
-			if backoff > cap {
-				backoff = cap
+			if backoff > capacity {
+				backoff = capacity
 			}
 
 			// A pseudo-random number generator here is fine. No need to be

@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-//go:generate mockgen -package mock -source ../usecase.go -destination=../mock/mock_usecase.go
+//go:generate mockgen -package mock -source ./usecase.go -destination=../mock/mock_usecase.go
 
 func TestAuthorUseCase_Create(t *testing.T) {
 

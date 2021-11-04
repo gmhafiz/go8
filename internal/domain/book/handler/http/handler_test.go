@@ -6,10 +6,12 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-playground/validator/v10"
 	"github.com/golang/mock/gomock"
 	"github.com/jinzhu/now"
 	"github.com/stretchr/testify/assert"
@@ -18,8 +20,6 @@ import (
 	"github.com/gmhafiz/go8/internal/domain/book"
 	"github.com/gmhafiz/go8/internal/domain/book/mock"
 	"github.com/gmhafiz/go8/internal/models"
-	"github.com/gmhafiz/go8/internal/utility/filter"
-	"github.com/go-playground/validator/v10"
 )
 
 //go:generate mockgen -package mock -source ../../handler.go -destination=../../mock/mock_handler.go
@@ -29,7 +29,7 @@ func TestHandler_Create(t *testing.T) {
 		Title:         "test01",
 		PublishedDate: now.MustParse("2020-02-02"),
 		ImageURL: null.String{
-			String: "http://example.com/image.png",
+			String: "https://example.com/image.png",
 			Valid:  true,
 		},
 		Description: "test01",
@@ -132,14 +132,13 @@ func TestHandler_List(t *testing.T) {
 
 	ctx := context.Background()
 	var e error
-	f := &book.Filter{
-		Base: filter.Filter{
-			Page:          0,
-			Size:          10,
-			DisablePaging: false,
-			Search:        false,
-		},
-	}
+
+	uri := "/api/v1/books?page=1&size=30"
+	f := book.Filters(url.Values{
+		"page": []string{"1"},
+		"size": []string{"30"},
+	})
+
 	var books []*models.Book
 
 	uc.EXPECT().List(ctx, f).Return(books, e).AnyTimes()
@@ -151,7 +150,7 @@ func TestHandler_List(t *testing.T) {
 	RegisterHTTPEndPoints(router, val, uc)
 
 	ww := httptest.NewRecorder()
-	rr, err := http.NewRequest(http.MethodGet, "/api/v1/books?page=1&size=10", nil)
+	rr, err := http.NewRequest(http.MethodGet, uri, nil)
 	assert.NoError(t, err)
 
 	h.List(ww, rr)
@@ -174,16 +173,16 @@ func TestHandler_Update(t *testing.T) {
 		Title:         "test01",
 		PublishedDate: now.MustParse("2020-02-02"),
 		ImageURL: null.String{
-			String: "http://example.com/image.png",
+			String: "https://example.com/image.png",
 			Valid:  true,
 		},
 		Description: "test01",
 	}
 	body, err := json.Marshal(bookReq)
 	assert.NoError(t, err)
-	var book *models.Book
+	var b *models.Book
 
-	uc.EXPECT().Update(ctx, bookReq).Return(book, e).Times(1)
+	uc.EXPECT().Update(ctx, bookReq).Return(b, e).Times(1)
 
 	router := chi.NewRouter()
 

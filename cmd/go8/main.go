@@ -6,23 +6,20 @@ import (
 	"github.com/gmhafiz/go8/internal/server"
 )
 
-const Version = "v0.9.0"
+// Version is injected using ldflags during build time
+var Version = "v0.11.0"
 
 // @title Go8
-// @version 0.9.0
-// @description Go + Postgres + Chi Router + sqlx + Unit Testing starter kit for API development.
-
+// @version 0.11.0
+// @description Go + Postgres + Chi router + sqlx + sqlboiler + Unit Testing starter kit for API development.
 // @contact.name Hafiz Shafruddin
 // @contact.url https://github.com/gmhafiz/go8
 // @contact.email gmhafiz@gmail.com
-
 // @host localhost:3080
 // @BasePath /
 func main() {
-	s := server.New(Version)
-	s.Init()
-
-	if err := s.Run(); err != nil {
-		log.Fatalf("%s", err.Error())
-	}
+	log.Printf("Starting API version: %s\n", Version)
+	s := server.New()
+	s.Init(Version)
+	s.Run()
 }

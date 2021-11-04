@@ -3,8 +3,8 @@
 # bool function to test if the user is root or not
 is_user_root () { [ ${EUID:-$(id -u)} -eq 0 ]; }
 
-TASKPATH=$(which task)
-if [ -z "$TASKPATH" ]
+TASK_PATH=$(which task)
+if [ -z "$TASK_PATH" ]
 then
   if is_user_root;
   then

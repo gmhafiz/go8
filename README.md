@@ -13,19 +13,17 @@
               .........                ......                .......
 A starter kit for Go API development. Inspired by [How I write HTTP services after eight years](https://pace.dev/blog/2018/05/09/how-I-write-http-services-after-eight-years.html).
 
-However, I wanted to use [chi router](https://github.com/go-chi/chi) which is more common in the community, [sqlx](https://github.com/jmoiron/sqlx) for database operations and design towards more like [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html).
-
-This kit tries to follow the [Standard Go Project Layout](https://github.com/golang-standards/project-layout) to make project structure familiar to a Go developer.
+However, I wanted to use [chi router](https://github.com/go-chi/chi) which is more common in the community, [sqlx](https://github.com/jmoiron/sqlx) for database operations and design towards layered architecture (handle -> business logic -> repository).
 
 It is still in early stages, and I do not consider it is completed until all integration tests are completed.
 
-In short, this kit is a Go + Postgres + Chi Router + sqlx + unit testing starter kit for API development.
+In short, this kit is a Go + Postgres + Chi Router + sqlx + sqlboiler + unit testing starter kit for API development.
 
 # Motivation
 
 On the topic of API development, there are two opposing camps between a using framework (like [echo](https://github.com/labstack/echo), [gin](https://github.com/gin-gonic/gin), [buffalo](http://gobuffalo.io/)) and starting small and only add features you need through various libraries. 
 
-However , starting small and adding  features aren't that straightforward. Also, you will want to structure your project in such a way that there are clear separation of functionalities for your controller, business logic and database operations. Dependencies are injected from outside to inside. Swapping a router or database library to a different one becomes much easier. This is the idea behind [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html). This way, it is easy to switch whichever library to another of your choice.
+However, starting small and adding  features aren't that straightforward. Also, you will want to structure your project in such a way that there are clear separation of functionalities for your controller, business logic and database operations. Dependencies are injected from outside to inside. Swapping a router or database library to a different one becomes much easier.
 
 
 # Features
@@ -35,60 +33,107 @@ This kit is composed of standard Go library together with some well-known librar
   - [x] Framework-less and net/http compatible handler
   - [x] Router/Mux with [Chi Router](https://github.com/go-chi/chi)
   - [x] Database Operations with [sqlx](https://github.com/jmoiron/sqlx)
+  - [x] Database Operations with [sqlboiler](https://github.com/volatiletech/sqlboiler)
   - [x] Database migration with [golang-migrate](https://github.com/golang-migrate/migrate/)
-  - [x] Input [validation](https://github.com/go-playground/validator) that return multiple error strings
-  - [x] Read all configurations using a single `.env` file
-  - [x] Clear directory structure so you know where to find middleware, domain, server struct, configuration files, migrations etc. 
+  - [x] Input [validation](https://github.com/go-playground/validator) that returns multiple error strings
+  - [x] Read all configurations using a single `.env` file or environment variable
+  - [x] Clear directory structure, so you know where to find the middleware, domain, server struct, handle, business logic, store, configuration files, migrations etc. 
   - [x] (optional) Request log that logs each user uniquely based on host address
-  - [x] Cors
+  - [x] CORS
   - [x] Scans and auto-generate [Swagger](https://github.com/swaggo/swag) docs using a declarative comments format 
   - [x] Custom model JSON output
   - [x] Filters (input port), Resource (output port) for pagination and custom response respectively.
-  - [x] Uses [Task](https://taskfile.dev) to simplify various tasks like testify, go mock, go-sec, swag, linting, test coverage, hot reload etc
+  - [x] Cache layer
+  - [x] Uses [Task](https://taskfile.dev) to simplify various tasks like mocking, linting, test coverage, hot reload etc
   - [x] Unit testing of repository, use case, and handler
-  - [x] End-to-end test using ephemeral docker containers
+  - [ ] End-to-end test using ephemeral docker containers
 
 # Quick Start
 
-You need to [have a go installation](#appendix) (>= v1.13) and put into path as well as [git](#appendix). Optionally `docker` and `docker-compose` for easier start up.
+It is advisable to use the latest [Go version installation](#appendix) (>= v1.17). Optionally `docker` and `docker-compose` for easier start up.
 
 Get it
 
     git clone https://github.com/gmhafiz/go8
     cd go8
 
-Fill in your database credentials in `.env` by making a copy of `env.example` first.
+Set database credentials by either
+
+1. Filling in your database credentials in `.env` by making a copy of `env.example` first.
+
 
     cp env.example .env
 
-Have a database ready either by installing them yourself or the following command. The `docker-compose.yml` will use database credentials set in `.env` file which is initialized by the previous step. Optionally, you may want redis as well.
+2. Or by exporting into environment variable
+
+
+    export DB_DRIVER=postgres
+    export DB_HOST=localhost
+    export DB_PORT=5432
+    export DB_USER=user
+    export DB_PASS=password
+    export DB_NAME=go8_db
+
+Have a database ready either by installing them yourself or the following command. The `docker-compose.yml` will use database credentials set in `.env` file which is initialized by the previous step if you chose that route. Optionally, you may want redis as well.
 
     docker-compose up -d postgres
 
 Once the database is up you may run the migration with,
 
-    go run cmd/extmigrate up
+    go run cmd/extmigrate/main.go
 
-Run the API with
+Run the API with the following command. For the first time run, dependencies will be downloaded first.
 
     go run cmd/go8/main.go
 
 
 You will see the address the API is running at as well as all registered routes.
 
-    2021/01/26 18:45:22 serving at 0.0.0.0:3080
-    2021/01/26 18:45:22 path: /api/v1/books/ method: GET 
-    2021/01/26 18:45:22 path: /api/v1/books/ method: POST 
-    2021/01/26 18:45:22 path: /api/v1/books/{bookID} method: GET 
-    2021/01/26 18:45:22 path: /api/v1/books/{bookID} method: PUT 
-    2021/01/26 18:45:22 path: /api/v1/books/{bookID} method: DELETE 
-    2021/01/26 18:45:22 path: /health/liveness method: GET 
-    2021/01/26 18:45:22 path: /health/readiness method: GET 
+    2021/10/31 10:49:11 Starting API version: v0.11.0
+    2021/10/31 10:49:11 Connecting to database...
+    2021/10/31 10:49:11 Database connected
+            .,*/(#####(/*,.                               .,*((###(/*.
+        .*(%%%%%%%%%%%%%%#/.                           .*#%%%%####%%%%#/.
+      ./#%%%%#(/,,...,,***.           .......          *#%%%#*.   ,(%%%#/.
+     .(#%%%#/.                    .*(#%%%%%%%##/,.     ,(%%%#*    ,(%%%#*.
+    .*#%%%#/.    ..........     .*#%%%%#(/((#%%%%(,     ,/#%%%#(/#%%%#(,
+    ./#%%%(*    ,#%%%%%%%%(*   .*#%%%#*     .*#%%%#,      *(%%%%%%%#(,.
+    ./#%%%#*    ,(((##%%%%(*   ,/%%%%/.      .(%%%#/   .*#%%%#(*/(#%%%#/,
+     ,#%%%#(.        ,#%%%(*   ,/%%%%/.      .(%%%#/  ,/%%%#/.    .*#%%%(,
+      *#%%%%(*.      ,#%%%(*   .*#%%%#*     ./#%%%#,  ,(%%%#*      .(%%%#*
+       ,(#%%%%%##(((##%%%%(*    .*#%%%%#(((##%%%%(,   .*#%%%##(///(#%%%#/.
+         .*/###%%%%%%%###(/,      .,/##%%%%%##(/,.      .*(##%%%%%%##(*,
+              .........                ......                .......
+    2021/10/31 10:49:11 Serving at 0.0.0.0:3080
+
 
 
 To use, follow examples in the `examples/` folder
 
-    curl --location --request GET 'http://localhost:3080/api/v1/books'
+    curl -v --location --request POST 'http://localhost:3080/api/v1/books' --header 'Content-Type: application/json' --data-raw '{"title": "Test title","image_url": "https://example.com","published_date": "2020-07-31T15:04:05.123499999Z","description": "test description"}' | jq
+
+    curl --location --request GET 'http://localhost:3080/api/v1/books' | jq
+
+To see all available routes, run 
+
+    go run cmd/route/route.go
+
+    Registered Routes:
+    POST    /api/v1/author/
+    GET     /api/v1/author/
+    GET     /api/v1/author/{id}
+    PUT     /api/v1/author/{id}
+    DELETE  /api/v1/author/{id}
+    GET     /api/v1/book/
+    POST    /api/v1/book/
+    DELETE  /api/v1/book/{bookID}
+    GET     /api/v1/book/{bookID}
+    PUT     /api/v1/book/{bookID}
+    GET     /health/
+    GET     /health/readiness
+    etc...
+
+
 
 # Table of Contents
 
@@ -100,6 +145,7 @@ To use, follow examples in the `examples/` folder
    * [Tools](#tools)
       + [Install](#install)
    * [Tasks](#tasks)
+      + [List Routes](#list-routes)
       + [Format Code](#format-code)
       + [Sync Dependencies](#sync-dependencies)
       + [Compile Check](#compile-check)
@@ -108,7 +154,7 @@ To use, follow examples in the `examples/` folder
       + [Security Checks](#security-checks)
       + [Check](#check)
       + [Hot reload](#hot-reload)
-      + [Generate Model/ORM](#generate-model-orm)
+      + [Generate Model/ORM](#generate-modelorm)
       + [Generate Swagger Documentation](#generate-swagger-documentation)
       + [Go generate](#go-generate)
       + [Test Coverage](#test-coverage)
@@ -147,6 +193,9 @@ To use, follow examples in the `examples/` folder
    * [Middleware](#middleware)
    * [Dependency Injection](#dependency-injection)
    * [Libraries](#libraries)
+- [Cache](#cache)
+   * [LRU](#lru)
+   * [Redis](#redis)
 - [Utility](#utility)
 - [Testing](#testing)
    * [Unit Testing](#unit-testing)
@@ -187,7 +236,7 @@ Various tooling can be installed automatically by running which includes
     * An opinionated code linter from https://golangci-lint.run/
  * [swag](https://github.com/swaggo/swag)
     * Generates swagger documentation 
- * [testify](https://github.com/swaggo/swag)
+ * [testify](https://github.com/stretchr/testify)
     * A testing framework
  * [gomock](https://github.com/golang/mock/mockgen)
     * Mock dependencies inside unit test
@@ -210,6 +259,16 @@ Install the tools above with:
 ## Tasks
 
 Various tooling are included within the `Task` runner. Configurations are done inside `Taskfile.yml` file.
+
+### List Routes
+
+List all registered routes, typically done by `register.go` files by
+
+    go run cmd/route/route.go
+
+or
+
+    task routes
 
 ### Format Code
 
@@ -256,7 +315,7 @@ Runs opinionated security checks from [https://github.com/securego/gosec](https:
 
     task check
 
-Runs all of the above tasks (Format Code until Security Checks)
+Runs all the above tasks (Format Code until Security Checks)
 
 ### Hot reload
 
@@ -268,21 +327,21 @@ Runs `air` which watches for file changes and rebuilds binary. Configure in `.ai
 
     task gen:orm
 
-Runs `sqlboiler` command to create ORM tailored to your database schema.
+Runs `sqlboiler` command to create models and ORM tailored to your database schema.
 
 
 ### Generate Swagger Documentation
     
     task swagger
 
-Reads annotations from controller and model file to create a swagger documentation file. Can be accessed from [http://localhost:3080](http://localhost:3080)
+Reads annotations from controller and model file to create a swagger documentation file. Can be accessed from [http://localhost:3080/swagger/](http://localhost:3080/swagger/)
 
 
 ### Go generate
 
     task generate
 
-Runs `go generate ./...` all //go:generate commands found in .go files. Useful for recreating mock file for unit tests.
+Runs `go generate ./...`. It looks for `//go:generate` tags found in .go files. Useful for recreating mock file for unit tests.
 
 
 ### Test Coverage
@@ -390,6 +449,10 @@ You can build a docker image with the app with its config files. Docker needs to
 
      task docker:build
 
+This task also makes a copy of `.env`. Since Docker doesn't copy hidden file, we make a copy of it on our `src` stage before transferring it to our final `scratch` stage. It also inserts formats git tag and git hash as the API version which runs at compile time. [upx](https://upx.github.io/) is used to make the resulting binary smaller.
+
+Note that this is a multistage Dockerfile. Since we statically compile this API, we can use `scratch` image (it is empty! - no file/folder exists).
+
 Run the following command to build a container from this image. `--net=host` tells the container to use local's network so that it can access host database.
 
     docker-compose up -d postgres # If you haven't run this from quick start 
@@ -415,7 +478,8 @@ It does task check prior to build and puts both the binary and `.env` files into
 
     go mod download
     CGO_ENABLED=0 GOOS=linux
-    go build -v -i -o go8 cmd/go8/main.go
+    go build -ldflags="-X main.Version=$(git describe --abbrev=0 --tags)-$(git rev-list -1 HEAD) -w -s" -o ./server ./cmd/go8/main.go;
+
 
 # Swagger docs
 
@@ -443,9 +507,19 @@ Custom theme is obtained from [https://github.com/ostranme/swagger-ui-themes](ht
 
 # Structure
 
-This project mostly follows the structure documented at [Standard Go Project Layout](https://github.com/golang-standards/project-layout).
+This project follows a layered architecture mainly consists of three layers:
 
-In addition, this project also tries to follow [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) where each functionality are separated into different files.
+ 1. Handler
+ 2. Business Logic
+ 3. Repository
+
+The handler is responsible to receiving requests, validating them hand over to business logic, then format the response to client.
+
+Business logic is the meat of operations, and it calls a repository if necessary.
+
+Database calls lives in this repository layer where data is retrieved from a store.
+
+All of these layers are encapsulated in a domain.
 
 ## Starting Point
 
@@ -537,13 +611,11 @@ Router multiplexer or mux is created for use by `Domain`. While [chi](https://gi
 
 ## Domain
 
-Let us look at how this project attempts at Clean Architecture. A domain consists of: 
+Let us look at how this project attempts at layered architecture. A domain consists of: 
 
   1. Handler (Controllers)
   2. Use case (Use Cases)
   3. Repository (Entities)
-
-![clean architecture](assets/CleanArchitecture.jpeg)
 
 Let us start by looking at how `repository` is implemented.
 
@@ -683,7 +755,7 @@ How does dependency injection happens? It starts with `InitDomains()` method.
 healthHandler.RegisterHTTPEndPoints(s.router, usecase.NewHealthUseCase(postgres.NewHealthRepository(s.db)))
 ```
 
-The repository gets access a pointer to `sql.DB` to perform database operations. This layer also knows nothing of layers above it. `NewBookUseCase` depends on that repository and finally the handler depends on the use case.
+The repository gets access to a pointer to `sql.DB` to perform database operations. This layer also knows nothing of layers above it. `NewBookUseCase` depends on that repository and finally the handler depends on the use case.
 
 ## Libraries
 
@@ -691,8 +763,123 @@ Initialization of external libraries are located in `third_party/`
 
 Since `sqlx` is a third party library, it is initialized in `/third_party/database/sqlx.go`
 
+# Cache
 
-## Utility
+The three most significant bottlenecks are 
+
+  1. Input output (I/O) like disk access including database.
+  2. Network calls - like calling another API.
+  3. Serialization - like serializing or deserializing JSON
+
+We demonstrate how caching results can speed up API response: 
+
+## LRU
+
+To make this work, we introduce another layer that sits between use case and database layer.
+
+`internal/author/repository/cache/lru.go` shows an example of using an LRU cache to tackle the biggest bottleneck. Once we get a result for the first time, we store it by using the requesting URL as its key. Subsequent requests of the same URL will return the result from the cache instead of from the database. 
+
+To make this work, we store the requesting URL in the handler layer.
+```go
+ctx := context.WithValue(r.Context(), author.CacheURL, r.URL.String())
+```
+
+Then in the cache layer, we retrieve it
+```go
+url := ctx.Value(author.CacheURL).(string)
+```
+
+We try and retrieve the key,
+```go
+val, ok := c.lru.Get(url)
+```
+
+If it doesn't exist, we can simply add it to our cache. 
+```go
+c.lru.Add(url, res)
+```
+
+Avoiding I/O bottleneck results in an amazing speed, **11x** more requests/second (328 bytes response size) compared to an already blazing fast endpoint as shown by `wrk` benchmark:
+
+CPU: AMD 3600 3.6Ghz
+Storage: SSD
+
+```shell
+wrk -t2 -d60 -c200  'http://localhost:3080/api/v1/author?page=1&size=3'
+Running 1m test @ http://localhost:3080/api/v1/author?page=1&size=3
+  2 threads and 200 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     4.23ms    5.07ms  71.75ms   83.36%
+    Req/Sec    40.64k     3.55k   52.91k    68.45%
+  4847965 requests in 1.00m, 1.48GB read
+Requests/sec:  80775.66
+Transfer/sec:     25.27MB
+```
+
+Compared to calling database layer:
+```shell
+wrk -t2 -d60 -c200  'http://localhost:3080/api/v1/author?page=1&size=3'
+Running 1m test @ http://localhost:3080/api/v1/author?page=1&size=3
+  2 threads and 200 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    70.66ms  116.57ms   1.24s    88.09%
+    Req/Sec     3.66k   276.15     4.53k    70.50%
+  437285 requests in 1.00m, 136.79MB read
+Requests/sec:   7280.82
+Transfer/sec:      2.28MB
+```
+
+Since a cache stays in the store if it is frequently accessed, invalidating the cache must be done if there are any changes to the stored value in the event of update and deletion. Thus, we need to delete the cache that starts with the base URL of this domain endpoint. 
+
+For example:
+```go
+func (c *AuthorLRU) Update(ctx context.Context, toAuthor *models.Author) (*models.Author, error) {
+	c.invalidate(ctx)
+
+	return c.service.Update(ctx, toAuthor)
+}
+
+func (c *AuthorLRU) invalidate(ctx context.Context) {
+	url := ctx.Value(author.CacheURL)
+	split := strings.Split(url.(string), "/")
+	baseURL := strings.Join(split[:4], "/")
+
+	keys := c.lru.Keys()
+	for _, key := range keys {
+		if strings.HasPrefix(key.(string), baseURL) {
+			c.lru.Remove(key)
+		}
+	}
+}
+```
+## Redis
+
+By using Redis as a cache, you can potentially take advantage of a cluster architecture for more RAM instead of relying on the RAM on current server your API is hosted. Also, the cache won't be cleared like in-memory `LRU` when a new API is deployed.
+
+Similar to LRU implementation above, this Redis layer sits in between use case and database layer.
+
+This Redis library requires payload in a binary format. You may choose the builtin `encoding/json` package or `msgpack` for smaller payload and **7x** higher speed than without a cache. Using `msgpack` over `json` tackles serialization bottleneck.
+
+```go
+// marshal 
+cacheEntry, err := msgpack.Marshal(res)
+// unmarshal
+err = msgpack.Unmarshal([]byte(val), &res)
+```
+
+```shell
+wrk -t2 -d60 -c200  'http://localhost:3080/api/v1/author?page=1&size=3'
+Running 1m test @ http://localhost:3080/api/v1/author?page=1&size=3
+  2 threads and 200 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     4.05ms    2.56ms  37.48ms   73.63%
+    Req/Sec    25.48k     1.45k   30.73k    71.29%
+  3039522 requests in 1.00m, 0.93GB read
+Requests/sec:  50638.73
+Transfer/sec:     15.84MB
+````
+
+# Utility
 
 Common tasks like retrieving query parameters or `filters` are done inside `utility` folder. It serves as one place abstract functionalities used across packages.
 
@@ -774,7 +961,7 @@ Next, call the `repo.Create()` function and perform assertions.
 
 ### Use Case
 
-Our use case unit tests may need to retrieve or store data from and into a database with the help of repository (or repositories). Thus there isn't any direct usage of database object. So instead, we need to mock our repository with the help of [gomock](https://github.com/golang/mock/). It can be installed with
+Our use case unit tests may need to retrieve or store data from and into a database with the help of repository (or repositories). Thus, there isn't any direct usage of database object. So instead, we need to mock our repository with the help of [gomock](https://github.com/golang/mock/). It can be installed with
 
       task install:gomock
 or
@@ -906,7 +1093,7 @@ testBookRequest := &models.Book{
     Title:         "test01",
     PublishedDate: now.MustParse("2020-02-02"),
     ImageURL: null.String{
-        String: "http://example.com/image.png",
+        String: "https://example.com/image.png",
         Valid:  true,
     },
     Description: "test01",
@@ -967,9 +1154,9 @@ assert.Equal(t, gotBook.PublishedDate.String(), ucResp.PublishedDate.String())
 assert.Equal(t, gotBook.ImageURL.String, ucResp.ImageURL.String)
 ```
 
-## End to End Test
+## End-to-End Test
 
-Technically End to End test (e2e test) can be done separately in another program and language. Having e2e binary integrated in the project has the advantage of reusing structs and migration which will be explained down below. 
+Technically End-to-End test (e2e test) can be done separately in another program and language. Having e2e binary integrated in the project has the advantage of reusing structs and migration which will be explained down below. 
 
 The idea here is to run our application isolated in a container (along with database) and the e2e program calls known API of this program and checks if the output is what is expected.  
 
@@ -1008,8 +1195,13 @@ or
 
 # TODO
 
+ - [ ] Fix end to end test
  - [ ] Complete HTTP integration test
- - [ ] Better return response
+ - [x] Better return response
+ - [x] LRU cache
+ - [X] Redis Cache
+ - [ ] Tracing
+ - [ ] Metric
 
 # Acknowledgements
 
@@ -1019,6 +1211,8 @@ or
  * https://gist.github.com/Oxyrus/b63f51929d687c1e20cda3447f834147
  * https://github.com/sno6/gosane
  * https://github.com/AleksK1NG/Go-Clean-Architecture-REST-API
+ * https://medium.com/@benbjohnson/standard-package-layout-7cdbc8391fc1
+ * https://github.com/arielizuardi/golang-backend-blog
  
 # Appendix
 
@@ -1026,24 +1220,18 @@ or
 
 For Ubuntu:
 
-    sudo apt update && sudo apt install git
-    wget https://golang.org/dl/go1.15.6.linux-amd64.tar.gz
-    sudo tar -C /usr/local -xzf go1.15.6.linux-amd64.tar.gz
+    sudo apt update && sudo apt install git curl build-essential jq
+    wget https://golang.org/dl/go1.17.3.linux-amd64.tar.gz
+    sudo tar -C /usr/local -xzf go1.17.3.linux-amd64.tar.gz
     export PATH=$PATH:/usr/local/go/bin
-    echo 'PATH=$PATH:/usr/local/go/bin' >> ~/.profile
+    echo 'PATH=$PATH:/usr/local/go/bin' >> ~/.bash_aliases
+    source ~/.bashrc
+    go get -u golang.org/x/tools/...
 
     curl -s https://get.docker.com | sudo bash
-
-    sudo apt remove docker docker-engine docker.io containerd runc
-    sudo apt update
-    sudo apt install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-    sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-    sudo apt update
-    sudo apt install -y docker-ce docker-ce-cli containerd.io
     sudo usermod -aG docker ${USER}
     newgrp docker
     su - ${USER} # or logout and login
 
-    sudo curl -L "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    sudo curl -L "https://github.com/docker/compose/releases/download/v2.0.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
     sudo chmod +x /usr/local/bin/docker-compose

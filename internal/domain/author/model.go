@@ -1,8 +1,11 @@
 package author
 
-import "github.com/gmhafiz/go8/internal/models"
+import (
+	"github.com/gmhafiz/go8/internal/domain/book"
+	"github.com/gmhafiz/go8/internal/models"
+)
 
-type AuthorB struct {
+type WithBooks struct {
 	*models.Author
-	Books models.BookSlice `json:"books"`
+	Books []book.Res `json:"books"`
 }

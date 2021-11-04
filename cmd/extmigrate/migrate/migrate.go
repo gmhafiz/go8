@@ -28,10 +28,10 @@ var (
 
 func Start() {
 	cfg := configs.New()
-	Up(cfg, ".")
+	up(cfg, ".")
 }
 
-func Up(cfg *configs.Configs, changeDirTo string) {
+func up(cfg *configs.Configs, changeDirTo string) {
 	err := os.Chdir(changeDirTo)
 	if err != nil {
 		log.Fatal(err)
@@ -76,8 +76,4 @@ func Up(cfg *configs.Configs, changeDirTo string) {
 	}
 
 	_ = m.Up()
-}
-
-func Down() {
-	_ = m.Down()
 }

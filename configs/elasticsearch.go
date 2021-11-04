@@ -5,7 +5,7 @@ import (
 )
 
 type Elasticsearch struct {
-	Address  string
+	Address  string `default:"http://localhost:9200"`
 	User     string
 	Password string
 }

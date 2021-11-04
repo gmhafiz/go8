@@ -12,6 +12,7 @@ import (
 	chiMiddleware "github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
+	"github.com/go-redis/redis/v8"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database"
 	"github.com/golang-migrate/migrate/v4/database/mysql"
@@ -20,40 +21,68 @@ import (
 	"github.com/jmoiron/sqlx"
 
 	"github.com/gmhafiz/go8/configs"
+	_ "github.com/gmhafiz/go8/docs"
 	"github.com/gmhafiz/go8/internal/middleware"
 	db "github.com/gmhafiz/go8/third_party/database"
+	redisLib "github.com/gmhafiz/go8/third_party/redis"
 	"github.com/gmhafiz/go8/third_party/validate"
 )
 
 const (
 	databaseMigrationPath = "file://database/migrations/"
-	swaggerDocsAssetPath  = "./docs"
+	swaggerDocsAssetPath  = "./docs/"
 )
 
 type Server struct {
+	version    string
 	cfg        *configs.Configs
 	db         *sqlx.DB
 	router     *chi.Mux
 	httpServer *http.Server
 	validator  *validator.Validate
+	cache      *redis.Client
 }
 
-func New(version string) *Server {
-	log.Printf("Starting API version: %s\n", version)
-	return &Server{}
+type Options func(opts *Server) error
+
+func New(opts ...Options) *Server {
+	s := &Server{}
+	for _, opt := range opts {
+		err := opt(s)
+		if err != nil {
+			log.Fatalln(err)
+		}
+	}
+	return s
 }
 
-func (s *Server) Init() {
+func WithConfig() func(s *Server) error {
+	return func(s *Server) error {
+		s.cfg = configs.New()
+		return nil
+	}
+}
+
+func WithRouter() func(s *Server) error {
+	return func(s *Server) error {
+		s.router = chi.NewRouter()
+		return nil
+	}
+}
+
+func (s *Server) Init(version string) {
+	s.version = version
 	s.newConfig()
+	s.newRedis()
 	s.newDatabase()
 	s.newValidator()
 	s.newRouter()
 	s.setGlobalMiddleware()
-	s.initDomains()
-	s.startSwagger()
+	s.InitDomains()
+	s.StartSwagger()
 }
 
-func (s *Server) startSwagger() {
+func (s *Server) StartSwagger() {
 	if s.cfg.Api.RunSwagger {
 		swaggerServer(s.router)
 	}
@@ -63,9 +92,13 @@ func (s *Server) newConfig() {
 	s.cfg = configs.New()
 }
 
+func (s *Server) newRedis() {
+	s.cache = redisLib.New(s.cfg.Cache)
+}
+
 func (s *Server) newDatabase() {
 	if s.cfg.Database.Driver == "" {
-		log.Fatal("please fill in database credentials in .env file")
+		log.Fatal("please fill in database credentials in .env file or set in environment variable")
 	}
 	s.db = db.NewSqlx(s.cfg)
 	s.db.SetMaxOpenConns(s.cfg.Database.MaxConnectionPool)
@@ -80,8 +113,12 @@ func (s *Server) newRouter() {
 }
 
 func (s *Server) setGlobalMiddleware() {
-	s.router.Use(middleware.Json)
-	s.router.Use(middleware.Cors)
+	s.router.NotFound(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusNotFound)
+		_, _ = w.Write([]byte(`{"error": "endpoint not found"}`))
+	})
+	s.router.Use(middleware.CORS)
 	if s.cfg.Api.RequestLog {
 		s.router.Use(chiMiddleware.Logger)
 	}
@@ -124,9 +161,9 @@ func (s *Server) Migrate() {
 	log.Println("done migration.")
 }
 
-func (s *Server) Run() error {
+func (s *Server) Run() {
 	s.httpServer = &http.Server{
-		Addr:           s.cfg.Api.Host.String() + ":" + s.cfg.Api.Port,
+		Addr:           s.cfg.Api.Host + ":" + s.cfg.Api.Port,
 		Handler:        s.router,
 		ReadTimeout:    s.cfg.Api.ReadTimeout,
 		WriteTimeout:   s.cfg.Api.WriteTimeout,
@@ -147,7 +184,6 @@ func (s *Server) Run() error {
               .........                ......                .......`)
 	go func() {
 		log.Printf("Serving at %s:%s\n", s.cfg.Api.Host, s.cfg.Api.Port)
-		printAllRegisteredRoutes(s.router)
 		err := s.httpServer.ListenAndServe()
 		if err != nil {
 			log.Fatal(err)
@@ -162,7 +198,8 @@ func (s *Server) Run() error {
 	ctx, shutdown := context.WithTimeout(context.Background(), s.cfg.Api.IdleTimeout*time.Second)
 	defer shutdown()
 
-	return s.httpServer.Shutdown(ctx)
+	_ = s.DB().Close()
+	_ = s.httpServer.Shutdown(ctx)
 }
 
 func (s *Server) Config() *configs.Configs {
@@ -173,24 +210,22 @@ func (s *Server) DB() *sqlx.DB {
 	return s.db
 }
 
-func swaggerServer(router *chi.Mux) {
-	fs := http.FileServer(http.Dir(swaggerDocsAssetPath))
-
-	router.Get("/*", func(w http.ResponseWriter, r *http.Request) {
-		if _, err := os.Stat(swaggerDocsAssetPath + r.RequestURI); os.IsNotExist(err) {
-			http.StripPrefix(r.RequestURI, fs).ServeHTTP(w, r)
-		} else {
-			fs.ServeHTTP(w, r)
-		}
-	})
+func (s *Server) Cache() *redis.Client {
+	return s.cache
 }
 
-func printAllRegisteredRoutes(router *chi.Mux) {
+func swaggerServer(router *chi.Mux) {
+	fileServer := http.FileServer(http.Dir(swaggerDocsAssetPath))
+	router.Handle("/swagger/*", http.StripPrefix("/swagger", fileServer))
+}
+
+func (s *Server) PrintAllRegisteredRoutes() {
 	walkFunc := func(method string, path string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
-		log.Printf("path: %s method: %s ", path, method)
+		fmt.Printf("%-7s %s\n", method, path)
+
 		return nil
 	}
-	if err := chi.Walk(router, walkFunc); err != nil {
-		log.Print(err)
+	if err := chi.Walk(s.router, walkFunc); err != nil {
+		fmt.Print(err)
 	}
 }

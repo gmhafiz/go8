@@ -13,13 +13,9 @@ type Res struct {
 	BookID        int64       `json:"book_id" deepcopier:"field:book_id" db:"id"`
 	Title         string      `json:"title" deepcopier:"field:title" db:"title"`
 	PublishedDate time.Time   `json:"published_date" deepcopier:"field:force" db:"published_date"`
-	ImageURL      null.String `json:"image_url" deepcopier:"field:image_url" db:"image_url"`
-	Description   null.String `json:"description" deepcopier:"field:description"`
+	ImageURL      null.String `json:"image_url" deepcopier:"field:image_url" db:"image_url" swaggertype:"string"`
+	Description   null.String `json:"description" deepcopier:"field:description" swaggertype:"string"`
 }
-
-//func Bind(body io.ReadCloser, b *Request) error {
-//	return json.NewDecoder(body).Decode(b)
-//}
 
 func Resource(book *models.Book) (Res, error) {
 	var resource Res
@@ -32,9 +28,9 @@ func Resource(book *models.Book) (Res, error) {
 	return resource, nil
 }
 
-func Resources(books []*models.Book) (interface{}, error) {
+func Resources(books []*models.Book) ([]Res, error) {
 	if len(books) == 0 {
-		return make([]string, 0), nil
+		return make([]Res, 0), nil
 	}
 
 	var resources []Res

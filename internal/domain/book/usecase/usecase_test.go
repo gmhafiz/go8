@@ -8,7 +8,6 @@ import (
 	"github.com/golang/mock/gomock"
 	_ "github.com/jackc/pgx/stdlib"
 	"github.com/jinzhu/now"
-	_ "github.com/joho/godotenv/autoload"
 	"github.com/stretchr/testify/assert"
 	"github.com/volatiletech/null/v8"
 

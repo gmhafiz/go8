@@ -12,6 +12,7 @@ import (
 	"github.com/gmhafiz/go8/internal/domain/book"
 	"github.com/gmhafiz/go8/internal/models"
 	"github.com/gmhafiz/go8/internal/utility/message"
+	"github.com/gmhafiz/go8/internal/utility/param"
 	"github.com/gmhafiz/go8/internal/utility/respond"
 	"github.com/gmhafiz/go8/internal/utility/validate"
 )
@@ -30,14 +31,14 @@ func NewHandler(useCase book.UseCase, validate *validator.Validate) *Handler {
 
 // Create creates a new book record
 // @Summary Create a Book
-// @Description Get a book with JSON payload
+// @Description Create a book using JSON payload
 // @Accept json
 // @Produce json
-// @Param Book body book.Request true "Book Request"
+// @Param Book body book.Request true "Create a book using the following format"
 // @Success 201 {object} book.Res
 // @Failure 400 {string} Bad Request
 // @Failure 500 {string} Internal Server Error
-// @Router /api/v1/books [post]
+// @router /api/v1/book [post]
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	var bookRequest book.Request
 	err := book.Bind(r.Body, &bookRequest)
@@ -48,11 +49,11 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 
 	errs := validate.Validate(h.validate, bookRequest)
 	if errs != nil {
-		respond.Error(w, http.StatusBadRequest, errs)
+		respond.Errors(w, http.StatusBadRequest, errs)
 		return
 	}
 
-	bk, err := h.useCase.Create(context.Background(), book.ToBook(&bookRequest))
+	bk, err := h.useCase.Create(r.Context(), book.ToBook(&bookRequest))
 	if err != nil {
 		if err == sql.ErrNoRows {
 			respond.Error(w, http.StatusBadRequest, message.ErrBadRequest)
@@ -79,9 +80,9 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} book.Res
 // @Failure 400 {string} Bad Request
 // @Failure 500 {string} Internal Server Error
-// @Router /api/v1/books/{bookID} [get]
+// @router /api/v1/book/{bookID} [get]
 func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
-	bookID := respond.GetURLParamInt64(w, r, "bookID")
+	bookID := param.Int64(w, r, "bookID")
 
 	b, err := h.useCase.Read(context.Background(), bookID)
 	if err != nil {
@@ -101,17 +102,17 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 // List will fetch the article based on given params
-// @Summary Show all books
-// @Description Get all books. By default it gets first page with 10 items.
+// @Summary Shows all books
+// @Description Lists all books. By default, it gets first page with 30 items.
 // @Accept json
 // @Produce json
-// @Param page query string false "page"
-// @Param size query string false "size"
-// @Param title query string false "term"
-// @Param description query string false "term"
+// @Param page query string false "page number"
+// @Param size query string false "size of result"
+// @Param title query string false "search by title"
+// @Param description query string false "search by description"
 // @Success 200 {object} []book.Res
 // @Failure 500 {string} Internal Server Error
-// @Router /api/v1/books [get]
+// @router /api/v1/book [get]
 func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 	filters := book.Filters(r.URL.Query())
 
@@ -164,9 +165,9 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} []book.Res
 // @Failure 400 {string} Bad Request
 // @Failure 500 {string} Internal Server Error
-// @Router /api/v1/books/{bookID} [put]
+// @router /api/v1/book/{bookID} [put]
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
-	bookID := respond.GetURLParamInt64(w, r, "bookID")
+	bookID := param.Int64(w, r, "bookID")
 
 	var bookRequest book.Request
 	err := json.NewDecoder(r.Body).Decode(&bookRequest)
@@ -178,7 +179,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 
 	errs := validate.Validate(h.validate, bookRequest)
 	if errs != nil {
-		respond.Error(w, http.StatusBadRequest, map[string][]string{"errors": errs})
+		respond.Errors(w, http.StatusBadRequest, errs)
 		return
 	}
 
@@ -205,9 +206,9 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 // @Param id path int true "book ID"
 // @Success 200 "Ok"
 // @Failure 500 {string} Internal Server Error
-// @Router /api/v1/books/{bookID} [delete]
+// @router /api/v1/book/{bookID} [delete]
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
-	bookID := respond.GetURLParamInt64(w, r, "bookID")
+	bookID := param.Int64(w, r, "bookID")
 
 	err := h.useCase.Delete(r.Context(), bookID)
 	if err != nil {

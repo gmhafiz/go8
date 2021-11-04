@@ -60,19 +60,19 @@ Get it
 Set database credentials by either
 
 1. Filling in your database credentials in `.env` by making a copy of `env.example` first.
-
-
-    cp env.example .env
+```shell
+ cp env.example .env
+```
 
 2. Or by exporting into environment variable
 
-
-    export DB_DRIVER=postgres
-    export DB_HOST=localhost
-    export DB_PORT=5432
-    export DB_USER=user
-    export DB_PASS=password
-    export DB_NAME=go8_db
+```shellexport DB_DRIVER=postgres
+export DB_HOST=localhost
+export DB_PORT=5432
+export DB_USER=user
+export DB_PASS=password
+export DB_NAME=go8_db
+```
 
 Have a database ready either by installing them yourself or the following command. The `docker-compose.yml` will use database credentials set in `.env` file which is initialized by the previous step if you chose that route. Optionally, you may want redis as well.
 

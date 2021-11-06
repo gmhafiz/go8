@@ -180,6 +180,7 @@ tasks:
 
   install:tools:
     desc: Install all optional cli tools
+    dir: scripts
     cmds:
       - task: install:golangci
       - task: install:swagger
@@ -217,7 +218,7 @@ tasks:
     cmds:
       - curl -L https://github.com/golang-migrate/migrate/releases/download/v4.15.1/migrate.linux-amd64.tar.gz | tar xvz
       - mkdir -p ~/.local/bin
-      - mv migrate.linux-amd64 ~/.local/bin/migrate
+      - mv migrate ~/.local/bin/migrate
 
   install:gosec:
     desc: Install golang security check. https://github.com/securego/gosec

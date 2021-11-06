@@ -12,7 +12,6 @@ import (
 )
 
 type AuthorLRU struct {
-	//service author.Repository
 	service database.Repository
 	lru     *lru.Cache
 }

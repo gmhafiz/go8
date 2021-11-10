@@ -110,7 +110,7 @@ You will see the address the API is running at as well as all registered routes.
 
 To use, follow examples in the `examples/` folder
 
-    curl -v --location --request POST 'http://localhost:3080/api/v1/books' --header 'Content-Type: application/json' --data-raw '{"title": "Test title","image_url": "https://example.com","published_date": "2020-07-31T15:04:05.123499999Z","description": "test description"}' | jq
+    curl -v --location --request POST 'http://localhost:3080/api/v1/book' --header 'Content-Type: application/json' --data-raw '{"title": "Test title","image_url": "https://example.com","published_date": "2020-07-31T15:04:05.123499999Z","description": "test description"}' | jq
 
     curl --location --request GET 'http://localhost:3080/api/v1/books' | jq
 
@@ -1220,18 +1220,20 @@ or
 
 For Ubuntu:
 
-    sudo apt update && sudo apt install git curl build-essential jq
-    wget https://golang.org/dl/go1.17.3.linux-amd64.tar.gz
-    sudo tar -C /usr/local -xzf go1.17.3.linux-amd64.tar.gz
-    export PATH=$PATH:/usr/local/go/bin
-    echo 'PATH=$PATH:/usr/local/go/bin' >> ~/.bash_aliases
-    source ~/.bashrc
-    go get -u golang.org/x/tools/...
+```shell
+sudo apt update && sudo apt install git curl build-essential jq
+wget https://golang.org/dl/go1.17.3.linux-amd64.tar.gz
+sudo tar -C /usr/local -xzf go1.17.3.linux-amd64.tar.gz
+export PATH=$PATH:/usr/local/go/bin
+echo 'PATH=$PATH:/usr/local/go/bin' >> ~/.bash_aliases
+source ~/.bashrc
+go get -u golang.org/x/tools/...
 
-    curl -s https://get.docker.com | sudo bash
-    sudo usermod -aG docker ${USER}
-    newgrp docker
-    su - ${USER} # or logout and login
+curl -s https://get.docker.com | sudo bash
+sudo usermod -aG docker ${USER}
+newgrp docker
+su - ${USER} # or logout and login
 
-    sudo curl -L "https://github.com/docker/compose/releases/download/v2.0.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-    sudo chmod +x /usr/local/bin/docker-compose
+sudo curl -L "https://github.com/docker/compose/releases/download/v2.0.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+```

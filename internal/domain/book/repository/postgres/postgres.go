@@ -31,16 +31,12 @@ func New(db *sqlx.DB) *repository {
 }
 
 func (r *repository) Create(ctx context.Context, book *models.Book) (int64, error) {
-	res, err := r.db.ExecContext(ctx, InsertIntoBooks, book.Title, book.PublishedDate, book.ImageURL, book.Description)
+	_, err := r.db.ExecContext(ctx, InsertIntoBooks, book.Title, book.PublishedDate, book.ImageURL, book.Description)
 	if err != nil {
 		return 0, errors.Wrapf(err, "book.repository.Create")
 	}
-	bookID, err := res.LastInsertId()
-	if err != nil {
-		return 0, err
-	}
 
-	return bookID, nil
+	return book.BookID, nil
 }
 
 func (r *repository) List(ctx context.Context, f *book.Filter) ([]*models.Book, error) {

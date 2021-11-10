@@ -7,7 +7,7 @@ import (
 )
 
 // Version is injected using ldflags during build time
-var Version = "v0.11.0"
+var Version = "v0.11.1"
 
 // @title Go8
 // @version 0.11.0

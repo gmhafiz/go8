@@ -1,13 +1,11 @@
 package configs
 
 import (
-	"net"
-
 	"github.com/kelseyhightower/envconfig"
 )
 
 type Cache struct {
-	Host      net.IP `default:"0.0.0.0"`
+	Host      string `default:"0.0.0.0"`
 	Port      string `default:"6379"`
 	Name      int    `default:"1"`
 	User      string

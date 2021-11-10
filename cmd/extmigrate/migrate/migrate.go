@@ -71,9 +71,5 @@ func up(cfg *configs.Configs, changeDirTo string) {
 		log.Fatalf("error connecting to database: %v", err)
 	}
 
-	if len(os.Args) < 2 {
-		log.Fatal("usage:")
-	}
-
 	_ = m.Up()
 }

@@ -112,7 +112,7 @@ To use, follow examples in the `examples/` folder
 
     curl -v --location --request POST 'http://localhost:3080/api/v1/book' --header 'Content-Type: application/json' --data-raw '{"title": "Test title","image_url": "https://example.com","published_date": "2020-07-31T15:04:05.123499999Z","description": "test description"}' | jq
 
-    curl --location --request GET 'http://localhost:3080/api/v1/books' | jq
+    curl --location --request GET 'http://localhost:3080/api/v1/book' | jq
 
 To see all available routes, run 
 

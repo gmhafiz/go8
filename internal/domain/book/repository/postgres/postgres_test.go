@@ -36,9 +36,9 @@ func TestRepository_Create(t *testing.T) {
 
 	expectID := int64(1)
 	ctx := context.Background()
-	//ctx := getContext()
 
 	bookTest := &models.Book{
+		BookID:        1,
 		Title:         "test1",
 		PublishedDate: timeWant(t),
 		Description:   "test1",
@@ -50,11 +50,6 @@ func TestRepository_Create(t *testing.T) {
 	mock.ExpectExec("^INSERT INTO \"books.*").
 		WithArgs(bookTest.Title, bookTest.PublishedDate, bookTest.ImageURL, bookTest.Description).
 		WillReturnResult(sqlmock.NewResult(1, 1))
-
-	//mock.ExpectPrepare("^INSERT INTO \"books.*").
-	//	ExpectQuery().
-	//	WithArgs(bookTest.Title, bookTest.PublishedDate, bookTest.ImageURL, bookTest.Description).
-	//	WillReturnRows(sqlmock.NewRows([]string{"book_id"}).AddRow(expectID))
 
 	gotID, err := repo.Create(ctx, bookTest)
 	if err != nil {

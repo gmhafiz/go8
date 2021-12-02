@@ -77,6 +77,7 @@ tasks:
       - task golint
       - task security
       - task test
+      - task race
     silent: true
 
   clean:

@@ -42,7 +42,7 @@ func (u *BookUseCase) Update(ctx context.Context, book *models.Book) (*models.Bo
 	if err != nil {
 		return nil, err
 	}
-	return u.bookRepo.Read(ctx, book.BookID)
+	return u.bookRepo.Read(ctx, book.ID)
 }
 
 func (u *BookUseCase) Delete(ctx context.Context, bookID int64) error {

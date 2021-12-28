@@ -51,7 +51,7 @@ func TestBookUseCase_Create(t *testing.T) {
 		Description: request.Description,
 	}
 	expectedCreated := &models.Book{
-		BookID:        1,
+		ID:            1,
 		Title:         request.Title,
 		PublishedDate: request.PublishedDate,
 		ImageURL: null.String{
@@ -71,7 +71,7 @@ func TestBookUseCase_Create(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	assert.NotEqual(t, bookGot.BookID, 0)
+	assert.NotEqual(t, bookGot.ID, 0)
 	assert.Equal(t, bookGot.Title, request.Title)
 	assert.Equal(t, bookGot.PublishedDate.String(), request.PublishedDate.String())
 	assert.Equal(t, bookGot.Description, request.Description)
@@ -115,7 +115,7 @@ func TestBookUseCase_Update(t *testing.T) {
 	var err error
 
 	request := &models.Book{
-		BookID:        1,
+		ID:            1,
 		Title:         "updated title",
 		PublishedDate: time.Time{},
 		ImageURL:      null.String{},
@@ -128,7 +128,7 @@ func TestBookUseCase_Update(t *testing.T) {
 	got, err := uc.Update(ctx, request)
 
 	assert.NoError(t, err)
-	assert.Equal(t, request.BookID, got.BookID)
+	assert.Equal(t, request.ID, got.ID)
 	assert.Equal(t, request.Title, got.Title)
 	assert.Equal(t, request.Description, got.Description)
 }

@@ -50,7 +50,7 @@ func TestHandler_Create(t *testing.T) {
 	var e error
 
 	ucResp := &models.Book{
-		BookID:        1,
+		ID:            1,
 		Title:         testBookRequest.Title,
 		PublishedDate: testBookRequest.PublishedDate,
 		ImageURL:      testBookRequest.ImageURL,
@@ -91,7 +91,7 @@ func TestHandler_Get(t *testing.T) {
 	var e error
 	var id int64
 	ucResp := &models.Book{
-		BookID:        0,
+		ID:            0,
 		Title:         "",
 		PublishedDate: time.Time{},
 		ImageURL:      null.String{},
@@ -118,7 +118,7 @@ func TestHandler_Get(t *testing.T) {
 	err = json.NewDecoder(ww.Body).Decode(&gotBook)
 
 	assert.NoError(t, err)
-	assert.Equal(t, ucResp.BookID, gotBook.BookID)
+	assert.Equal(t, ucResp.ID, gotBook.ID)
 	assert.Equal(t, ucResp.Description, gotBook.Description.String)
 	assert.Equal(t, ucResp.PublishedDate, gotBook.PublishedDate)
 	assert.Equal(t, ucResp.ImageURL, gotBook.ImageURL)
@@ -180,9 +180,19 @@ func TestHandler_Update(t *testing.T) {
 	}
 	body, err := json.Marshal(bookReq)
 	assert.NoError(t, err)
-	var b *models.Book
 
-	uc.EXPECT().Update(ctx, bookReq).Return(b, e).Times(1)
+	expectBook := &models.Book{
+		ID:            1,
+		Title:         "test01",
+		PublishedDate: now.MustParse("2020-02-02"),
+		ImageURL: null.String{
+			String: "https://example.com/image.png",
+			Valid:  true,
+		},
+		Description: "test01",
+	}
+
+	uc.EXPECT().Update(ctx, bookReq).Return(expectBook, e).Times(1)
 
 	router := chi.NewRouter()
 
@@ -196,11 +206,10 @@ func TestHandler_Update(t *testing.T) {
 
 	h.Update(ww, rr)
 
-	var gotBook models.Book
+	var gotBook book.Res
 	err = json.NewDecoder(ww.Body).Decode(&gotBook)
 
 	assert.NoError(t, err)
-
 }
 
 func TestHandler_Delete(t *testing.T) {

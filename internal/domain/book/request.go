@@ -11,7 +11,7 @@ import (
 )
 
 type Request struct {
-	BookID        int64  `json:"-"`
+	Id            int64  `json:"-"`
 	Title         string `json:"title" validate:"required"`
 	PublishedDate string `json:"published_date" validate:"required"`
 	ImageURL      string `json:"image_url" validate:"url"`
@@ -24,7 +24,7 @@ func Bind(body io.ReadCloser, b *Request) error {
 
 func ToBook(req *Request) *models.Book {
 	return &models.Book{
-		BookID:        req.BookID,
+		ID:            req.Id,
 		Title:         req.Title,
 		PublishedDate: now.MustParse(req.PublishedDate),
 		ImageURL: null.String{

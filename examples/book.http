@@ -2,7 +2,7 @@
 # for vscode users, install `REST Client` to use these example.
 
 ### Create a new book
-# curl --location --request POST 'http://localhost:3080/api/v1/book' --header 'Content-Type: application/json' --data-raw '{"title": "Test title","image_url": "https://example.com","published_date": "2020-07-31T15:04:05.123499999Z","description": "test description"}'
+# curl -X POST 'http://localhost:3080/api/v1/book' --header 'Content-Type: application/json' --data-raw '{"title": "Test title","image_url": "https://example.com","published_date": "2020-07-31T15:04:05.123499999Z","description": "test description"}'
 POST http://localhost:3080/api/v1/book
 Content-Type: application/json
 
@@ -15,25 +15,25 @@ Content-Type: application/json
 
 
 ### List all books, by default gets the first 10 books when ordered desc
-# curl --location --request GET 'http://localhost:3080/api/v1/book'
+# curl -X GET 'http://localhost:3080/api/v1/book'
 GET http://localhost:3080/api/v1/book
 Accept: application/json
 
 
 ### List paginated books
-# curl --location --request GET 'http://localhost:3080/api/v1/book?page=2&size=10'
+# curl -X GET 'http://localhost:3080/api/v1/book?page=2&size=10'
 GET http://localhost:3080/api/v1/book?page=1&size=10
 Accept: application/json
 
 
 ### Get one book
-# curl --location --request POST 'http://localhost:3080/api/v1/book/1
+# curl -X POST 'http://localhost:3080/api/v1/book/1
 GET http://localhost:3080/api/v1/book/1
 Accept: application/json
 
 
 ### Updates a new book
-# curl --location --request PUT 'http://localhost:3080/api/v1/book' --header 'Content-Type: application/json' --data-raw '{"title": "dsgs","image_url": "http://example.com","published_date": "2020-07-31T15:04:05.123499999Z","description": "test descr updated"}'
+# curl -X PUT 'http://localhost:3080/api/v1/book' --header 'Content-Type: application/json' --data-raw '{"title": "dsgs","image_url": "http://example.com","published_date": "2020-07-31T15:04:05.123499999Z","description": "test descr updated"}'
 PUT  http://localhost:3080/api/v1/book/1
 Content-Type: application/json
 
@@ -46,6 +46,6 @@ Content-Type: application/json
 
 
 ### Delete a book
-# curl --location --request DELETE 'http://localhost:3080/api/v1/book/1
+# curl -X DELETE 'http://localhost:3080/api/v1/book/1
 DELETE http://localhost:3080/api/v1/book/1
 Accept: application/json

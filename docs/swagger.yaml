@@ -37,33 +37,7 @@ definitions:
     properties:
       books:
         items:
-          $ref: '#/definitions/author.Book'
-        type: array
-      first_name:
-        type: string
-      id:
-        type: integer
-      last_name:
-        type: string
-      middle_name:
-        type: string
-    type: object
-  author.Res:
-    properties:
-      first_name:
-        type: string
-      id:
-        type: integer
-      last_name:
-        type: string
-      middle_name:
-        type: string
-    type: object
-  author.ResWithBooks:
-    properties:
-      books:
-        items:
-          $ref: '#/definitions/book.Res'
+          $ref: '#/definitions/gen.Book'
         type: array
       first_name:
         type: string
@@ -102,16 +76,69 @@ definitions:
     type: object
   book.Res:
     properties:
-      book_id:
-        type: integer
       description:
         type: string
+      id:
+        type: integer
       image_url:
         type: string
       published_date:
         type: string
       title:
         type: string
+    type: object
+  gen.Author:
+    properties:
+      edges:
+        $ref: '#/definitions/gen.AuthorEdges'
+        description: |-
+          Edges holds the relations/edges for other nodes in the graph.
+          The values are being populated by the AuthorQuery when eager-loading is set.
+      first_name:
+        description: FirstName holds the value of the "first_name" field.
+        type: string
+      id:
+        description: ID of the ent.
+        type: integer
+      last_name:
+        description: LastName holds the value of the "last_name" field.
+        type: string
+      middle_name:
+        description: MiddleName holds the value of the "middle_name" field.
+        type: string
+    type: object
+  gen.AuthorEdges:
+    properties:
+      books:
+        description: Books holds the value of the books edge.
+        items:
+          $ref: '#/definitions/gen.Book'
+        type: array
+    type: object
+  gen.Book:
+    properties:
+      edges:
+        $ref: '#/definitions/gen.BookEdges'
+        description: |-
+          Edges holds the relations/edges for other nodes in the graph.
+          The values are being populated by the BookQuery when eager-loading is set.
+      id:
+        description: ID of the ent.
+        type: integer
+      published_date:
+        description: PublishedDate holds the value of the "published_date" field.
+        type: string
+      title:
+        description: Title holds the value of the "title" field.
+        type: string
+    type: object
+  gen.BookEdges:
+    properties:
+      authors:
+        description: Authors holds the value of the authors edge.
+        items:
+          $ref: '#/definitions/gen.Author'
+        type: array
     type: object
   respond.Meta:
     properties:
@@ -132,10 +159,10 @@ info:
     email: gmhafiz@gmail.com
     name: Hafiz Shafruddin
     url: https://github.com/gmhafiz/go8
-  description: Go + Postgres + Chi router + sqlx + sqlboiler + Unit Testing starter
-    kit for API development.
+  description: Go + Postgres + Chi router + sqlx + ent + Unit Testing starter kit
+    for API development.
   title: Go8
-  version: 0.11.0
+  version: 0.12.0
 paths:
   /api/v1/author:
     get:
@@ -147,13 +174,25 @@ paths:
         in: query
         name: page
         type: string
-      - description: size of result
+      - description: limit of result
         in: query
-        name: size
+        name: limit
         type: string
-      - description: search by name
+      - description: result offset
         in: query
-        name: name
+        name: offset
+        type: string
+      - description: search by first_name
+        in: query
+        name: first_name
+        type: string
+      - description: search by last_name
+        in: query
+        name: last_name
+        type: string
+      - description: sort by fields name. E.g. first_name,asc
+        in: query
+        name: sort
         type: string
       produces:
       - application/json
@@ -231,7 +270,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/author.ResWithBooks'
+            $ref: '#/definitions/gen.Author'
         "400":
           description: Bad Request
           schema:
@@ -258,9 +297,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/author.Res'
-            type: array
+            $ref: '#/definitions/gen.Author'
         "400":
           description: Bad Request
           schema:

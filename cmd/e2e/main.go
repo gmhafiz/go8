@@ -114,7 +114,7 @@ func testAddOneBook(t *E2eTest) int64 {
 	}
 
 	log.Println("testAddOneBook passes")
-	return got.BookID
+	return got.ID
 }
 
 func testGetOneBook(t *E2eTest, id int64) int64 {
@@ -149,12 +149,12 @@ func testGetOneBook(t *E2eTest, id int64) int64 {
 
 	log.Println("testGetBook passes")
 
-	return got.BookID
+	return got.ID
 }
 
 func testUpdateBook(t *E2eTest, bookID int64) {
 	newBook := book.Request{
-		BookID:        bookID,
+		Id:            bookID,
 		Title:         "updated title",
 		PublishedDate: "2020-07-31T15:04:05.123499999Z",
 		ImageURL:      "https://example.com/image.png",
@@ -168,7 +168,7 @@ func testUpdateBook(t *E2eTest, bookID int64) {
 		log.Fatal(err)
 	}
 
-	url := fmt.Sprintf("http://localhost:%s/api/v1/books/%d", t.server.Config().Api.Port, newBook.BookID)
+	url := fmt.Sprintf("http://localhost:%s/api/v1/books/%d", t.server.Config().Api.Port, newBook.Id)
 
 	req, err := http.NewRequest(http.MethodPut, url, bytes.NewBuffer(bR))
 	if err != nil {
@@ -196,7 +196,7 @@ func testUpdateBook(t *E2eTest, bookID int64) {
 		log.Println(err)
 	}
 
-	if got.BookID != newBook.BookID && got.Title != newBook.Title && got.Description.String != newBook.Description && got.ImageURL.String != newBook.ImageURL {
+	if got.ID != newBook.Id && got.Title != newBook.Title && got.Description.String != newBook.Description && got.ImageURL.String != newBook.ImageURL {
 		if err != nil {
 			log.Fatalf("returned resource does not match. want %v, got %v", respBody, got)
 		}

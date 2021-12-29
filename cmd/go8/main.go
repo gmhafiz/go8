@@ -1,17 +1,16 @@
 package main
 
 import (
-	"log"
-
 	"github.com/gmhafiz/go8/internal/server"
+	"log"
 )
 
 // Version is injected using ldflags during build time
-var Version = "v0.11.1"
+var Version = "v0.12.0"
 
 // @title Go8
-// @version 0.11.0
-// @description Go + Postgres + Chi router + sqlx + sqlboiler + Unit Testing starter kit for API development.
+// @version 0.12.0
+// @description Go + Postgres + Chi router + sqlx + ent + Unit Testing starter kit for API development.
 // @contact.name Hafiz Shafruddin
 // @contact.url https://github.com/gmhafiz/go8
 // @contact.email gmhafiz@gmail.com

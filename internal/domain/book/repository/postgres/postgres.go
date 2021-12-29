@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-
 	"github.com/friendsofgo/errors"
 	"github.com/jmoiron/sqlx"
 
@@ -16,12 +15,12 @@ type repository struct {
 }
 
 const (
-	InsertIntoBooks         = "INSERT INTO \"books\" (title, published_date, image_url, description) VALUES ($1, $2, $3, $4) RETURNING book_id"
+	InsertIntoBooks         = "INSERT INTO \"books\" (title, published_date, image_url, description) VALUES ($1, $2, $3, $4) RETURNING id"
 	SelectFromBooks         = "SELECT * FROM books ORDER BY created_at DESC"
 	SelectFromBooksPaginate = "SELECT * FROM books ORDER BY created_at DESC LIMIT $1 OFFSET $2"
-	SelectBookByID          = "SELECT * FROM books where book_id = $1"
-	UpdateBook              = "UPDATE books set title = $1, description = $2, published_date = $3, image_url = $4 where book_id = $5"
-	DeleteByID              = "DELETE FROM books where book_id = ($1)"
+	SelectBookByID          = "SELECT * FROM books where id = $1"
+	UpdateBook              = "UPDATE books set title = $1, description = $2, published_date = $3, image_url = $4 where id = $5"
+	DeleteByID              = "DELETE FROM books where id = ($1)"
 	SearchBooks             = "SELECT * FROM books where title like '%' || $1 || '%' and description like '%'|| $2 || '%' ORDER BY published_date DESC"
 	SearchBooksPaginate     = "SELECT * FROM books where title like '%' || '%' || $1 || '%' || '%' and description like '%'|| $2 || '%' ORDER BY published_date DESC LIMIT $3 OFFSET $4"
 )
@@ -36,7 +35,7 @@ func (r *repository) Create(ctx context.Context, book *models.Book) (int64, erro
 		return 0, errors.Wrapf(err, "book.repository.Create")
 	}
 
-	return book.BookID, nil
+	return book.ID, nil
 }
 
 func (r *repository) List(ctx context.Context, f *book.Filter) ([]*models.Book, error) {
@@ -70,7 +69,7 @@ func (r *repository) Read(ctx context.Context, bookID int64) (*models.Book, erro
 
 func (r *repository) Update(ctx context.Context, book *models.Book) error {
 	_, err := r.db.ExecContext(ctx, UpdateBook, book.Title, book.Description,
-		book.PublishedDate, book.ImageURL, book.BookID)
+		book.PublishedDate, book.ImageURL, book.ID)
 	if err != nil {
 		return err
 	}

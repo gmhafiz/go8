@@ -46,14 +46,32 @@ var doc = `{
                     },
                     {
                         "type": "string",
-                        "description": "size of result",
-                        "name": "size",
+                        "description": "limit of result",
+                        "name": "limit",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "search by name",
-                        "name": "name",
+                        "description": "result offset",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "search by first_name",
+                        "name": "first_name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "search by last_name",
+                        "name": "last_name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "sort by fields name. E.g. first_name,asc",
+                        "name": "sort",
                         "in": "query"
                     }
                 ],
@@ -137,7 +155,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/author.ResWithBooks"
+                            "$ref": "#/definitions/gen.Author"
                         }
                     },
                     "400": {
@@ -178,10 +196,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/author.Res"
-                            }
+                            "$ref": "#/definitions/gen.Author"
                         }
                     },
                     "400": {
@@ -525,47 +540,7 @@ var doc = `{
                 "books": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/author.Book"
-                    }
-                },
-                "first_name": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "last_name": {
-                    "type": "string"
-                },
-                "middle_name": {
-                    "type": "string"
-                }
-            }
-        },
-        "author.Res": {
-            "type": "object",
-            "properties": {
-                "first_name": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "last_name": {
-                    "type": "string"
-                },
-                "middle_name": {
-                    "type": "string"
-                }
-            }
-        },
-        "author.ResWithBooks": {
-            "type": "object",
-            "properties": {
-                "books": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/book.Res"
+                        "$ref": "#/definitions/gen.Book"
                     }
                 },
                 "first_name": {
@@ -624,11 +599,11 @@ var doc = `{
         "book.Res": {
             "type": "object",
             "properties": {
-                "book_id": {
-                    "type": "integer"
-                },
                 "description": {
                     "type": "string"
+                },
+                "id": {
+                    "type": "integer"
                 },
                 "image_url": {
                     "type": "string"
@@ -638,6 +613,76 @@ var doc = `{
                 },
                 "title": {
                     "type": "string"
+                }
+            }
+        },
+        "gen.Author": {
+            "type": "object",
+            "properties": {
+                "edges": {
+                    "description": "Edges holds the relations/edges for other nodes in the graph.\nThe values are being populated by the AuthorQuery when eager-loading is set.",
+                    "$ref": "#/definitions/gen.AuthorEdges"
+                },
+                "first_name": {
+                    "description": "FirstName holds the value of the \"first_name\" field.",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "ID of the ent.",
+                    "type": "integer"
+                },
+                "last_name": {
+                    "description": "LastName holds the value of the \"last_name\" field.",
+                    "type": "string"
+                },
+                "middle_name": {
+                    "description": "MiddleName holds the value of the \"middle_name\" field.",
+                    "type": "string"
+                }
+            }
+        },
+        "gen.AuthorEdges": {
+            "type": "object",
+            "properties": {
+                "books": {
+                    "description": "Books holds the value of the books edge.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/gen.Book"
+                    }
+                }
+            }
+        },
+        "gen.Book": {
+            "type": "object",
+            "properties": {
+                "edges": {
+                    "description": "Edges holds the relations/edges for other nodes in the graph.\nThe values are being populated by the BookQuery when eager-loading is set.",
+                    "$ref": "#/definitions/gen.BookEdges"
+                },
+                "id": {
+                    "description": "ID of the ent.",
+                    "type": "integer"
+                },
+                "published_date": {
+                    "description": "PublishedDate holds the value of the \"published_date\" field.",
+                    "type": "string"
+                },
+                "title": {
+                    "description": "Title holds the value of the \"title\" field.",
+                    "type": "string"
+                }
+            }
+        },
+        "gen.BookEdges": {
+            "type": "object",
+            "properties": {
+                "authors": {
+                    "description": "Authors holds the value of the authors edge.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/gen.Author"
+                    }
                 }
             }
         },
@@ -675,12 +720,12 @@ type swaggerInfo struct {
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = swaggerInfo{
-	Version:     "0.11.0",
+	Version:     "0.12.0",
 	Host:        "localhost:3080",
 	BasePath:    "/",
 	Schemes:     []string{},
 	Title:       "Go8",
-	Description: "Go + Postgres + Chi router + sqlx + sqlboiler + Unit Testing starter kit for API development.",
+	Description: "Go + Postgres + Chi router + sqlx + ent + Unit Testing starter kit for API development.",
 }
 
 type s struct{}

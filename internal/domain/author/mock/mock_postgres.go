@@ -8,8 +8,8 @@ import (
 	context "context"
 	reflect "reflect"
 
+	gen "github.com/gmhafiz/go8/ent/gen"
 	author "github.com/gmhafiz/go8/internal/domain/author"
-	models "github.com/gmhafiz/go8/internal/models"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -37,10 +37,10 @@ func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockRepository) Create(ctx context.Context, r *models.Author) (int64, error) {
+func (m *MockRepository) Create(ctx context.Context, r author.CreateRequest) (*gen.Author, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", ctx, r)
-	ret0, _ := ret[0].(int64)
+	ret0, _ := ret[0].(*gen.Author)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -49,21 +49,6 @@ func (m *MockRepository) Create(ctx context.Context, r *models.Author) (int64, e
 func (mr *MockRepositoryMockRecorder) Create(ctx, r interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockRepository)(nil).Create), ctx, r)
-}
-
-// CreateRead mocks base method.
-func (m *MockRepository) CreateRead(ctx context.Context, r author.CreateRequest) (*author.CreateResponse, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateRead", ctx, r)
-	ret0, _ := ret[0].(*author.CreateResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CreateRead indicates an expected call of CreateRead.
-func (mr *MockRepositoryMockRecorder) CreateRead(ctx, r interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRead", reflect.TypeOf((*MockRepository)(nil).CreateRead), ctx, r)
 }
 
 // Delete mocks base method.
@@ -81,10 +66,10 @@ func (mr *MockRepositoryMockRecorder) Delete(ctx, authorID interface{}) *gomock.
 }
 
 // List mocks base method.
-func (m *MockRepository) List(ctx context.Context, f *author.Filter) ([]*models.Author, int64, error) {
+func (m *MockRepository) List(ctx context.Context, f *author.Filter) ([]*gen.Author, int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "List", ctx, f)
-	ret0, _ := ret[0].([]*models.Author)
+	ret0, _ := ret[0].([]*gen.Author)
 	ret1, _ := ret[1].(int64)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
@@ -97,48 +82,33 @@ func (mr *MockRepositoryMockRecorder) List(ctx, f interface{}) *gomock.Call {
 }
 
 // Read mocks base method.
-func (m *MockRepository) Read(ctx context.Context, authorID uint64) (*models.Author, error) {
+func (m *MockRepository) Read(ctx context.Context, id uint64) (*gen.Author, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Read", ctx, authorID)
-	ret0, _ := ret[0].(*models.Author)
+	ret := m.ctrl.Call(m, "Read", ctx, id)
+	ret0, _ := ret[0].(*gen.Author)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Read indicates an expected call of Read.
-func (mr *MockRepositoryMockRecorder) Read(ctx, authorID interface{}) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) Read(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Read", reflect.TypeOf((*MockRepository)(nil).Read), ctx, authorID)
-}
-
-// ReadWithBooks mocks base method.
-func (m *MockRepository) ReadWithBooks(ctx context.Context, id uint64) (*author.WithBooks, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReadWithBooks", ctx, id)
-	ret0, _ := ret[0].(*author.WithBooks)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ReadWithBooks indicates an expected call of ReadWithBooks.
-func (mr *MockRepositoryMockRecorder) ReadWithBooks(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadWithBooks", reflect.TypeOf((*MockRepository)(nil).ReadWithBooks), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Read", reflect.TypeOf((*MockRepository)(nil).Read), ctx, id)
 }
 
 // Update mocks base method.
-func (m *MockRepository) Update(ctx context.Context, author *models.Author) (*models.Author, error) {
+func (m *MockRepository) Update(ctx context.Context, toAuthor *author.Update) (*gen.Author, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", ctx, author)
-	ret0, _ := ret[0].(*models.Author)
+	ret := m.ctrl.Call(m, "Update", ctx, toAuthor)
+	ret0, _ := ret[0].(*gen.Author)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockRepositoryMockRecorder) Update(ctx, author interface{}) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) Update(ctx, toAuthor interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockRepository)(nil).Update), ctx, author)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockRepository)(nil).Update), ctx, toAuthor)
 }
 
 // MockSearcher is a mock of Searcher interface.
@@ -165,10 +135,10 @@ func (m *MockSearcher) EXPECT() *MockSearcherMockRecorder {
 }
 
 // Search mocks base method.
-func (m *MockSearcher) Search(ctx context.Context, f *author.Filter) ([]*models.Author, int64, error) {
+func (m *MockSearcher) Search(ctx context.Context, f *author.Filter) ([]*gen.Author, int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Search", ctx, f)
-	ret0, _ := ret[0].([]*models.Author)
+	ret0, _ := ret[0].([]*gen.Author)
 	ret1, _ := ret[1].(int64)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2

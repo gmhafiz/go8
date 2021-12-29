@@ -3,6 +3,7 @@ package author
 import (
 	"context"
 	"errors"
+	"log"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
@@ -13,6 +14,8 @@ import (
 	"github.com/gmhafiz/go8/internal/utility/respond"
 	"github.com/gmhafiz/go8/internal/utility/validate"
 )
+
+//go:generate ent generate --target ../../../../../ent/gen ../../../../../ent/schema
 
 type HTTP interface {
 	Create(w http.ResponseWriter, r *http.Request)
@@ -60,6 +63,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 
 	create, err := h.useCase.Create(r.Context(), req)
 	if err != nil {
+		log.Println(err)
 		respond.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -73,8 +77,11 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param page query string false "page number"
-// @Param size query string false "size of result"
-// @Param name query string false "search by name"
+// @Param limit query string false "limit of result"
+// @Param offset query string false "result offset"
+// @Param first_name query string false "search by first_name"
+// @Param last_name query string false "search by last_name"
+// @Param sort query string false "sort by fields name. E.g. first_name,asc"
 // @Success 200 {object} respond.Standard
 // @Failure 500 {string} Internal Server Error
 // @router /api/v1/author [get]
@@ -87,18 +94,13 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 
 	authors, total, err := h.useCase.List(ctx, filters)
 	if err != nil {
-		respond.Error(w, http.StatusInternalServerError, err)
-		return
-	}
-
-	list, err := author.Resources(authors)
-	if err != nil {
+		log.Println(err)
 		respond.Error(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	respond.Json(w, http.StatusOK, respond.Standard{
-		Data: list,
+		Data: authors,
 		Meta: respond.Meta{
 			Size:  len(authors),
 			Total: total,
@@ -112,7 +114,7 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param id path int true "author ID"
-// @Success 200 {object} author.ResWithBooks
+// @Success 200 {object} gen.Author
 // @Failure 400 {string} Bad Request
 // @Failure 500 {string} Internal Server Error
 // @router /api/v1/author/{id} [get]
@@ -121,15 +123,14 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 
 	ctx := context.WithValue(r.Context(), author.CacheURL, r.URL.String())
 
-	a, err := h.useCase.ReadWithBooks(ctx, uint64(authorID))
+	res, err := h.useCase.Read(ctx, uint64(authorID))
 	if err != nil {
+		log.Println(err)
 		respond.Error(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	res := author.ResourceWithBooks(a)
-
-	respond.Render(w, http.StatusOK, res)
+	respond.Json(w, http.StatusOK, res)
 }
 
 // Update an author
@@ -138,7 +139,7 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param Author body author.Update true "Author Request"
-// @Success 200 {object} []author.Res
+// @Success 200 {object} gen.Author
 // @Failure 400 {string} Bad Request
 // @Failure 500 {string} Internal Server Error
 // @router /api/v1/author/{id} [put]
@@ -161,16 +162,12 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 
 	updated, err := h.useCase.Update(ctx, &req)
 	if err != nil {
+		log.Println(err)
 		respond.Error(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	res, err := author.ResourceUpdate(updated)
-	if err != nil {
-		respond.Error(w, http.StatusInternalServerError, err)
-	}
-
-	respond.Render(w, http.StatusOK, res)
+	respond.Json(w, http.StatusOK, updated)
 }
 
 // Delete an author by its ID
@@ -193,6 +190,7 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	err := h.useCase.Delete(ctx, id)
 	if err != nil {
+		log.Println(err)
 		if errors.Is(err, respond.ErrNoRecord) {
 			respond.Error(w, http.StatusBadRequest, err)
 			return

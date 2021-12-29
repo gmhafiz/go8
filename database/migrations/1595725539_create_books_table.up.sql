@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS books
 (
-    book_id bigserial,
+    id bigserial,
     title varchar(255) not null,
     published_date timestamp with time zone not null,
     image_url varchar(255),
@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS books
     created_at timestamp with time zone default current_timestamp,
     updated_at timestamp with time zone,
     deleted_at timestamp with time zone,
-    primary key (book_id)
+    primary key (id)
 );
 
 CREATE OR REPLACE FUNCTION update_updated_at_column()

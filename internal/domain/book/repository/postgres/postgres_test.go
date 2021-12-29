@@ -38,14 +38,14 @@ func TestRepository_Create(t *testing.T) {
 	ctx := context.Background()
 
 	bookTest := &models.Book{
-		BookID:        1,
+		ID:            1,
 		Title:         "test1",
 		PublishedDate: timeWant(t),
-		Description:   "test1",
 		ImageURL: null.String{
 			String: "https://example.com/image.png",
 			Valid:  true,
 		},
+		Description: "test1",
 	}
 	mock.ExpectExec("^INSERT INTO \"books.*").
 		WithArgs(bookTest.Title, bookTest.PublishedDate, bookTest.ImageURL, bookTest.Description).
@@ -69,7 +69,7 @@ func testDisablePaging(t *testing.T) {
 	repo := New(db)
 
 	mockBook := &models.Book{
-		BookID:        1,
+		ID:            1,
 		Title:         "test1",
 		PublishedDate: timeWant(t),
 		ImageURL: null.String{
@@ -87,8 +87,8 @@ func testDisablePaging(t *testing.T) {
 		},
 	}
 	mock.ExpectQuery("SELECT (.+) FROM books ORDER BY").
-		WillReturnRows(sqlmock.NewRows([]string{"book_id", "title", "published_date", "image_url", "description"}).
-			AddRow(mockBook.BookID, mockBook.Title, mockBook.PublishedDate, mockBook.ImageURL.String, mockBook.Description),
+		WillReturnRows(sqlmock.NewRows([]string{"id", "title", "published_date", "image_url", "description"}).
+			AddRow(mockBook.ID, mockBook.Title, mockBook.PublishedDate, mockBook.ImageURL.String, mockBook.Description),
 		)
 
 	gotBooks, err := repo.List(context.Background(), f)
@@ -102,7 +102,7 @@ func testPaginate(t *testing.T) {
 	repo := New(db)
 
 	mockBook := &models.Book{
-		BookID:        1,
+		ID:            1,
 		Title:         "test1",
 		PublishedDate: timeWant(t),
 		ImageURL: null.String{
@@ -121,8 +121,8 @@ func testPaginate(t *testing.T) {
 	}
 	mock.ExpectQuery("SELECT (.+) FROM books ORDER BY").
 		WithArgs(f.Base.Limit, f.Base.Offset).
-		WillReturnRows(sqlmock.NewRows([]string{"book_id", "title", "published_date", "image_url", "description"}).
-			AddRow(mockBook.BookID, mockBook.Title, mockBook.PublishedDate, mockBook.ImageURL.String, mockBook.Description),
+		WillReturnRows(sqlmock.NewRows([]string{"id", "title", "published_date", "image_url", "description"}).
+			AddRow(mockBook.ID, mockBook.Title, mockBook.PublishedDate, mockBook.ImageURL.String, mockBook.Description),
 		)
 
 	gotBooks, err := repo.List(context.Background(), f)
@@ -138,10 +138,10 @@ func TestRepository_Read(t *testing.T) {
 	ctx := context.Background()
 	bookID := int64(1)
 
-	bookCols := []string{"book_id", "title", "published_date", "image_url", "description"}
+	bookCols := []string{"id", "title", "published_date", "image_url", "description"}
 
 	mockBook := &models.Book{
-		BookID:        1,
+		ID:            1,
 		Title:         "test1",
 		PublishedDate: timeWant(t),
 		ImageURL: null.String{
@@ -151,9 +151,9 @@ func TestRepository_Read(t *testing.T) {
 		Description: "test1",
 	}
 
-	mock.ExpectQuery("^SELECT (.+) FROM books where book_id").
+	mock.ExpectQuery("^SELECT (.+) FROM books where id").
 		WithArgs(bookID).
-		WillReturnRows(sqlmock.NewRows(bookCols).AddRow(mockBook.BookID, mockBook.Title, mockBook.PublishedDate, mockBook.ImageURL, mockBook.Description))
+		WillReturnRows(sqlmock.NewRows(bookCols).AddRow(mockBook.ID, mockBook.Title, mockBook.PublishedDate, mockBook.ImageURL, mockBook.Description))
 
 	gotBook, err := repo.Read(ctx, bookID)
 	if err != nil {
@@ -168,7 +168,7 @@ func TestRepository_Update(t *testing.T) {
 	repo := New(db)
 
 	mockBook := &models.Book{
-		BookID:        1,
+		ID:            1,
 		Title:         "test1",
 		PublishedDate: timeWant(t),
 		ImageURL: null.String{
@@ -179,7 +179,7 @@ func TestRepository_Update(t *testing.T) {
 	}
 
 	mock.ExpectExec("UPDATE books set title").
-		WithArgs(mockBook.Title, mockBook.Description, mockBook.PublishedDate, mockBook.ImageURL.String, mockBook.BookID).
+		WithArgs(mockBook.Title, mockBook.Description, mockBook.PublishedDate, mockBook.ImageURL.String, mockBook.ID).
 		WillReturnResult(sqlmock.NewErrorResult(nil))
 
 	err := repo.Update(context.Background(), mockBook)

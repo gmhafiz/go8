@@ -2,13 +2,13 @@ package cache
 
 import (
 	"context"
+	"github.com/gmhafiz/go8/ent/gen"
 	"github.com/gmhafiz/go8/internal/domain/author/repository/database"
 	"strings"
 
 	lru "github.com/hashicorp/golang-lru"
 
 	"github.com/gmhafiz/go8/internal/domain/author"
-	"github.com/gmhafiz/go8/internal/models"
 )
 
 type AuthorLRU struct {
@@ -17,8 +17,8 @@ type AuthorLRU struct {
 }
 
 type AuthorLRUService interface {
-	ReadWithBooks(ctx context.Context, id uint64) (*author.WithBooks, error)
-	Update(ctx context.Context, toAuthor *models.Author) (*models.Author, error)
+	Read(ctx context.Context, id uint64) (*gen.Author, error)
+	Update(ctx context.Context, toAuthor *author.Update) (*gen.Author, error)
 	Delete(ctx context.Context, id int64) error
 }
 
@@ -34,18 +34,18 @@ func NewLRUCache(service database.Repository) *AuthorLRU {
 	}
 }
 
-func (c *AuthorLRU) ReadWithBooks(ctx context.Context, id uint64) (*author.WithBooks, error) {
+func (c *AuthorLRU) Read(ctx context.Context, id uint64) (*gen.Author, error) {
 	// (1) Picks up the key from context which is added in the handler layer.
 	url := ctx.Value(author.CacheURL).(string)
 
 	if val, ok := c.lru.Get(url); ok {
 		// (3) Simply cast the returned value.
-		return val.(*author.WithBooks), nil
+		return val.(*gen.Author), nil
 	}
 
 	// (2) If key doesn't exist or pushed off the LRU queue, we call the
 	//     repository layer.
-	res, err := c.service.ReadWithBooks(ctx, id)
+	res, err := c.service.Read(ctx, id)
 	if err != nil {
 		return nil, err
 	} else if res != nil {
@@ -55,7 +55,7 @@ func (c *AuthorLRU) ReadWithBooks(ctx context.Context, id uint64) (*author.WithB
 	return res, nil
 }
 
-func (c *AuthorLRU) Update(ctx context.Context, toAuthor *models.Author) (*models.Author, error) {
+func (c *AuthorLRU) Update(ctx context.Context, toAuthor *author.Update) (*gen.Author, error) {
 	c.invalidate(ctx)
 
 	return c.service.Update(ctx, toAuthor)

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"syscall"
 	"time"
 
 	chiMiddleware "github.com/go-chi/chi/middleware"
@@ -22,6 +23,7 @@ import (
 
 	"github.com/gmhafiz/go8/configs"
 	_ "github.com/gmhafiz/go8/docs"
+	"github.com/gmhafiz/go8/ent/gen"
 	"github.com/gmhafiz/go8/internal/middleware"
 	db "github.com/gmhafiz/go8/third_party/database"
 	redisLib "github.com/gmhafiz/go8/third_party/redis"
@@ -41,12 +43,21 @@ type Server struct {
 	httpServer *http.Server
 	validator  *validator.Validate
 	cache      *redis.Client
+	ent        *gen.Client
 }
 
 type Options func(opts *Server) error
 
+func defaultServer() *Server {
+	return &Server{
+		cfg:    configs.New(),
+		router: chi.NewRouter(),
+	}
+}
+
 func New(opts ...Options) *Server {
-	s := &Server{}
+	s := defaultServer()
+
 	for _, opt := range opts {
 		err := opt(s)
 		if err != nil {
@@ -54,20 +65,6 @@ func New(opts ...Options) *Server {
 		}
 	}
 	return s
-}
-
-func WithConfig() func(s *Server) error {
-	return func(s *Server) error {
-		s.cfg = configs.New()
-		return nil
-	}
-}
-
-func WithRouter() func(s *Server) error {
-	return func(s *Server) error {
-		s.router = chi.NewRouter()
-		return nil
-	}
 }
 
 func (s *Server) Init(version string) {
@@ -79,13 +76,6 @@ func (s *Server) Init(version string) {
 	s.newRouter()
 	s.setGlobalMiddleware()
 	s.InitDomains()
-	s.StartSwagger()
-}
-
-func (s *Server) StartSwagger() {
-	if s.cfg.Api.RunSwagger {
-		swaggerServer(s.router)
-	}
 }
 
 func (s *Server) newConfig() {
@@ -102,6 +92,20 @@ func (s *Server) newDatabase() {
 	}
 	s.db = db.NewSqlx(s.cfg)
 	s.db.SetMaxOpenConns(s.cfg.Database.MaxConnectionPool)
+
+	dsn := fmt.Sprintf("%s://%s/%s?sslmode=%s&user=%s&password=%s",
+		s.cfg.Database.Driver,
+		s.cfg.Database.Host,
+		s.cfg.Database.Name,
+		s.cfg.Database.SslMode,
+		s.cfg.Database.User,
+		s.cfg.Database.Pass)
+	client, err := gen.Open("postgres", dsn)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	s.ent = client
 }
 
 func (s *Server) newValidator() {
@@ -118,6 +122,7 @@ func (s *Server) setGlobalMiddleware() {
 		w.WriteHeader(http.StatusNotFound)
 		_, _ = w.Write([]byte(`{"error": "endpoint not found"}`))
 	})
+	s.router.Use(middleware.Json)
 	s.router.Use(middleware.CORS)
 	if s.cfg.Api.RequestLog {
 		s.router.Use(chiMiddleware.Logger)
@@ -163,11 +168,8 @@ func (s *Server) Migrate() {
 
 func (s *Server) Run() {
 	s.httpServer = &http.Server{
-		Addr:           s.cfg.Api.Host + ":" + s.cfg.Api.Port,
-		Handler:        s.router,
-		ReadTimeout:    s.cfg.Api.ReadTimeout,
-		WriteTimeout:   s.cfg.Api.WriteTimeout,
-		MaxHeaderBytes: 1 << 20,
+		Addr:    s.cfg.Api.Host + ":" + s.cfg.Api.Port,
+		Handler: s.router,
 	}
 
 	fmt.Println(`            .,*/(#####(/*,.                               .,*((###(/*.
@@ -183,23 +185,10 @@ func (s *Server) Run() {
          .*/###%%%%%%%###(/,      .,/##%%%%%##(/,.      .*(##%%%%%%##(*,
               .........                ......                .......`)
 	go func() {
-		log.Printf("Serving at %s:%s\n", s.cfg.Api.Host, s.cfg.Api.Port)
-		err := s.httpServer.ListenAndServe()
-		if err != nil {
-			log.Fatal(err)
-		}
+		start(s)
 	}()
 
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt)
-
-	<-quit
-
-	ctx, shutdown := context.WithTimeout(context.Background(), s.cfg.Api.IdleTimeout*time.Second)
-	defer shutdown()
-
-	_ = s.DB().Close()
-	_ = s.httpServer.Shutdown(ctx)
+	_ = gracefulShutdown(context.Background(), s)
 }
 
 func (s *Server) Config() *configs.Configs {
@@ -214,11 +203,6 @@ func (s *Server) Cache() *redis.Client {
 	return s.cache
 }
 
-func swaggerServer(router *chi.Mux) {
-	fileServer := http.FileServer(http.Dir(swaggerDocsAssetPath))
-	router.Handle("/swagger/*", http.StripPrefix("/swagger", fileServer))
-}
-
 func (s *Server) PrintAllRegisteredRoutes() {
 	walkFunc := func(method string, path string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
 		fmt.Printf("%-7s %s\n", method, path)
@@ -228,4 +212,28 @@ func (s *Server) PrintAllRegisteredRoutes() {
 	if err := chi.Walk(s.router, walkFunc); err != nil {
 		fmt.Print(err)
 	}
+}
+
+func start(s *Server) {
+	log.Printf("Serving at %s:%s\n", s.cfg.Api.Host, s.cfg.Api.Port)
+	err := s.httpServer.ListenAndServe()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func gracefulShutdown(ctx context.Context, s *Server) error {
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
+
+	<-quit
+
+	log.Println("Shutting down...")
+
+	ctx, shutdown := context.WithTimeout(ctx, s.Config().Api.GracefulTimeout*time.Second)
+	defer shutdown()
+
+	_ = s.DB().Close()
+
+	return s.httpServer.Shutdown(ctx)
 }

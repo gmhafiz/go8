@@ -17,7 +17,7 @@ However, I wanted to use [chi router](https://github.com/go-chi/chi) which is mo
 
 It is still in early stages, and I do not consider it is completed until all integration tests are completed.
 
-In short, this kit is a Go + Postgres + Chi Router + sqlx + sqlboiler + unit testing starter kit for API development.
+In short, this kit is a Go + Postgres + Chi Router + sqlx + ent + unit testing starter kit for API development.
 
 # Motivation
 
@@ -33,7 +33,7 @@ This kit is composed of standard Go library together with some well-known librar
   - [x] Framework-less and net/http compatible handler
   - [x] Router/Mux with [Chi Router](https://github.com/go-chi/chi)
   - [x] Database Operations with [sqlx](https://github.com/jmoiron/sqlx)
-  - [x] Database Operations with [sqlboiler](https://github.com/volatiletech/sqlboiler)
+  - [x] Database Operations with [ent](https://entgo.io/docs/getting-started)
   - [x] Database migration with [golang-migrate](https://github.com/golang-migrate/migrate/)
   - [x] Input [validation](https://github.com/go-playground/validator) that returns multiple error strings
   - [x] Read all configurations using a single `.env` file or environment variable
@@ -89,7 +89,7 @@ Run the API with the following command. For the first time run, dependencies wil
 
 You will see the address the API is running at as well as all registered routes.
 
-    2021/10/31 10:49:11 Starting API version: v0.11.0
+    2021/10/31 10:49:11 Starting API version: v0.12.0
     2021/10/31 10:49:11 Connecting to database...
     2021/10/31 10:49:11 Database connected
             .,*/(#####(/*,.                               .,*((###(/*.
@@ -242,7 +242,7 @@ Various tooling can be installed automatically by running which includes
     * Mock dependencies inside unit test
  * [golang-migrate](https://github.com/golang-migrate/migrate)
     * Migration tool
- * [sqlboiler](https://github.com/volatiletech/sqlboiler)
+ * [ent](https://entgo.io/docs/getting-started)
     * Database ORM tool
  * [gosec](https://github.com/securego/gosec)
     * Security Checker
@@ -955,7 +955,7 @@ To mock these,
 
 4. Returns a book ID
 
-    WillReturnRows(sqlmock.NewRows([]string{"book_id"}).AddRow(1))
+    WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 
 Next, call the `repo.Create()` function and perform assertions.
 
@@ -1002,7 +1002,7 @@ repo.EXPECT().Create(ctx, gomock.Eq(expected)).Return(bookID, err).Times(1)
 
 2. In `Read()`:
 * Receives a book ID
-* Return a book model with book_id == 1
+* Return a book model with id == 1
 
 Thus,
 

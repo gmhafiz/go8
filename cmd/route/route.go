@@ -12,12 +12,8 @@ var Version = "v0.1.0"
 
 func main() {
 	log.Printf("Starting API version: %s\n", Version)
-	s := server.New(
-		server.WithConfig(),
-		server.WithRouter(),
-	)
+	s := server.New()
 	s.InitDomains()
-	s.StartSwagger()
 	fmt.Println("Registered Routes:")
 	s.PrintAllRegisteredRoutes()
 }

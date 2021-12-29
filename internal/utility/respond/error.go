@@ -8,9 +8,9 @@ import (
 )
 
 var (
-	ErrBadRequest    = errors.New("bad request")
-	ErrNoRecord      = errors.New("no record found")
-	ErrInternalError = errors.New("internal")
+	ErrBadRequest          = errors.New("bad request")
+	ErrNoRecord            = errors.New("no record found")
+	ErrInternalServerError = errors.New("internal server error")
 
 	ErrDatabase       = errors.New("connecting to database")
 	ErrInvalidRequest = errors.New("invalid request")
@@ -25,11 +25,15 @@ func Errors(w http.ResponseWriter, statusCode int, errors []string) {
 	}
 
 	p := map[string][]string{
-		"error": errors,
+		"message": errors,
 	}
 	data, err := json.Marshal(p)
 	if err != nil {
 		log.Println(err)
+	}
+
+	if string(data) == "null" {
+		return
 	}
 
 	write(w, data)
@@ -45,12 +49,17 @@ func Error(w http.ResponseWriter, statusCode int, message error) {
 	}
 
 	p = map[string]string{
-		"error": message.Error(),
+		"message": message.Error(),
 	}
 	data, err := json.Marshal(p)
 	if err != nil {
 		log.Println(err)
 	}
+
+	if string(data) == "null" {
+		return
+	}
+
 	write(w, data)
 }
 

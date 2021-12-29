@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/friendsofgo/errors"
@@ -63,12 +64,9 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	b, err := book.Resource(bk)
-	if err != nil {
-		respond.Error(w, http.StatusInternalServerError, err)
-		return
-	}
-	respond.Render(w, http.StatusCreated, b)
+	b := book.Resource(bk)
+
+	respond.Json(w, http.StatusCreated, b)
 }
 
 // Get a book by its ID
@@ -87,18 +85,15 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 	b, err := h.useCase.Read(context.Background(), bookID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			respond.Error(w, http.StatusBadRequest, sql.ErrNoRows)
+			respond.Error(w, http.StatusBadRequest, fmt.Errorf("no book is found for this ID"))
 			return
 		}
 		respond.Error(w, http.StatusInternalServerError, nil)
 		return
 	}
-	list, err := book.Resource(b)
-	if err != nil {
-		respond.Error(w, http.StatusInternalServerError, nil)
-		return
-	}
-	respond.Render(w, http.StatusOK, list)
+	list := book.Resource(b)
+
+	respond.Json(w, http.StatusOK, list)
 }
 
 // List will fetch the article based on given params
@@ -150,7 +145,7 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respond.Render(w, http.StatusOK, list)
+	respond.Json(w, http.StatusOK, list)
 }
 
 // Update a book
@@ -172,7 +167,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 		respond.Error(w, http.StatusBadRequest, nil)
 		return
 	}
-	bookRequest.BookID = bookID
+	bookRequest.Id = bookID
 
 	errs := validate.Validate(h.validate, bookRequest)
 	if errs != nil {
@@ -186,13 +181,9 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := book.Resource(resp)
-	if err != nil {
-		respond.Error(w, http.StatusInternalServerError, err)
-		return
-	}
+	res := book.Resource(resp)
 
-	respond.Render(w, http.StatusOK, res)
+	respond.Json(w, http.StatusOK, res)
 }
 
 // Delete a book by its ID
@@ -213,5 +204,5 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respond.Render(w, http.StatusOK, nil)
+	respond.Json(w, http.StatusOK, nil)
 }

@@ -3,10 +3,6 @@ package author
 import (
 	"encoding/json"
 	"io"
-
-	"github.com/volatiletech/null/v8"
-
-	"github.com/gmhafiz/go8/internal/models"
 )
 
 type cacheKey string
@@ -49,18 +45,6 @@ func (r *Update) Bind(body io.ReadCloser) error {
 
 func (r *CreateRequest) Bind(body io.ReadCloser) error {
 	return json.NewDecoder(body).Decode(r)
-}
-
-func (r *Update) UpdateToAuthor(a *Update) *models.Author {
-	return &models.Author{
-		ID:        a.ID,
-		FirstName: a.FirstName,
-		MiddleName: null.String{
-			String: a.MiddleName,
-			Valid:  true,
-		},
-		LastName: a.LastName,
-	}
 }
 
 func (r *Request) Bind(body io.ReadCloser) error {

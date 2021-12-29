@@ -7,6 +7,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
+	"github.com/gmhafiz/go8/ent/gen"
 	"github.com/gmhafiz/go8/internal/domain/author"
 	"github.com/gmhafiz/go8/internal/models"
 )
@@ -21,7 +22,7 @@ func New(db *sqlx.DB) *repository {
 
 // Search using the same store. May use other store e.g. elasticsearch/bleve as
 // the search repository.
-func (r *repository) Search(ctx context.Context, f *author.Filter) ([]*models.Author, int64, error) {
+func (r *repository) Search(ctx context.Context, f *author.Filter) ([]*gen.Author, int64, error) {
 	var mods []qm.QueryMod
 
 	if f.Base.Limit != 0 {
@@ -53,9 +54,9 @@ func (r *repository) Search(ctx context.Context, f *author.Filter) ([]*models.Au
 	//
 	// Also, may use term frequency-inverted index search (tf-idf) like
 	// elasticsearch or bleve.
-	mods = append(mods, qm.Where(models.AuthorColumns.FirstName+" ILIKE ?", f.Name))
-	mods = append(mods, qm.Or(models.AuthorColumns.MiddleName+" ILIKE ?", f.Name))
-	mods = append(mods, qm.Or(models.AuthorColumns.LastName+" ILIKE ?", f.Name))
+	mods = append(mods, qm.Where(models.AuthorColumns.FirstName+" ILIKE ?", f.FirstName))
+	mods = append(mods, qm.Or(models.AuthorColumns.MiddleName+" ILIKE ?", f.MiddleName))
+	mods = append(mods, qm.Or(models.AuthorColumns.LastName+" ILIKE ?", f.LastName))
 
 	mods = append(mods, qm.OrderBy(models.AuthorColumns.UpdatedAt))
 
@@ -68,5 +69,19 @@ func (r *repository) Search(ctx context.Context, f *author.Filter) ([]*models.Au
 		return nil, 0, errors.Wrapf(err, "error committing Author list")
 	}
 
-	return all, total, nil
+	var authors []*gen.Author
+	for _, val := range all {
+		a := &gen.Author{
+			ID:         uint(val.ID),
+			FirstName:  val.FirstName,
+			MiddleName: val.MiddleName.String,
+			LastName:   val.LastName,
+			CreatedAt:  val.CreatedAt.Time,
+			UpdatedAt:  val.UpdatedAt.Time,
+			DeletedAt:  &val.DeletedAt.Time,
+		}
+		authors = append(authors, a)
+	}
+
+	return authors, total, nil
 }

@@ -22,6 +22,7 @@ import (
 
 func (s *Server) InitDomains() {
 	s.initVersion()
+	s.initSwagger()
 	s.initAuthor()
 	s.initHealth()
 	s.initBook()
@@ -43,6 +44,17 @@ func (s *Server) initHealth() {
 	healthHandlerHTTP.RegisterHTTPEndPoints(s.router, newHealthUseCase)
 }
 
+func (s *Server) initSwagger() {
+	if s.Config().Api.RunSwagger {
+		fileServer := http.FileServer(http.Dir(swaggerDocsAssetPath))
+		s.router.HandleFunc("/swagger", func(w http.ResponseWriter, r *http.Request) {
+			http.Redirect(w, r, "/swagger/", http.StatusMovedPermanently)
+		})
+		s.router.Handle("/swagger/", http.StripPrefix("/swagger", middleware.Html(fileServer)))
+		s.router.Handle("/swagger/*", http.StripPrefix("/swagger", middleware.Html(fileServer)))
+	}
+}
+
 func (s *Server) initBook() {
 	newBookRepo := bookRepo.New(s.DB())
 	newBookUseCase := bookUseCase.New(newBookRepo)
@@ -50,23 +62,16 @@ func (s *Server) initBook() {
 }
 
 func (s *Server) initAuthor() {
-	newAuthorRepo := authorRepo.New(s.DB())
+	newAuthorRepo := authorRepo.New(s.ent)
 	newLRUCache := authorCache.NewLRUCache(newAuthorRepo)
 	newRedisCache := authorCache.NewRedisCache(newAuthorRepo, s.Cache())
 	newAuthorSearchRepo := authorSearchRepo.New(s.DB())
-
-	newBookRepo := bookRepo.New(s.DB())
 
 	newAuthorUseCase := authorUseCase.New(
 		newAuthorRepo,
 		newAuthorSearchRepo,
 		newLRUCache,
 		newRedisCache,
-		newBookRepo,
 	)
-	authorHandlerHTTP.RegisterHTTPEndPoints(
-		authorHandlerHTTP.WithRouter(s.router),
-		authorHandlerHTTP.WithValidator(s.validator),
-		authorHandlerHTTP.WithUseCase(newAuthorUseCase),
-	)
+	authorHandlerHTTP.RegisterHTTPEndPoints(s.router, s.validator, newAuthorUseCase)
 }

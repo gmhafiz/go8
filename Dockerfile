@@ -24,6 +24,7 @@ LABEL com.gmhafiz.maintainers="User <author@example.com>"
 
 WORKDIR /App
 
+COPY --from=src /etc/ssl/certs/ /etc/ssl/certs/
 COPY --from=src /go/src/app/server /App/server
 
 # Docker cannot copy hidden .env file. So in Taskfile.yml, we make a copy of it.

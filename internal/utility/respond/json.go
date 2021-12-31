@@ -31,6 +31,7 @@ func Json(w http.ResponseWriter, statusCode int, payload interface{}) {
 	}
 
 	if string(data) == "null" {
+		_, _ = w.Write([]byte("[]"))
 		return
 	}
 

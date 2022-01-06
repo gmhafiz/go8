@@ -8,11 +8,11 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/jackc/pgx/stdlib"
 
-	"github.com/gmhafiz/go8/configs"
+	"github.com/gmhafiz/go8/config"
 	"github.com/gmhafiz/go8/internal/utility/database"
 )
 
-func New(cfg *configs.Configs) *sql.DB {
+func New(cfg *config.Config) *sql.DB {
 	var dsn string
 	switch cfg.Database.Driver {
 	case "postgres":

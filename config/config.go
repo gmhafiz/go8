@@ -1,4 +1,4 @@
-package configs
+package config
 
 import (
 	"log"
@@ -6,20 +6,20 @@ import (
 	"github.com/joho/godotenv"
 )
 
-type Configs struct {
+type Config struct {
 	Api           Api
 	Database      Database
 	Cache         Cache
 	Elasticsearch Elasticsearch
 }
 
-func New() *Configs {
+func New() *Config {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return &Configs{
+	return &Config{
 		Api:           API(),
 		Database:      DataStore(),
 		Cache:         NewCache(),

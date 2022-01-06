@@ -21,7 +21,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
 
-	"github.com/gmhafiz/go8/configs"
+	"github.com/gmhafiz/go8/config"
 	_ "github.com/gmhafiz/go8/docs"
 	"github.com/gmhafiz/go8/ent/gen"
 	"github.com/gmhafiz/go8/internal/middleware"
@@ -37,7 +37,7 @@ const (
 
 type Server struct {
 	version    string
-	cfg        *configs.Configs
+	cfg        *config.Config
 	db         *sqlx.DB
 	router     *chi.Mux
 	httpServer *http.Server
@@ -50,7 +50,7 @@ type Options func(opts *Server) error
 
 func defaultServer() *Server {
 	return &Server{
-		cfg:    configs.New(),
+		cfg:    config.New(),
 		router: chi.NewRouter(),
 	}
 }
@@ -79,7 +79,7 @@ func (s *Server) Init(version string) {
 }
 
 func (s *Server) newConfig() {
-	s.cfg = configs.New()
+	s.cfg = config.New()
 }
 
 func (s *Server) newRedis() {
@@ -191,7 +191,7 @@ func (s *Server) Run() {
 	_ = gracefulShutdown(context.Background(), s)
 }
 
-func (s *Server) Config() *configs.Configs {
+func (s *Server) Config() *config.Config {
 	return s.cfg
 }
 

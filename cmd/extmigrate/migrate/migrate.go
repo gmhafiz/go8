@@ -14,7 +14,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/jackc/pgx/stdlib"
 
-	"github.com/gmhafiz/go8/configs"
+	"github.com/gmhafiz/go8/config"
 )
 
 const (
@@ -27,11 +27,11 @@ var (
 )
 
 func Start() {
-	cfg := configs.New()
+	cfg := config.New()
 	up(cfg, ".")
 }
 
-func up(cfg *configs.Configs, changeDirTo string) {
+func up(cfg *config.Config, changeDirTo string) {
 	err := os.Chdir(changeDirTo)
 	if err != nil {
 		log.Fatal(err)

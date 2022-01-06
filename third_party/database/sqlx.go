@@ -8,11 +8,11 @@ import (
 	_ "github.com/jackc/pgx/stdlib"
 	"github.com/jmoiron/sqlx"
 
-	"github.com/gmhafiz/go8/configs"
+	"github.com/gmhafiz/go8/config"
 	"github.com/gmhafiz/go8/internal/utility/database"
 )
 
-func NewSqlx(cfg *configs.Configs) *sqlx.DB {
+func NewSqlx(cfg *config.Config) *sqlx.DB {
 	var dsn string
 	switch cfg.Database.Driver {
 	case "postgres":

@@ -154,7 +154,6 @@ To see all available routes, run
       + [Security Checks](#security-checks)
       + [Check](#check)
       + [Hot reload](#hot-reload)
-      + [Generate Model/ORM](#generate-modelorm)
       + [Generate Swagger Documentation](#generate-swagger-documentation)
       + [Go generate](#go-generate)
       + [Test Coverage](#test-coverage)
@@ -188,8 +187,6 @@ To see all available routes, run
       + [Use Case](#use-case)
       + [Handler](#handler)
       + [Initialize Domain](#initialize-domain)
-      + [Models](#models)
-         - [Generate Models](#generate-models)
    * [Middleware](#middleware)
    * [Dependency Injection](#dependency-injection)
    * [Libraries](#libraries)
@@ -322,13 +319,6 @@ Runs all the above tasks (Format Code until Security Checks)
     task dev
 
 Runs `air` which watches for file changes and rebuilds binary. Configure in `.air.toml` file.
-
-### Generate Model/ORM
-
-    task gen:orm
-
-Runs `sqlboiler` command to create models and ORM tailored to your database schema.
-
 
 ### Generate Swagger Documentation
     
@@ -672,33 +662,6 @@ func (s *Server) initBook() {
    bookHandler.RegisterHTTPEndPoints(s.router, newBookUseCase)
 }
 ```
-
-### Models
-
-All models are placed inside `/internal/models` folder. Putting all model files in one place is compatible with [sqlboiler](https://github.com/volatiletech/sqlboiler). `Sqlboiler` allows us to generate model go files automatically by 
-reading the database schema.
-
-Thus, `sqlboiler` needs to know database credentials. I use `sqlboiler.toml` to read necessary information according to which database you use. Copy the example toml file to `sqlboiler.toml`
-   
-      cp sqlboiler.toml.example sqlboiler.toml
-
-
-#### Generate Models
-
-Using `task`, install `sqlboiler` with
-
-      task install:sqlboiler
-
-Generate new model files with
-
-      task gen:orm
-
-This command replaces existing model files, add soft deletes `deleted_at` as well as adding an extra struct tag called `db`.
-
-Without `task`
-   
-      sqlboiler --wipe --add-soft-deletes -t db psql
-
 
 ## Middleware
 

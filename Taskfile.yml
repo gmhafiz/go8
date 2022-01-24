@@ -53,8 +53,9 @@ tasks:
 
   routes:
     desc: List all registered routes.
+    silent: true
     cmds:
-      - go run cmd/route/route.go
+      - go run cmd/route/main.go
 
   build:
     desc: Creates a compiled binary and copy configuration files into ./bin

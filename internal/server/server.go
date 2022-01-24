@@ -3,10 +3,16 @@ package server
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"math"
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
+	"reflect"
+	"runtime"
+	"strings"
 	"syscall"
 	"time"
 
@@ -20,6 +26,8 @@ import (
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
+	"github.com/jwalton/gchalk"
+	"golang.org/x/mod/modfile"
 
 	"github.com/gmhafiz/go8/config"
 	_ "github.com/gmhafiz/go8/docs"
@@ -203,15 +211,117 @@ func (s *Server) Cache() *redis.Client {
 	return s.cache
 }
 
-func (s *Server) PrintAllRegisteredRoutes() {
+// PrintAllRegisteredRoutes prints all registered routes from Chi router.
+// definitely can be an extension to the router instead.
+func (s *Server) PrintAllRegisteredRoutes(exceptions ...string) {
+	exceptions = append(exceptions, "/swagger")
+
 	walkFunc := func(method string, path string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
-		fmt.Printf("%-7s %s\n", method, path)
+
+		for _, val := range exceptions {
+			if strings.HasPrefix(path, val) {
+				return nil
+			}
+		}
+
+		switch method {
+		case "GET":
+			fmt.Printf("%s", gchalk.Green(fmt.Sprintf("%-8s", method)))
+		case "POST", "PUT", "PATCH":
+			fmt.Printf("%s", gchalk.Yellow(fmt.Sprintf("%-8s", method)))
+		case "DELETE":
+			fmt.Printf("%s", gchalk.Red(fmt.Sprintf("%-8s", method)))
+		default:
+			fmt.Printf("%s", gchalk.White(fmt.Sprintf("%-8s", method)))
+		}
+
+		//fmt.Printf("%-25s %60s\n", path, getHandler(getModName(), handler))
+		fmt.Printf("%s", strPad(path, 25, "-", "RIGHT"))
+		fmt.Printf("%s\n", strPad(getHandler(getModName(), handler), 60, "-", "LEFT"))
 
 		return nil
 	}
 	if err := chi.Walk(s.router, walkFunc); err != nil {
 		fmt.Print(err)
 	}
+
+	if s.cfg.Api.RunSwagger {
+		fmt.Printf("%s", gchalk.Green(fmt.Sprintf("%-8s", "GET")))
+		fmt.Printf("/swagger\n")
+	}
+}
+
+// StrPad returns the input string padded on the left, right or both sides using padType to the specified padding length padLength.
+//
+// Example:
+// input := "Codes";
+// StrPad(input, 10, " ", "RIGHT")        // produces "Codes     "
+// StrPad(input, 10, "-=", "LEFT")        // produces "=-=-=Codes"
+// StrPad(input, 10, "_", "BOTH")         // produces "__Codes___"
+// StrPad(input, 6, "___", "RIGHT")       // produces "Codes_"
+// StrPad(input, 3, "*", "RIGHT")         // produces "Codes"
+// taken from // https://gist.github.com/asessa/3aaec43d93044fc42b7c6d5f728cb039
+func strPad(input string, padLength int, padString string, padType string) string {
+	var output string
+
+	inputLength := len(input)
+	padStringLength := len(padString)
+
+	if inputLength >= padLength {
+		return input
+	}
+
+	repeat := math.Ceil(float64(1) + (float64(padLength-padStringLength))/float64(padStringLength))
+
+	switch padType {
+	case "RIGHT":
+		output = input + strings.Repeat(padString, int(repeat))
+		output = output[:padLength]
+	case "LEFT":
+		output = strings.Repeat(padString, int(repeat)) + input
+		output = output[len(output)-padLength:]
+	case "BOTH":
+		length := (float64(padLength - inputLength)) / float64(2)
+		repeat = math.Ceil(length / float64(padStringLength))
+		output = strings.Repeat(padString, int(repeat))[:int(math.Floor(float64(length)))] + input + strings.Repeat(padString, int(repeat))[:int(math.Ceil(float64(length)))]
+	}
+
+	return output
+}
+
+func getHandler(projectName string, handler http.Handler) (funcName string) {
+	// https://github.com/go-chi/chi/issues/424
+	funcName = runtime.FuncForPC(reflect.ValueOf(handler).Pointer()).Name()
+	base := filepath.Base(funcName)
+
+	nameSplit := strings.Split(funcName, "")
+	names := nameSplit[len(projectName):]
+	path := strings.Join(names, "")
+
+	pathSplit := strings.Split(path, "/")
+	path = strings.Join(pathSplit[:len(pathSplit)-1], "/")
+
+	sFull := strings.Split(base, ".")
+	s := sFull[len(sFull)-1:]
+
+	s = strings.Split(s[0], "")
+	if len(s) <= 4 && len(sFull) >= 3 {
+		s = sFull[len(sFull)-3 : len(sFull)-2]
+		return "@" + gchalk.Blue(fmt.Sprintf(strings.Join(s, "")))
+	}
+	s = s[:len(s)-3]
+	funcName = strings.Join(s, "")
+
+	return path + "@" + gchalk.Blue(funcName)
+}
+
+// adapted from https://stackoverflow.com/a/63393712/1033134
+func getModName() string {
+	goModBytes, err := ioutil.ReadFile("go.mod")
+	if err != nil {
+		os.Exit(0)
+	}
+	return modfile.ModulePath(goModBytes)
 }
 
 func start(s *Server) {

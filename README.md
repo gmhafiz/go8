@@ -13,7 +13,7 @@
               .........                ......                .......
 A starter kit for Go API development. Inspired by [How I write HTTP services after eight years](https://pace.dev/blog/2018/05/09/how-I-write-http-services-after-eight-years.html).
 
-However, I wanted to use [chi router](https://github.com/go-chi/chi) which is more common in the community, [sqlx](https://github.com/jmoiron/sqlx) for database operations and design towards layered architecture (handle -> business logic -> repository).
+However, I wanted to use [chi router](https://github.com/go-chi/chi) which is more common in the community, [sqlx](https://github.com/jmoiron/sqlx) for database operations and design towards layered architecture (handler -> business logic -> repository).
 
 It is still in early stages, and I do not consider it is completed until all integration tests are completed.
 
@@ -21,10 +21,9 @@ In short, this kit is a Go + Postgres + Chi Router + sqlx + ent + unit testing s
 
 # Motivation
 
-On the topic of API development, there are two opposing camps between a using framework (like [echo](https://github.com/labstack/echo), [gin](https://github.com/gin-gonic/gin), [buffalo](http://gobuffalo.io/)) and starting small and only add features you need through various libraries. 
+On the topic of API development, there are two opposing camps between using framework (like [echo](https://github.com/labstack/echo), [gin](https://github.com/gin-gonic/gin), [buffalo](http://gobuffalo.io/)) and starting small and only adding features you need through various libraries. 
 
-However, starting small and adding  features aren't that straightforward. Also, you will want to structure your project in such a way that there are clear separation of functionalities for your controller, business logic and database operations. Dependencies are injected from outside to inside. Swapping a router or database library to a different one becomes much easier.
-
+However, the second option isn't that straightforward. you will want to structure your project in such a way that there are clear separation of functionalities for your controller, business logic and database operations. Dependencies need to be injected from outside to inside. Being modular, swapping a library like a router or database library to a different one becomes much easier.
 
 # Features
 
@@ -114,25 +113,13 @@ To use, follow examples in the `examples/` folder
 
     curl --location --request GET 'http://localhost:3080/api/v1/book' | jq
 
-To see all available routes, run 
+To see all available routes, run
 
-    go run cmd/route/route.go
+```shell
+go run cmd/route/main.go
+```
 
-    Registered Routes:
-    POST    /api/v1/author/
-    GET     /api/v1/author/
-    GET     /api/v1/author/{id}
-    PUT     /api/v1/author/{id}
-    DELETE  /api/v1/author/{id}
-    GET     /api/v1/book/
-    POST    /api/v1/book/
-    DELETE  /api/v1/book/{bookID}
-    GET     /api/v1/book/{bookID}
-    PUT     /api/v1/book/{bookID}
-    GET     /health/
-    GET     /health/readiness
-    etc...
-
+![go run cmd/routes/main.go](assets/routes.png)
 
 
 # Table of Contents
@@ -611,13 +598,13 @@ Let us start by looking at how `repository` is implemented.
 
 ### Repository
 
-Starting with innermost circle, `Entities`. This is where all database operations are handled. Inside the `internal/domain/health` folder:
+Starting wit, `Entities`. This is where all database operations are handled. Inside the `internal/domain/health` folder:
 
 ![book-domain](assets/domain-health.png)
 
 Interfaces for both use case and repository are on its own file under the `health` package while its implementation are in `usecase` and `repository` package respectively.
 
-The `health` repository has only a single signature
+The `health` repository has a single method
 
 `internal/domain/health/repository.go`
 
@@ -1185,8 +1172,8 @@ For Ubuntu:
 
 ```shell
 sudo apt update && sudo apt install git curl build-essential jq
-wget https://golang.org/dl/go1.17.3.linux-amd64.tar.gz
-sudo tar -C /usr/local -xzf go1.17.3.linux-amd64.tar.gz
+wget https://golang.org/dl/go1.17.6.linux-amd64.tar.gz
+sudo tar -C /usr/local -xzf go1.17.6.linux-amd64.tar.gz
 export PATH=$PATH:/usr/local/go/bin
 echo 'PATH=$PATH:/usr/local/go/bin' >> ~/.bash_aliases
 source ~/.bashrc
@@ -1197,6 +1184,6 @@ sudo usermod -aG docker ${USER}
 newgrp docker
 su - ${USER} # or logout and login
 
-sudo curl -L "https://github.com/docker/compose/releases/download/v2.0.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo curl -L "https://github.com/docker/compose/releases/download/v2.2.3/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 ```

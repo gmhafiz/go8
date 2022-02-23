@@ -101,8 +101,9 @@ func (s *Server) newDatabase() {
 	s.db = db.NewSqlx(s.cfg)
 	s.db.SetMaxOpenConns(s.cfg.Database.MaxConnectionPool)
 
-	dsn := fmt.Sprintf("%s://%s/%s?sslmode=%s&user=%s&password=%s",
+	dsn := fmt.Sprintf("%s://%s:%s/%s?sslmode=%s&user=%s&password=%s",
 		s.cfg.Database.Driver,
+		s.cfg.Database.Port,
 		s.cfg.Database.Host,
 		s.cfg.Database.Name,
 		s.cfg.Database.SslMode,

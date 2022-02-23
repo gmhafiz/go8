@@ -42,13 +42,12 @@ func Errors(w http.ResponseWriter, statusCode int, errors []string) {
 func Error(w http.ResponseWriter, statusCode int, message error) {
 	w.WriteHeader(statusCode)
 
-	var p map[string]string
 	if message == nil {
 		write(w, nil)
 		return
 	}
 
-	p = map[string]string{
+	p := map[string]string{
 		"message": message.Error(),
 	}
 	data, err := json.Marshal(p)

@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+
 	"github.com/friendsofgo/errors"
 	"github.com/jmoiron/sqlx"
 
@@ -30,12 +31,14 @@ func New(db *sqlx.DB) *repository {
 }
 
 func (r *repository) Create(ctx context.Context, book *models.Book) (int64, error) {
-	_, err := r.db.ExecContext(ctx, InsertIntoBooks, book.Title, book.PublishedDate, book.ImageURL, book.Description)
+	var id int64
+	err := r.db.QueryRowxContext(ctx, InsertIntoBooks, book.Title, book.PublishedDate, book.ImageURL, book.Description).
+		Scan(&id)
 	if err != nil {
 		return 0, errors.Wrapf(err, "book.repository.Create")
 	}
 
-	return book.ID, nil
+	return id, nil
 }
 
 func (r *repository) List(ctx context.Context, f *book.Filter) ([]*models.Book, error) {

@@ -1,4 +1,4 @@
-FROM golang:1.17-buster AS src
+FROM golang:1.18-buster AS src
 
 WORKDIR /go/src/app/
 
@@ -14,9 +14,8 @@ COPY . ./
 RUN set -ex; \
     CGO_ENABLED=0 GOOS=linux go build -ldflags="-X main.Version=$(git describe --abbrev=0 --tags)-$(git rev-list -1 HEAD) -w -s" -o ./server ./cmd/go8/main.go;
 
-# Compress binary using upx https://upx.github.io/
-RUN apt update
-RUN apt install -y upx-ucl
+# Compress binary using upx https://upx.github.io/ and install CA certificates
+RUN apt update && apt install -y upx-ucl ca-certificates
 RUN upx ./server
 
 FROM scratch

@@ -16,7 +16,7 @@ type Config struct {
 func New() *Config {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	return &Config{

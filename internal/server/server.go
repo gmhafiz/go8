@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"math"
 	"net/http"
@@ -16,6 +15,9 @@ import (
 	"syscall"
 	"time"
 
+	"encoding/json"
+	"entgo.io/ent"
+	"entgo.io/ent/dialect"
 	chiMiddleware "github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
@@ -25,6 +27,7 @@ import (
 	"github.com/golang-migrate/migrate/v4/database/mysql"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	_ "github.com/jackc/pgx/stdlib"
 	"github.com/jmoiron/sqlx"
 	"github.com/jwalton/gchalk"
 	"golang.org/x/mod/modfile"
@@ -44,14 +47,18 @@ const (
 )
 
 type Server struct {
-	version    string
-	cfg        *config.Config
-	db         *sqlx.DB
+	Version string
+	cfg     *config.Config
+
+	db    *sqlx.DB
+	ent   *gen.Client
+	cache *redis.Client
+
+	validator  *validator.Validate
 	router     *chi.Mux
 	httpServer *http.Server
-	validator  *validator.Validate
-	cache      *redis.Client
-	ent        *gen.Client
+
+	Domain
 }
 
 type Options func(opts *Server) error
@@ -76,7 +83,7 @@ func New(opts ...Options) *Server {
 }
 
 func (s *Server) Init(version string) {
-	s.version = version
+	s.Version = version
 	s.newConfig()
 	s.newRedis()
 	s.newDatabase()
@@ -100,20 +107,18 @@ func (s *Server) newDatabase() {
 	}
 	s.db = db.NewSqlx(s.cfg)
 	s.db.SetMaxOpenConns(s.cfg.Database.MaxConnectionPool)
+	s.db.SetMaxIdleConns(s.cfg.Database.MaxIdleConnections)
+	s.db.SetConnMaxLifetime(s.cfg.Database.ConnectionsMaxLifeTime)
 
-	dsn := fmt.Sprintf("%s://%s/%s?sslmode=%s&user=%s&password=%s",
-		s.cfg.Database.Driver,
+	dsn := fmt.Sprintf("postgres://%s/%s?sslmode=%s&user=%s&password=%s",
 		s.cfg.Database.Host,
 		s.cfg.Database.Name,
 		s.cfg.Database.SslMode,
 		s.cfg.Database.User,
-		s.cfg.Database.Pass)
-	client, err := gen.Open("postgres", dsn)
-	if err != nil {
-		log.Fatal(err)
-	}
+		s.cfg.Database.Pass,
+	)
 
-	s.ent = client
+	s.newEnt(dsn)
 }
 
 func (s *Server) newValidator() {
@@ -131,6 +136,9 @@ func (s *Server) setGlobalMiddleware() {
 		_, _ = w.Write([]byte(`{"error": "endpoint not found"}`))
 	})
 	s.router.Use(middleware.Json)
+	s.router.Use(middleware.AuthN())
+	s.router.Use(middleware.Audit)
+	s.router.Use(middleware.CacheByURL)
 	s.router.Use(middleware.CORS)
 	if s.cfg.Api.RequestLog {
 		s.router.Use(chiMiddleware.Logger)
@@ -251,6 +259,35 @@ func (s *Server) PrintAllRegisteredRoutes(exceptions ...string) {
 	}
 }
 
+func (s *Server) newEnt(dsn string) {
+	client, err := gen.Open(dialect.Postgres, dsn)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	client.Use(func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, mutation ent.Mutation) (ent.Value, error) {
+			meta, ok := ctx.Value(middleware.AuditID).(middleware.Event)
+			if !ok {
+				return next.Mutate(ctx, mutation)
+			}
+
+			val, err := next.Mutate(ctx, mutation)
+
+			meta.Table = mutation.Type()
+			meta.Action = middleware.Action(mutation.Op().String())
+
+			newValues, _ := json.Marshal(val)
+			meta.NewValues = string(newValues)
+			log.Println(meta)
+
+			return val, err
+		})
+	})
+
+	s.ent = client
+}
+
 // StrPad returns the input string padded on the left, right or both sides using padType to the specified padding length padLength.
 //
 // Example:
@@ -307,7 +344,7 @@ func getHandler(projectName string, handler http.Handler) (funcName string) {
 	s = strings.Split(s[0], "")
 	if len(s) <= 4 && len(sFull) >= 3 {
 		s = sFull[len(sFull)-3 : len(sFull)-2]
-		return "@" + gchalk.Blue(fmt.Sprintf(strings.Join(s, "")))
+		return "@" + gchalk.Blue(strings.Join(s, ""))
 	}
 	s = s[:len(s)-3]
 	funcName = strings.Join(s, "")
@@ -317,7 +354,7 @@ func getHandler(projectName string, handler http.Handler) (funcName string) {
 
 // adapted from https://stackoverflow.com/a/63393712/1033134
 func getModName() string {
-	goModBytes, err := ioutil.ReadFile("go.mod")
+	goModBytes, err := os.ReadFile("go.mod")
 	if err != nil {
 		os.Exit(0)
 	}
@@ -344,6 +381,7 @@ func gracefulShutdown(ctx context.Context, s *Server) error {
 	defer shutdown()
 
 	_ = s.DB().Close()
+	s.cache.Shutdown(ctx)
 
 	return s.httpServer.Shutdown(ctx)
 }

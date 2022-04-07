@@ -73,12 +73,10 @@ tasks:
       - task generate
       - task swagger
       - task fmt
-      - task tidy
       - task vet
       - task golint
       - task security
       - task test
-      - task race
     silent: true
 
   clean:
@@ -186,19 +184,11 @@ tasks:
     cmds:
       - task: install:golangci
       - task: install:swagger
-      - task: install:gomock
       - task: install:golangmigrate
-      - task: install:sqlboiler
+      - task: install:mirip
       - task: install:gosec
       - task: install:air
     silent: true
-
-  install:sqlboiler:
-    desc: Install sqlboiler orm
-    cmds:
-      - go install github.com/volatiletech/sqlboiler/v4@latest
-      - go install github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-psql@latest
-      - go install github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mysql@latest
 
   install:golangci:
     desc: Install golangci linter
@@ -210,10 +200,10 @@ tasks:
     cmds:
       - go install  github.com/swaggo/swag/cmd/swag@latest
 
-  install:gomock:
-    desc: Install gomock testing framework
+  install:mirip:
+    desc: Install mock generator
     cmds:
-      - go install github.com/golang/mock/mockgen@latest
+      - go install github.com/gmhafiz/mirip@latest
 
   install:golangmigrate:
     desc: Install golang migration tool
@@ -231,3 +221,8 @@ tasks:
     desc: Install a hot reloader. Watch for file changes and automatically rebuilds binary
     cmds:
       - go install github.com/cosmtrek/air@latest
+
+  install:dockertest:
+    desc: Installs dockertest library
+    cmds:
+      - go get -u github.com/ory/dockertest/v3

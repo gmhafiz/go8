@@ -6,8 +6,6 @@ definitions:
         type: string
       id:
         type: integer
-      image_url:
-        type: string
       published_date:
         type: string
       title:
@@ -59,7 +57,7 @@ definitions:
       middle_name:
         type: string
     type: object
-  book.Request:
+  book.CreateRequest:
     properties:
       description:
         type: string
@@ -86,6 +84,21 @@ definitions:
         type: string
       title:
         type: string
+    type: object
+  book.UpdateRequest:
+    properties:
+      description:
+        type: string
+      image_url:
+        type: string
+      published_date:
+        type: string
+      title:
+        type: string
+    required:
+    - description
+    - published_date
+    - title
     type: object
   gen.Author:
     properties:
@@ -125,6 +138,9 @@ definitions:
       id:
         description: ID of the ent.
         type: integer
+      image_url:
+        description: ImageURL holds the value of the "image_url" field.
+        type: string
       published_date:
         description: PublishedDate holds the value of the "published_date" field.
         type: string
@@ -164,6 +180,25 @@ info:
   title: Go8
   version: 0.12.0
 paths:
+  /api/health:
+    get:
+      description: Hits this API to see if API is running in the server
+      responses:
+        "200":
+          description: ""
+        "500":
+          description: ""
+      summary: Checks if API is up
+  /api/health/readiness:
+    get:
+      description: Hits this API to see if both API and Database are running in the
+        server
+      responses:
+        "200":
+          description: ""
+        "500":
+          description: ""
+      summary: Checks if both API and Database are up
   /api/v1/author:
     get:
       consumes:
@@ -306,7 +341,7 @@ paths:
           description: Internal Server Error
           schema:
             type: string
-      summary: Update n Author
+      summary: Update an Author
   /api/v1/book:
     get:
       consumes:
@@ -353,7 +388,7 @@ paths:
         name: Book
         required: true
         schema:
-          $ref: '#/definitions/book.Request'
+          $ref: '#/definitions/book.CreateRequest'
       produces:
       - application/json
       responses:
@@ -422,21 +457,19 @@ paths:
       - application/json
       description: Update a book by its model.
       parameters:
-      - description: Book Request
+      - description: Book UpdateRequest
         in: body
         name: Book
         required: true
         schema:
-          $ref: '#/definitions/book.Request'
+          $ref: '#/definitions/book.UpdateRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/book.Res'
-            type: array
+            $ref: '#/definitions/book.Res'
         "400":
           description: Bad Request
           schema:
@@ -446,23 +479,4 @@ paths:
           schema:
             type: string
       summary: Update a Book
-  /health:
-    get:
-      description: Hits this API to see if API is running in the server
-      responses:
-        "200":
-          description: ""
-        "500":
-          description: ""
-      summary: Checks if API is up
-  /health/readiness:
-    get:
-      description: Hits this API to see if both API and Database are running in the
-        server
-      responses:
-        "200":
-          description: ""
-        "500":
-          description: ""
-      summary: Checks if both API and Database are up
 swagger: "2.0"

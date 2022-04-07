@@ -12,8 +12,8 @@ type Standard struct {
 }
 
 type Meta struct {
-	Size  int   `json:"size"`
-	Total int64 `json:"total"`
+	Size  int `json:"size"`
+	Total int `json:"total"`
 }
 
 func Json(w http.ResponseWriter, statusCode int, payload interface{}) {

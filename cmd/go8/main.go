@@ -1,12 +1,13 @@
 package main
 
 import (
-	"github.com/gmhafiz/go8/internal/server"
 	"log"
+
+	"github.com/gmhafiz/go8/internal/server"
 )
 
 // Version is injected using ldflags during build time
-var Version = "v0.12.0"
+var Version = "v0.13.0"
 
 // @title Go8
 // @version 0.12.0

@@ -27,6 +27,34 @@ var doc = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/health": {
+            "get": {
+                "description": "Hits this API to see if API is running in the server",
+                "summary": "Checks if API is up",
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "500": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/health/readiness": {
+            "get": {
+                "description": "Hits this API to see if both API and Database are running in the server",
+                "summary": "Checks if both API and Database are up",
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "500": {
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/v1/author": {
             "get": {
                 "description": "Lists all authors. By default, it gets first page with 30 items.",
@@ -180,7 +208,7 @@ var doc = `{
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Update n Author",
+                "summary": "Update an Author",
                 "parameters": [
                     {
                         "description": "Author Request",
@@ -314,7 +342,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/book.Request"
+                            "$ref": "#/definitions/book.CreateRequest"
                         }
                     }
                 ],
@@ -391,12 +419,12 @@ var doc = `{
                 "summary": "Update a Book",
                 "parameters": [
                     {
-                        "description": "Book Request",
+                        "description": "Book UpdateRequest",
                         "name": "Book",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/book.Request"
+                            "$ref": "#/definitions/book.UpdateRequest"
                         }
                     }
                 ],
@@ -404,10 +432,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/book.Res"
-                            }
+                            "$ref": "#/definitions/book.Res"
                         }
                     },
                     "400": {
@@ -454,34 +479,6 @@ var doc = `{
                     }
                 }
             }
-        },
-        "/health": {
-            "get": {
-                "description": "Hits this API to see if API is running in the server",
-                "summary": "Checks if API is up",
-                "responses": {
-                    "200": {
-                        "description": ""
-                    },
-                    "500": {
-                        "description": ""
-                    }
-                }
-            }
-        },
-        "/health/readiness": {
-            "get": {
-                "description": "Hits this API to see if both API and Database are running in the server",
-                "summary": "Checks if both API and Database are up",
-                "responses": {
-                    "200": {
-                        "description": ""
-                    },
-                    "500": {
-                        "description": ""
-                    }
-                }
-            }
         }
     },
     "definitions": {
@@ -498,9 +495,6 @@ var doc = `{
                 },
                 "id": {
                     "type": "integer"
-                },
-                "image_url": {
-                    "type": "string"
                 },
                 "published_date": {
                     "type": "string"
@@ -574,7 +568,7 @@ var doc = `{
                 }
             }
         },
-        "book.Request": {
+        "book.CreateRequest": {
             "type": "object",
             "required": [
                 "description",
@@ -604,6 +598,28 @@ var doc = `{
                 },
                 "id": {
                     "type": "integer"
+                },
+                "image_url": {
+                    "type": "string"
+                },
+                "published_date": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "book.UpdateRequest": {
+            "type": "object",
+            "required": [
+                "description",
+                "published_date",
+                "title"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
                 },
                 "image_url": {
                     "type": "string"
@@ -663,6 +679,10 @@ var doc = `{
                 "id": {
                     "description": "ID of the ent.",
                     "type": "integer"
+                },
+                "image_url": {
+                    "description": "ImageURL holds the value of the \"image_url\" field.",
+                    "type": "string"
                 },
                 "published_date": {
                     "description": "PublishedDate holds the value of the \"published_date\" field.",

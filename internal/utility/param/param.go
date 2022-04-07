@@ -5,28 +5,26 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
-
-	"github.com/gmhafiz/go8/internal/utility/respond"
 )
 
-func UInt64(w http.ResponseWriter, r *http.Request, param string) uint64 {
+func UInt(r *http.Request, param string) (uint, error) {
 	val, err := strconv.ParseInt(chi.URLParam(r, param), 10, 64)
 	if err != nil {
-		respond.Error(w, http.StatusBadRequest, err)
+		return 0, err
 	}
 
-	return uint64(val)
+	return uint(val), nil
 }
 
-func Int64(w http.ResponseWriter, r *http.Request, param string) int64 {
-	val, err := strconv.ParseInt(chi.URLParam(r, param), 10, 64)
+func Int(r *http.Request, param string) (int, error) {
+	val, err := strconv.Atoi(chi.URLParam(r, param))
 	if err != nil {
-		respond.Error(w, http.StatusBadRequest, err)
+		return 0, err
 	}
 
-	return val
+	return val, nil
 }
 
 func String(r *http.Request, param string) string {
-	return chi.URLParam(r, param)
+	return chi.URLParam(r, chi.URLParam(r, param))
 }

@@ -9,20 +9,16 @@ import (
 	"github.com/jmoiron/sqlx"
 
 	"github.com/gmhafiz/go8/config"
+	_ "github.com/gmhafiz/go8/ent/gen/runtime"
 	"github.com/gmhafiz/go8/internal/utility/database"
 )
 
 func NewSqlx(cfg *config.Config) *sqlx.DB {
 	var dsn string
 	switch cfg.Database.Driver {
-	case "postgres":
-		dsn = fmt.Sprintf("%s://%s/%s?sslmode=%s&user=%s&password=%s",
-			cfg.Database.Driver,
-			cfg.Database.Host,
-			cfg.Database.Name,
-			cfg.Database.SslMode,
-			cfg.Database.User,
-			cfg.Database.Pass)
+	case "postgres", "pgx":
+		dsn = fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+			cfg.Database.Host, cfg.Database.Port, cfg.Database.User, cfg.Database.Pass, cfg.Database.Name)
 	case "mysql":
 		dsn = fmt.Sprintf("%s:%s@(%s:%s)/%s?parseTime=true",
 			cfg.Database.User,

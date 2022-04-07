@@ -5,10 +5,6 @@ import (
 	"io"
 )
 
-type cacheKey string
-
-var CacheURL cacheKey
-
 type Request struct {
 	Filter
 	FirstName  string `json:"first_name" validate:"required"`
@@ -25,15 +21,14 @@ type CreateRequest struct {
 }
 
 type Book struct {
-	BookID        int64  `json:"id"`
+	BookID        int    `json:"id"`
 	Title         string `json:"title" validate:"required"`
 	PublishedDate string `json:"published_date" validate:"required"`
-	ImageURL      string `json:"image_url" validate:"url"`
 	Description   string `json:"description" validate:"required"`
 }
 
 type Update struct {
-	ID         int64  `json:"id"`
+	ID         int    `json:"id"`
 	FirstName  string `json:"first_name"`
 	MiddleName string `json:"middle_name,omitempty"`
 	LastName   string `json:"last_name"`

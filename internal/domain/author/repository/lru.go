@@ -1,28 +1,28 @@
-package cache
+package repository
 
 import (
 	"context"
-	"github.com/gmhafiz/go8/ent/gen"
-	"github.com/gmhafiz/go8/internal/domain/author/repository/database"
 	"strings"
 
 	lru "github.com/hashicorp/golang-lru"
 
+	"github.com/gmhafiz/go8/ent/gen"
 	"github.com/gmhafiz/go8/internal/domain/author"
+	"github.com/gmhafiz/go8/internal/middleware"
 )
 
 type AuthorLRU struct {
-	service database.Repository
+	service Author
 	lru     *lru.Cache
 }
 
 type AuthorLRUService interface {
-	Read(ctx context.Context, id uint64) (*gen.Author, error)
+	Read(ctx context.Context, id uint) (*gen.Author, error)
 	Update(ctx context.Context, toAuthor *author.Update) (*gen.Author, error)
-	Delete(ctx context.Context, id int64) error
+	Delete(ctx context.Context, id uint) error
 }
 
-func NewLRUCache(service database.Repository) *AuthorLRU {
+func NewLRUCache(service Author) *AuthorLRU {
 	// Creates a cache with a size.
 	// https://en.wikipedia.org/wiki/Cache_replacement_policies#Least_recently_used_(LRU)
 	// Once cache is filled, the least recently used key is discarded to make
@@ -34,9 +34,9 @@ func NewLRUCache(service database.Repository) *AuthorLRU {
 	}
 }
 
-func (c *AuthorLRU) Read(ctx context.Context, id uint64) (*gen.Author, error) {
+func (c *AuthorLRU) Read(ctx context.Context, id uint) (*gen.Author, error) {
 	// (1) Picks up the key from context which is added in the handler layer.
-	url := ctx.Value(author.CacheURL).(string)
+	url := ctx.Value(middleware.CacheURL).(string)
 
 	if val, ok := c.lru.Get(url); ok {
 		// (3) Simply cast the returned value.
@@ -61,14 +61,14 @@ func (c *AuthorLRU) Update(ctx context.Context, toAuthor *author.Update) (*gen.A
 	return c.service.Update(ctx, toAuthor)
 }
 
-func (c *AuthorLRU) Delete(ctx context.Context, id int64) error {
+func (c *AuthorLRU) Delete(ctx context.Context, id uint) error {
 	c.invalidate(ctx)
 
 	return c.service.Delete(ctx, id)
 }
 
 func (c *AuthorLRU) invalidate(ctx context.Context) {
-	url := ctx.Value(author.CacheURL).(string)
+	url := ctx.Value(middleware.CacheURL).(string)
 
 	keys := c.lru.Keys()
 	for _, key := range keys {

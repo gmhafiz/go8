@@ -1,29 +1,37 @@
-package http
+package handler
 
 import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 
-	"github.com/friendsofgo/errors"
 	"github.com/go-playground/validator/v10"
 
 	"github.com/gmhafiz/go8/internal/domain/book"
-	"github.com/gmhafiz/go8/internal/models"
+	"github.com/gmhafiz/go8/internal/domain/book/usecase"
 	"github.com/gmhafiz/go8/internal/utility/message"
 	"github.com/gmhafiz/go8/internal/utility/param"
 	"github.com/gmhafiz/go8/internal/utility/respond"
 	"github.com/gmhafiz/go8/internal/utility/validate"
 )
 
+type HTTP interface {
+	Create(w http.ResponseWriter, r *http.Request)
+	Update(w http.ResponseWriter, r *http.Request)
+	List(w http.ResponseWriter, r *http.Request)
+	Get(w http.ResponseWriter, r *http.Request)
+	Delete(w http.ResponseWriter, r *http.Request)
+}
+
 type Handler struct {
-	useCase  book.UseCase
+	useCase  usecase.Book
 	validate *validator.Validate
 }
 
-func NewHandler(useCase book.UseCase, validate *validator.Validate) *Handler {
+func NewHandler(useCase usecase.Book, validate *validator.Validate) *Handler {
 	return &Handler{
 		useCase:  useCase,
 		validate: validate,
@@ -35,13 +43,13 @@ func NewHandler(useCase book.UseCase, validate *validator.Validate) *Handler {
 // @Description Create a book using JSON payload
 // @Accept json
 // @Produce json
-// @Param Book body book.Request true "Create a book using the following format"
+// @Param Book body book.CreateRequest true "Create a book using the following format"
 // @Success 201 {object} book.Res
-// @Failure 400 {string} Bad Request
+// @Failure 400 {string} Bad book.CreateRequest
 // @Failure 500 {string} Internal Server Error
 // @router /api/v1/book [post]
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
-	var bookRequest book.Request
+	var bookRequest book.CreateRequest
 	err := book.Bind(r.Body, &bookRequest)
 	if err != nil {
 		respond.Error(w, http.StatusBadRequest, nil)
@@ -54,7 +62,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bk, err := h.useCase.Create(r.Context(), book.ToBook(&bookRequest))
+	bk, err := h.useCase.Create(r.Context(), &bookRequest)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			respond.Error(w, http.StatusBadRequest, message.ErrBadRequest)
@@ -76,11 +84,15 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Param bookID path int true "book ID"
 // @Success 200 {object} book.Res
-// @Failure 400 {string} Bad Request
+// @Failure 400 {string} Bad book.CreateRequest
 // @Failure 500 {string} Internal Server Error
 // @router /api/v1/book/{bookID} [get]
 func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
-	bookID := param.Int64(w, r, "bookID")
+	bookID, err := param.Int(r, "bookID")
+	if err != nil {
+		respond.Error(w, http.StatusBadRequest, err)
+		return
+	}
 
 	b, err := h.useCase.Read(context.Background(), bookID)
 	if err != nil {
@@ -111,7 +123,7 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 	filters := book.Filters(r.URL.Query())
 
-	var books []*models.Book
+	var books []*book.DB
 	ctx := r.Context()
 
 	switch filters.Base.Search {
@@ -153,29 +165,33 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 // @Description Update a book by its model.
 // @Accept json
 // @Produce json
-// @Param Book body book.Request true "Book Request"
-// @Success 200 {object} []book.Res
+// @Param Book body book.UpdateRequest true "Book UpdateRequest"
+// @Success 200 {object} book.Res
 // @Failure 400 {string} Bad Request
 // @Failure 500 {string} Internal Server Error
 // @router /api/v1/book/{bookID} [put]
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
-	bookID := param.Int64(w, r, "bookID")
+	bookID, err := param.Int(r, "bookID")
+	if err != nil {
+		respond.Error(w, http.StatusBadRequest, err)
+		return
+	}
 
-	var bookRequest book.Request
-	err := json.NewDecoder(r.Body).Decode(&bookRequest)
+	var req book.UpdateRequest
+	err = json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		respond.Error(w, http.StatusBadRequest, nil)
 		return
 	}
-	bookRequest.Id = bookID
+	req.ID = bookID
 
-	errs := validate.Validate(h.validate, bookRequest)
+	errs := validate.Validate(h.validate, req)
 	if errs != nil {
 		respond.Errors(w, http.StatusBadRequest, errs)
 		return
 	}
 
-	resp, err := h.useCase.Update(r.Context(), book.ToBook(&bookRequest))
+	resp, err := h.useCase.Update(r.Context(), &req)
 	if err != nil {
 		respond.Error(w, http.StatusInternalServerError, err)
 		return
@@ -196,9 +212,13 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {string} Internal Server Error
 // @router /api/v1/book/{bookID} [delete]
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
-	bookID := param.Int64(w, r, "bookID")
+	bookID, err := param.Int(r, "bookID")
+	if err != nil {
+		respond.Error(w, http.StatusBadRequest, err)
+		return
+	}
 
-	err := h.useCase.Delete(r.Context(), bookID)
+	err = h.useCase.Delete(r.Context(), bookID)
 	if err != nil {
 		respond.Error(w, http.StatusInternalServerError, message.ErrInternalError)
 		return

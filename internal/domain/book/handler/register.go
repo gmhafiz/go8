@@ -1,13 +1,13 @@
-package http
+package handler
 
 import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
 
-	"github.com/gmhafiz/go8/internal/domain/book"
+	"github.com/gmhafiz/go8/internal/domain/book/usecase"
 )
 
-func RegisterHTTPEndPoints(router *chi.Mux, validator *validator.Validate, uc book.UseCase) *Handler {
+func RegisterHTTPEndPoints(router *chi.Mux, validator *validator.Validate, uc usecase.Book) *Handler {
 	h := NewHandler(uc, validator)
 
 	router.Route("/api/v1/book", func(router chi.Router) {

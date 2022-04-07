@@ -1,4 +1,4 @@
-package author
+package handler
 
 import (
 	"github.com/go-chi/chi/v5"
@@ -7,7 +7,7 @@ import (
 	"github.com/gmhafiz/go8/internal/domain/author/usecase"
 )
 
-func RegisterHTTPEndPoints(router *chi.Mux, validate *validator.Validate, useCase *usecase.AuthorUseCase) {
+func RegisterHTTPEndPoints(router *chi.Mux, validate *validator.Validate, useCase usecase.Author) *Handler {
 	h := NewHandler(useCase, validate)
 
 	router.Route("/api/v1/author", func(router chi.Router) {
@@ -17,4 +17,6 @@ func RegisterHTTPEndPoints(router *chi.Mux, validate *validator.Validate, useCas
 		router.Put("/{id}", h.Update)
 		router.Delete("/{id}", h.Delete)
 	})
+
+	return h
 }

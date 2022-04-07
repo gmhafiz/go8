@@ -5,157 +5,402 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang/mock/gomock"
 	_ "github.com/jackc/pgx/stdlib"
-	"github.com/jinzhu/now"
 	"github.com/stretchr/testify/assert"
-	"github.com/volatiletech/null/v8"
 
 	"github.com/gmhafiz/go8/internal/domain/book"
-	"github.com/gmhafiz/go8/internal/domain/book/mock"
-	"github.com/gmhafiz/go8/internal/models"
+	"github.com/gmhafiz/go8/internal/domain/book/repository"
+	"github.com/gmhafiz/go8/internal/utility/filter"
 )
 
-//go:generate mockgen -package mock -source ../usecase.go -destination=../mock/mock_usecase.go
-
-func newUseCase(t *testing.T) (*BookUseCase, *mock.MockRepository) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	repo := mock.NewMockRepository(ctrl)
-	return New(repo), repo
-}
-
 func TestBookUseCase_Create(t *testing.T) {
-	uc, repo := newUseCase(t)
+	type args struct {
+		ctx context.Context
+		req *book.CreateRequest
+	}
 
-	request := &models.Book{
-		Title:         "title",
-		PublishedDate: now.MustParse("2006-01-02 15:04:05 +0000 UTC"),
-		ImageURL: null.String{
-			String: "https://example.com/image.png",
-			Valid:  true,
+	type want struct {
+		book *book.DB
+		err  error
+	}
+
+	type test struct {
+		name string
+		args
+		want
+		*repository.BookMock
+	}
+
+	timeParsed, err := time.Parse(time.RFC3339, "2020-02-02T00:00:00Z")
+	assert.Nil(t, err)
+
+	tests := []test{
+		{
+			name: "simple",
+			args: args{
+				ctx: context.Background(),
+				req: &book.CreateRequest{
+					Title:         "title",
+					PublishedDate: "2020-02-02T00:00:00Z",
+					ImageURL:      "https://example.com/image.png",
+					Description:   "description",
+				},
+			},
+			want: want{
+				book: &book.DB{
+					ID:            1,
+					Title:         "title",
+					PublishedDate: timeParsed,
+					ImageURL:      "https://example.com/image.png",
+					Description:   "description",
+				},
+				err: nil,
+			},
+			BookMock: &repository.BookMock{
+				CreateFunc: func(ctx context.Context, bookMiripParam *book.CreateRequest) (int, error) {
+					return 1, nil
+				},
+				ReadFunc: func(ctx context.Context, bookID int) (*book.DB, error) {
+					return &book.DB{
+						ID:            1,
+						Title:         "title",
+						PublishedDate: timeParsed,
+						ImageURL:      "https://example.com/image.png",
+						Description:   "description",
+					}, nil
+				},
+			},
 		},
-		Description: "",
 	}
 
-	ctx := context.Background()
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			uc := New(test.BookMock)
 
-	expected := &models.Book{
-		Title:         request.Title,
-		PublishedDate: request.PublishedDate,
-		ImageURL: null.String{
-			String: request.ImageURL.String,
-			Valid:  true,
-		},
-		Description: request.Description,
+			created, err := uc.Create(test.args.ctx, test.args.req)
+			assert.Equal(t, test.want.err, err)
+
+			assert.Equal(t, test.want.book.ID, created.ID)
+			assert.Equal(t, test.want.book.Title, created.Title)
+			assert.Equal(t, test.want.book.PublishedDate, created.PublishedDate)
+			assert.Equal(t, test.want.book.ImageURL, created.ImageURL)
+			assert.Equal(t, test.want.book.Description, created.Description)
+		})
 	}
-	expectedCreated := &models.Book{
-		ID:            1,
-		Title:         request.Title,
-		PublishedDate: request.PublishedDate,
-		ImageURL: null.String{
-			String: request.ImageURL.String,
-			Valid:  true,
-		},
-		Description: request.Description,
-	}
-	var err error
-	bookID := int64(1)
-
-	repo.EXPECT().Create(ctx, gomock.Eq(expected)).Return(bookID, err).Times(1)
-	repo.EXPECT().Read(ctx, gomock.Eq(bookID)).Return(expectedCreated, err).Times(1)
-
-	bookGot, err := uc.Create(ctx, request)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	assert.NotEqual(t, bookGot.ID, 0)
-	assert.Equal(t, bookGot.Title, request.Title)
-	assert.Equal(t, bookGot.PublishedDate.String(), request.PublishedDate.String())
-	assert.Equal(t, bookGot.Description, request.Description)
-	assert.Equal(t, bookGot.ImageURL.String, request.ImageURL.String)
 }
 
 func TestBookUseCase_List(t *testing.T) {
-	uc, repo := newUseCase(t)
+	type fields struct {
+		bookRepo repository.BookMock
+	}
+	type args struct {
+		ctx context.Context
+		f   *book.Filter
+	}
 
-	ctx := context.Background()
-	var err error
-	var want []*models.Book
-	filter := &book.Filter{}
+	timeParsed, err := time.Parse(time.RFC3339, "2020-02-02T00:00:00Z")
+	assert.Nil(t, err)
 
-	repo.EXPECT().List(ctx, filter).Return(want, err).AnyTimes()
+	oneBook := []*book.DB{
+		{
+			ID:            1,
+			Title:         "title 1",
+			PublishedDate: timeParsed,
+			ImageURL:      "https://example.com/image1.png",
+			Description:   "description 1",
+		},
+	}
 
-	books, err := uc.List(ctx, filter)
-
-	assert.NoError(t, err)
-	assert.Nil(t, books)
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    []*book.DB
+		wantErr error
+	}{
+		{
+			name: "simple",
+			fields: fields{
+				bookRepo: repository.BookMock{
+					ListFunc: func(ctx context.Context, f *book.Filter) ([]*book.DB, error) {
+						return oneBook, nil
+					},
+				},
+			},
+			args: args{
+				ctx: context.Background(),
+				f: &book.Filter{
+					Base: filter.Filter{
+						Page:          1,
+						Offset:        0,
+						Limit:         0,
+						DisablePaging: false,
+						Sort:          nil,
+						Search:        false,
+					},
+					Title:         "",
+					Description:   "",
+					PublishedDate: "",
+				},
+			},
+			want:    oneBook,
+			wantErr: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			u := &BookUseCase{
+				bookRepo: &tt.fields.bookRepo,
+			}
+			got, err := u.List(tt.args.ctx, tt.args.f)
+			assert.Equal(t, tt.wantErr, err)
+			assert.Equalf(t, tt.want, got, "List(%v, %v)", tt.args.ctx, tt.args.f)
+		})
+	}
 }
 
 func TestBookUseCase_Read(t *testing.T) {
-	uc, repo := newUseCase(t)
+	type fields struct {
+		bookRepo repository.Book
+	}
+	type args struct {
+		ctx    context.Context
+		bookID int
+	}
 
-	ctx := context.Background()
-	var err error
-	var id int64
-	var want *models.Book
+	timeParsed, err := time.Parse(time.RFC3339, "2020-02-02T00:00:00Z")
+	assert.Nil(t, err)
 
-	repo.EXPECT().Read(ctx, id).Return(want, err).Times(1)
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    *book.DB
+		wantErr error
+	}{
+		{
+			name: "simple",
+			fields: fields{
+				bookRepo: &repository.BookMock{
+					ReadFunc: func(ctx context.Context, bookID int) (*book.DB, error) {
+						return &book.DB{
+							ID:            1,
+							Title:         "title",
+							PublishedDate: timeParsed,
+							ImageURL:      "https://example.com/image.png",
+							Description:   "description",
+						}, nil
+					}},
+			},
+			args: args{
+				ctx:    context.Background(),
+				bookID: 1,
+			},
+			want: &book.DB{
+				ID:            1,
+				Title:         "title",
+				PublishedDate: timeParsed,
+				ImageURL:      "https://example.com/image.png",
+				Description:   "description",
+			},
+			wantErr: nil,
+		},
+	}
 
-	_, err = uc.Read(ctx, id)
-
-	assert.NoError(t, err)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			u := &BookUseCase{
+				bookRepo: tt.fields.bookRepo,
+			}
+			got, err := u.Read(tt.args.ctx, tt.args.bookID)
+			assert.Equal(t, err, tt.wantErr)
+			assert.Equalf(t, tt.want, got, "Read(%v, %v)", tt.args.ctx, tt.args.bookID)
+		})
+	}
 }
 
 func TestBookUseCase_Update(t *testing.T) {
-	uc, repo := newUseCase(t)
-	ctx := context.Background()
-	var err error
-
-	request := &models.Book{
-		ID:            1,
-		Title:         "updated title",
-		PublishedDate: time.Time{},
-		ImageURL:      null.String{},
-		Description:   "",
+	type fields struct {
+		bookRepo repository.Book
+	}
+	type args struct {
+		ctx  context.Context
+		book *book.UpdateRequest
 	}
 
-	repo.EXPECT().Update(ctx, request).Return(err).AnyTimes()
-	repo.EXPECT().Read(ctx, gomock.Any()).Return(request, err).Times(1)
+	timeParsed, err := time.Parse(time.RFC3339, "2020-02-02T00:00:00Z")
+	assert.Nil(t, err)
 
-	got, err := uc.Update(ctx, request)
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    *book.DB
+		wantErr error
+	}{
+		{
+			name: "simple",
+			fields: fields{
+				bookRepo: &repository.BookMock{
+					UpdateFunc: func(ctx context.Context, book *book.UpdateRequest) error {
+						return nil
+					},
+					ReadFunc: func(ctx context.Context, bookID int) (*book.DB, error) {
+						return &book.DB{
+							ID:            1,
+							Title:         "title",
+							PublishedDate: timeParsed,
+							ImageURL:      "https://example.com/image1.png",
+							Description:   "description",
+						}, nil
+					},
+				},
+			},
+			args: args{
+				ctx: context.Background(),
+				book: &book.UpdateRequest{
+					Title:         "title",
+					PublishedDate: "2020-02-02T00:00:00Z",
+					ImageURL:      "https://example.com/image1.png",
+					Description:   "description",
+				},
+			},
+			want: &book.DB{
+				ID:            1,
+				Title:         "title",
+				PublishedDate: timeParsed,
+				ImageURL:      "https://example.com/image1.png",
+				Description:   "description",
+			},
+			wantErr: nil,
+		},
+	}
 
-	assert.NoError(t, err)
-	assert.Equal(t, request.ID, got.ID)
-	assert.Equal(t, request.Title, got.Title)
-	assert.Equal(t, request.Description, got.Description)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			u := &BookUseCase{
+				bookRepo: tt.fields.bookRepo,
+			}
+			got, err := u.Update(tt.args.ctx, tt.args.book)
+			assert.Equal(t, tt.wantErr, err)
+			assert.Equalf(t, tt.want, got, "Update(%v, %v)", tt.args.ctx, tt.args.book)
+		})
+	}
 }
 
 func TestBookUseCase_Delete(t *testing.T) {
-	uc, repo := newUseCase(t)
-	ctx := context.Background()
-	var id int64
-
-	repo.EXPECT().Delete(ctx, gomock.Any()).Return(nil).Times(1)
-
-	err := uc.Delete(ctx, id)
-
-	assert.NoError(t, err)
+	type fields struct {
+		bookRepo repository.Book
+	}
+	type args struct {
+		ctx    context.Context
+		bookID int
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr error
+	}{
+		{
+			name: "simple",
+			fields: fields{
+				bookRepo: &repository.BookMock{
+					DeleteFunc: func(ctx context.Context, bookID int) error {
+						return nil
+					},
+				},
+			},
+			args: args{
+				ctx:    context.Background(),
+				bookID: 1,
+			},
+			wantErr: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			u := &BookUseCase{
+				bookRepo: tt.fields.bookRepo,
+			}
+			err := u.Delete(tt.args.ctx, tt.args.bookID)
+			assert.Equal(t, tt.wantErr, err)
+		})
+	}
 }
 
 func TestBookUseCase_Search(t *testing.T) {
-	uc, repo := newUseCase(t)
-	ctx := context.Background()
-	var err error
-	var want []*models.Book
-	filter := &book.Filter{}
+	type fields struct {
+		bookRepo repository.Book
+	}
+	type args struct {
+		ctx context.Context
+		req *book.Filter
+	}
 
-	repo.EXPECT().Search(ctx, filter).Return(want, err).AnyTimes()
+	timeParsed, err := time.Parse(time.RFC3339, "2020-02-02T00:00:00Z")
+	assert.Nil(t, err)
 
-	got, err := uc.Search(ctx, filter)
-
-	assert.NoError(t, err)
-	assert.Len(t, got, 0)
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    []*book.DB
+		wantErr error
+	}{
+		{
+			name: "simple",
+			fields: fields{
+				bookRepo: &repository.BookMock{
+					SearchFunc: func(ctx context.Context, req *book.Filter) ([]*book.DB, error) {
+						return []*book.DB{
+							{
+								ID:            1,
+								Title:         "searched 1",
+								PublishedDate: timeParsed,
+								ImageURL:      "https://example.com/image1.png",
+								Description:   "description",
+							},
+						}, nil
+					},
+				},
+			},
+			args: args{
+				ctx: nil,
+				req: &book.Filter{
+					Base: filter.Filter{
+						Page:          1,
+						Offset:        0,
+						Limit:         0,
+						DisablePaging: false,
+						Sort:          nil,
+						Search:        true,
+					},
+					Title:         "searched",
+					Description:   "",
+					PublishedDate: "",
+				},
+			},
+			want: []*book.DB{
+				{
+					ID:            1,
+					Title:         "searched 1",
+					PublishedDate: timeParsed,
+					ImageURL:      "https://example.com/image1.png",
+					Description:   "description",
+				},
+			},
+			wantErr: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			u := &BookUseCase{
+				bookRepo: tt.fields.bookRepo,
+			}
+			got, err := u.Search(tt.args.ctx, tt.args.req)
+			assert.Equal(t, tt.wantErr, err)
+			assert.Equalf(t, tt.want, got, "Search(%v, %v)", tt.args.ctx, tt.args.req)
+		})
+	}
 }

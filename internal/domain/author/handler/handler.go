@@ -1,7 +1,8 @@
-package author
+package handler
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"log"
 	"net/http"
@@ -10,27 +11,19 @@ import (
 
 	"github.com/gmhafiz/go8/internal/domain/author"
 	"github.com/gmhafiz/go8/internal/domain/author/usecase"
+	"github.com/gmhafiz/go8/internal/middleware"
+	"github.com/gmhafiz/go8/internal/utility/message"
 	"github.com/gmhafiz/go8/internal/utility/param"
 	"github.com/gmhafiz/go8/internal/utility/respond"
 	"github.com/gmhafiz/go8/internal/utility/validate"
 )
 
-//go:generate ent generate --target ../../../../../ent/gen ../../../../../ent/schema
-
-type HTTP interface {
-	Create(w http.ResponseWriter, r *http.Request)
-	List(w http.ResponseWriter, r *http.Request)
-	Read(w http.ResponseWriter, r *http.Request)
-	Update(w http.ResponseWriter, r *http.Request)
-	Delete(w http.ResponseWriter, r *http.Request)
-}
-
 type Handler struct {
-	useCase  usecase.UseCase
+	useCase  usecase.Author
 	validate *validator.Validate
 }
 
-func NewHandler(useCase usecase.UseCase, v *validator.Validate) *Handler {
+func NewHandler(useCase usecase.Author, v *validator.Validate) *Handler {
 	return &Handler{
 		useCase:  useCase,
 		validate: v,
@@ -61,9 +54,13 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	create, err := h.useCase.Create(r.Context(), req)
+	create, err := h.useCase.Create(r.Context(), &req)
 	if err != nil {
 		log.Println(err)
+		if err == sql.ErrNoRows {
+			respond.Error(w, http.StatusBadRequest, message.ErrBadRequest)
+			return
+		}
 		respond.Error(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -88,9 +85,9 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 	filters := author.Filters(r.URL.Query())
 
-	// For cache purpose, we use request URI as the key for our result.
+	// For cache purpose, we use updateRequest URI as the key for our result.
 	// We save it into context so that we can pick it pick in our cache layer.
-	ctx := context.WithValue(r.Context(), author.CacheURL, r.URL.String())
+	ctx := context.WithValue(r.Context(), middleware.CacheURL, r.URL.String())
 
 	authors, total, err := h.useCase.List(ctx, filters)
 	if err != nil {
@@ -119,11 +116,15 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {string} Internal Server Error
 // @router /api/v1/author/{id} [get]
 func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
-	authorID := param.Int64(w, r, "id")
+	authorID, err := param.UInt(r, "id")
+	if authorID == 0 || err != nil {
+		respond.Error(w, http.StatusBadRequest, errors.New("id is required"))
+		return
+	}
 
-	ctx := context.WithValue(r.Context(), author.CacheURL, r.URL.String())
+	ctx := context.WithValue(r.Context(), middleware.CacheURL, r.URL.String())
 
-	res, err := h.useCase.Read(ctx, uint64(authorID))
+	res, err := h.useCase.Read(ctx, authorID)
 	if err != nil {
 		log.Println(err)
 		respond.Error(w, http.StatusInternalServerError, err)
@@ -134,7 +135,7 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 // Update an author
-// @Summary Update n Author
+// @Summary Update an Author
 // @Description Update an author by its model.
 // @Accept json
 // @Produce json
@@ -144,16 +145,16 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {string} Internal Server Error
 // @router /api/v1/author/{id} [put]
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
-	id := param.Int64(w, r, "id")
-	if id == 0 {
+	id, err := param.Int(r, "id")
+	if id == 0 || err != nil {
 		respond.Error(w, http.StatusBadRequest, errors.New("id is required"))
 		return
 	}
 
-	ctx := context.WithValue(r.Context(), author.CacheURL, r.URL.String())
+	ctx := context.WithValue(r.Context(), middleware.CacheURL, r.URL.String())
 
 	var req author.Update
-	err := req.Bind(r.Body)
+	err = req.Bind(r.Body)
 	if err != nil {
 		respond.Error(w, http.StatusBadRequest, err)
 		return
@@ -180,15 +181,15 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {string} Internal Server Error
 // @router /api/v1/author/{id} [delete]
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
-	id := param.Int64(w, r, "id")
-	if id == 0 {
+	id, err := param.UInt(r, "id")
+	if id == 0 || err != nil {
 		respond.Error(w, http.StatusBadRequest, errors.New("id is required"))
 		return
 	}
 
-	ctx := context.WithValue(r.Context(), author.CacheURL, r.URL.String())
+	ctx := context.WithValue(r.Context(), middleware.CacheURL, r.URL.String())
 
-	err := h.useCase.Delete(ctx, id)
+	err = h.useCase.Delete(ctx, id)
 	if err != nil {
 		log.Println(err)
 		if errors.Is(err, respond.ErrNoRecord) {

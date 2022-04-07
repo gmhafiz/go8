@@ -2,36 +2,32 @@ package book
 
 import (
 	"time"
-
-	"github.com/volatiletech/null/v8"
-
-	"github.com/gmhafiz/go8/internal/models"
 )
 
 type Res struct {
-	ID            int64       `json:"id"`
-	Title         string      `json:"title"`
-	PublishedDate time.Time   `json:"published_date"`
-	ImageURL      null.String `json:"image_url" swaggertype:"string"`
-	Description   null.String `json:"description" swaggertype:"string"`
+	ID            int       `json:"id"`
+	Title         string    `json:"title"`
+	PublishedDate time.Time `json:"published_date"`
+	ImageURL      string    `json:"image_url" swaggertype:"string"`
+	Description   string    `json:"description" swaggertype:"string"`
 }
 
-func Resource(book *models.Book) *Res {
+func Resource(book *DB) *Res {
+	if book == nil {
+		return &Res{}
+	}
 	resource := &Res{
 		ID:            book.ID,
 		Title:         book.Title,
 		PublishedDate: book.PublishedDate,
 		ImageURL:      book.ImageURL,
-		Description: null.String{
-			String: book.Description,
-			Valid:  true,
-		},
+		Description:   book.Description,
 	}
 
 	return resource
 }
 
-func Resources(books []*models.Book) ([]*Res, error) {
+func Resources(books []*DB) ([]*Res, error) {
 	if len(books) == 0 {
 		return make([]*Res, 0), nil
 	}

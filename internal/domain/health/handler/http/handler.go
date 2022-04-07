@@ -22,7 +22,7 @@ func NewHandler(useCase health.UseCase) *Handler {
 // @Description Hits this API to see if API is running in the server
 // @Success 200
 // @Failure 500
-// @router /health [get]
+// @router /api/health [get]
 func (h *Handler) Health(w http.ResponseWriter, _ *http.Request) {
 	respond.Status(w, http.StatusOK)
 }
@@ -32,7 +32,7 @@ func (h *Handler) Health(w http.ResponseWriter, _ *http.Request) {
 // @Description Hits this API to see if both API and Database are running in the server
 // @Success 200
 // @Failure 500
-// @router /health/readiness [get]
+// @router /api/health/readiness [get]
 func (h *Handler) Readiness(w http.ResponseWriter, _ *http.Request) {
 	err := h.useCase.Readiness()
 	if err != nil {

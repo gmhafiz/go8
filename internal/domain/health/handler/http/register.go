@@ -10,7 +10,7 @@ import (
 func RegisterHTTPEndPoints(router *chi.Mux, uc health.UseCase) {
 	h := NewHandler(uc)
 
-	router.Route("/health", func(router chi.Router) {
+	router.Route("/api/health", func(router chi.Router) {
 		router.Use(middleware.Json)
 
 		router.Get("/", h.Health)

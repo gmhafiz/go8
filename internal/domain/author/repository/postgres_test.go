@@ -43,7 +43,7 @@ func (d db) migrate(upOrDown string) {
 	}
 
 	m, err := migrate.NewWithDatabaseInstance(
-		"file://../../../../../database/migrations/",
+		"file://../../../../database/migrations/",
 		"postgres",
 		driver,
 	)

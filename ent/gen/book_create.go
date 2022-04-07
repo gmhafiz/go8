@@ -33,6 +33,20 @@ func (bc *BookCreate) SetPublishedDate(t time.Time) *BookCreate {
 	return bc
 }
 
+// SetImageURL sets the "image_url" field.
+func (bc *BookCreate) SetImageURL(s string) *BookCreate {
+	bc.mutation.SetImageURL(s)
+	return bc
+}
+
+// SetNillableImageURL sets the "image_url" field if the given value is not nil.
+func (bc *BookCreate) SetNillableImageURL(s *string) *BookCreate {
+	if s != nil {
+		bc.SetImageURL(*s)
+	}
+	return bc
+}
+
 // SetDescription sets the "description" field.
 func (bc *BookCreate) SetDescription(s string) *BookCreate {
 	bc.mutation.SetDescription(s)
@@ -186,19 +200,19 @@ func (bc *BookCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (bc *BookCreate) check() error {
 	if _, ok := bc.mutation.Title(); !ok {
-		return &ValidationError{Name: "title", err: errors.New(`gen: missing required field "title"`)}
+		return &ValidationError{Name: "title", err: errors.New(`gen: missing required field "Book.title"`)}
 	}
 	if _, ok := bc.mutation.PublishedDate(); !ok {
-		return &ValidationError{Name: "published_date", err: errors.New(`gen: missing required field "published_date"`)}
+		return &ValidationError{Name: "published_date", err: errors.New(`gen: missing required field "Book.published_date"`)}
 	}
 	if _, ok := bc.mutation.Description(); !ok {
-		return &ValidationError{Name: "description", err: errors.New(`gen: missing required field "description"`)}
+		return &ValidationError{Name: "description", err: errors.New(`gen: missing required field "Book.description"`)}
 	}
 	if _, ok := bc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`gen: missing required field "created_at"`)}
+		return &ValidationError{Name: "created_at", err: errors.New(`gen: missing required field "Book.created_at"`)}
 	}
 	if _, ok := bc.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`gen: missing required field "updated_at"`)}
+		return &ValidationError{Name: "updated_at", err: errors.New(`gen: missing required field "Book.updated_at"`)}
 	}
 	return nil
 }
@@ -248,6 +262,14 @@ func (bc *BookCreate) createSpec() (*Book, *sqlgraph.CreateSpec) {
 			Column: book.FieldPublishedDate,
 		})
 		_node.PublishedDate = value
+	}
+	if value, ok := bc.mutation.ImageURL(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: book.FieldImageURL,
+		})
+		_node.ImageURL = value
 	}
 	if value, ok := bc.mutation.Description(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

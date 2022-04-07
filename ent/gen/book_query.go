@@ -132,7 +132,7 @@ func (bq *BookQuery) FirstIDX(ctx context.Context) uint {
 }
 
 // Only returns a single Book entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when exactly one Book entity is not found.
+// Returns a *NotSingularError when more than one Book entity is found.
 // Returns a *NotFoundError when no Book entities are found.
 func (bq *BookQuery) Only(ctx context.Context) (*Book, error) {
 	nodes, err := bq.Limit(2).All(ctx)
@@ -159,7 +159,7 @@ func (bq *BookQuery) OnlyX(ctx context.Context) *Book {
 }
 
 // OnlyID is like Only, but returns the only Book ID in the query.
-// Returns a *NotSingularError when exactly one Book ID is not found.
+// Returns a *NotSingularError when more than one Book ID is found.
 // Returns a *NotFoundError when no entities are found.
 func (bq *BookQuery) OnlyID(ctx context.Context) (id uint, err error) {
 	var ids []uint
@@ -269,8 +269,9 @@ func (bq *BookQuery) Clone() *BookQuery {
 		predicates:  append([]predicate.Book{}, bq.predicates...),
 		withAuthors: bq.withAuthors.Clone(),
 		// clone intermediate query.
-		sql:  bq.sql.Clone(),
-		path: bq.path,
+		sql:    bq.sql.Clone(),
+		path:   bq.path,
+		unique: bq.unique,
 	}
 }
 
@@ -444,6 +445,10 @@ func (bq *BookQuery) sqlAll(ctx context.Context) ([]*Book, error) {
 
 func (bq *BookQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := bq.querySpec()
+	_spec.Node.Columns = bq.fields
+	if len(bq.fields) > 0 {
+		_spec.Unique = bq.unique != nil && *bq.unique
+	}
 	return sqlgraph.CountNodes(ctx, bq.driver, _spec)
 }
 
@@ -514,6 +519,9 @@ func (bq *BookQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if bq.sql != nil {
 		selector = bq.sql
 		selector.Select(selector.Columns(columns...)...)
+	}
+	if bq.unique != nil && *bq.unique {
+		selector.Distinct()
 	}
 	for _, p := range bq.predicates {
 		p(selector)
@@ -793,9 +801,7 @@ func (bgb *BookGroupBy) sqlQuery() *sql.Selector {
 		for _, f := range bgb.fields {
 			columns = append(columns, selector.C(f))
 		}
-		for _, c := range aggregation {
-			columns = append(columns, c)
-		}
+		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
 	return selector.GroupBy(selector.Columns(bgb.fields...)...)

@@ -194,16 +194,16 @@ func (ac *AuthorCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (ac *AuthorCreate) check() error {
 	if _, ok := ac.mutation.FirstName(); !ok {
-		return &ValidationError{Name: "first_name", err: errors.New(`gen: missing required field "first_name"`)}
+		return &ValidationError{Name: "first_name", err: errors.New(`gen: missing required field "Author.first_name"`)}
 	}
 	if _, ok := ac.mutation.LastName(); !ok {
-		return &ValidationError{Name: "last_name", err: errors.New(`gen: missing required field "last_name"`)}
+		return &ValidationError{Name: "last_name", err: errors.New(`gen: missing required field "Author.last_name"`)}
 	}
 	if _, ok := ac.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`gen: missing required field "created_at"`)}
+		return &ValidationError{Name: "created_at", err: errors.New(`gen: missing required field "Author.created_at"`)}
 	}
 	if _, ok := ac.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`gen: missing required field "updated_at"`)}
+		return &ValidationError{Name: "updated_at", err: errors.New(`gen: missing required field "Author.updated_at"`)}
 	}
 	return nil
 }

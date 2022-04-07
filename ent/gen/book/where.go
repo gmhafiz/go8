@@ -107,6 +107,13 @@ func PublishedDate(v time.Time) predicate.Book {
 	})
 }
 
+// ImageURL applies equality check predicate on the "image_url" field. It's identical to ImageURLEQ.
+func ImageURL(v string) predicate.Book {
+	return predicate.Book(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldImageURL), v))
+	})
+}
+
 // Description applies equality check predicate on the "description" field. It's identical to DescriptionEQ.
 func Description(v string) predicate.Book {
 	return predicate.Book(func(s *sql.Selector) {
@@ -319,6 +326,131 @@ func PublishedDateLT(v time.Time) predicate.Book {
 func PublishedDateLTE(v time.Time) predicate.Book {
 	return predicate.Book(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldPublishedDate), v))
+	})
+}
+
+// ImageURLEQ applies the EQ predicate on the "image_url" field.
+func ImageURLEQ(v string) predicate.Book {
+	return predicate.Book(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldImageURL), v))
+	})
+}
+
+// ImageURLNEQ applies the NEQ predicate on the "image_url" field.
+func ImageURLNEQ(v string) predicate.Book {
+	return predicate.Book(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldImageURL), v))
+	})
+}
+
+// ImageURLIn applies the In predicate on the "image_url" field.
+func ImageURLIn(vs ...string) predicate.Book {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Book(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldImageURL), v...))
+	})
+}
+
+// ImageURLNotIn applies the NotIn predicate on the "image_url" field.
+func ImageURLNotIn(vs ...string) predicate.Book {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Book(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldImageURL), v...))
+	})
+}
+
+// ImageURLGT applies the GT predicate on the "image_url" field.
+func ImageURLGT(v string) predicate.Book {
+	return predicate.Book(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldImageURL), v))
+	})
+}
+
+// ImageURLGTE applies the GTE predicate on the "image_url" field.
+func ImageURLGTE(v string) predicate.Book {
+	return predicate.Book(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldImageURL), v))
+	})
+}
+
+// ImageURLLT applies the LT predicate on the "image_url" field.
+func ImageURLLT(v string) predicate.Book {
+	return predicate.Book(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldImageURL), v))
+	})
+}
+
+// ImageURLLTE applies the LTE predicate on the "image_url" field.
+func ImageURLLTE(v string) predicate.Book {
+	return predicate.Book(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldImageURL), v))
+	})
+}
+
+// ImageURLContains applies the Contains predicate on the "image_url" field.
+func ImageURLContains(v string) predicate.Book {
+	return predicate.Book(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldImageURL), v))
+	})
+}
+
+// ImageURLHasPrefix applies the HasPrefix predicate on the "image_url" field.
+func ImageURLHasPrefix(v string) predicate.Book {
+	return predicate.Book(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldImageURL), v))
+	})
+}
+
+// ImageURLHasSuffix applies the HasSuffix predicate on the "image_url" field.
+func ImageURLHasSuffix(v string) predicate.Book {
+	return predicate.Book(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldImageURL), v))
+	})
+}
+
+// ImageURLIsNil applies the IsNil predicate on the "image_url" field.
+func ImageURLIsNil() predicate.Book {
+	return predicate.Book(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldImageURL)))
+	})
+}
+
+// ImageURLNotNil applies the NotNil predicate on the "image_url" field.
+func ImageURLNotNil() predicate.Book {
+	return predicate.Book(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldImageURL)))
+	})
+}
+
+// ImageURLEqualFold applies the EqualFold predicate on the "image_url" field.
+func ImageURLEqualFold(v string) predicate.Book {
+	return predicate.Book(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldImageURL), v))
+	})
+}
+
+// ImageURLContainsFold applies the ContainsFold predicate on the "image_url" field.
+func ImageURLContainsFold(v string) predicate.Book {
+	return predicate.Book(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldImageURL), v))
 	})
 }
 

@@ -10,6 +10,3 @@ create table IF not exists authors
     updated_at timestamp with time zone,
     deleted_at timestamp with time zone
 );
-
-alter table authors owner to "user";
-

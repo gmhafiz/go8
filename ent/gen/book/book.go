@@ -15,6 +15,8 @@ const (
 	FieldTitle = "title"
 	// FieldPublishedDate holds the string denoting the published_date field in the database.
 	FieldPublishedDate = "published_date"
+	// FieldImageURL holds the string denoting the image_url field in the database.
+	FieldImageURL = "image_url"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
@@ -39,6 +41,7 @@ var Columns = []string{
 	FieldID,
 	FieldTitle,
 	FieldPublishedDate,
+	FieldImageURL,
 	FieldDescription,
 	FieldCreatedAt,
 	FieldUpdatedAt,

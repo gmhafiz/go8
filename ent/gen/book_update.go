@@ -4,6 +4,7 @@ package gen
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -37,6 +38,26 @@ func (bu *BookUpdate) SetTitle(s string) *BookUpdate {
 // SetPublishedDate sets the "published_date" field.
 func (bu *BookUpdate) SetPublishedDate(t time.Time) *BookUpdate {
 	bu.mutation.SetPublishedDate(t)
+	return bu
+}
+
+// SetImageURL sets the "image_url" field.
+func (bu *BookUpdate) SetImageURL(s string) *BookUpdate {
+	bu.mutation.SetImageURL(s)
+	return bu
+}
+
+// SetNillableImageURL sets the "image_url" field if the given value is not nil.
+func (bu *BookUpdate) SetNillableImageURL(s *string) *BookUpdate {
+	if s != nil {
+		bu.SetImageURL(*s)
+	}
+	return bu
+}
+
+// ClearImageURL clears the value of the "image_url" field.
+func (bu *BookUpdate) ClearImageURL() *BookUpdate {
+	bu.mutation.ClearImageURL()
 	return bu
 }
 
@@ -202,6 +223,19 @@ func (bu *BookUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: book.FieldPublishedDate,
 		})
 	}
+	if value, ok := bu.mutation.ImageURL(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: book.FieldImageURL,
+		})
+	}
+	if bu.mutation.ImageURLCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: book.FieldImageURL,
+		})
+	}
 	if value, ok := bu.mutation.Description(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -311,6 +345,26 @@ func (buo *BookUpdateOne) SetTitle(s string) *BookUpdateOne {
 // SetPublishedDate sets the "published_date" field.
 func (buo *BookUpdateOne) SetPublishedDate(t time.Time) *BookUpdateOne {
 	buo.mutation.SetPublishedDate(t)
+	return buo
+}
+
+// SetImageURL sets the "image_url" field.
+func (buo *BookUpdateOne) SetImageURL(s string) *BookUpdateOne {
+	buo.mutation.SetImageURL(s)
+	return buo
+}
+
+// SetNillableImageURL sets the "image_url" field if the given value is not nil.
+func (buo *BookUpdateOne) SetNillableImageURL(s *string) *BookUpdateOne {
+	if s != nil {
+		buo.SetImageURL(*s)
+	}
+	return buo
+}
+
+// ClearImageURL clears the value of the "image_url" field.
+func (buo *BookUpdateOne) ClearImageURL() *BookUpdateOne {
+	buo.mutation.ClearImageURL()
 	return buo
 }
 
@@ -464,7 +518,7 @@ func (buo *BookUpdateOne) sqlSave(ctx context.Context) (_node *Book, err error) 
 	}
 	id, ok := buo.mutation.ID()
 	if !ok {
-		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Book.ID for update")}
+		return nil, &ValidationError{Name: "id", err: errors.New(`gen: missing "Book.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
 	if fields := buo.fields; len(fields) > 0 {
@@ -498,6 +552,19 @@ func (buo *BookUpdateOne) sqlSave(ctx context.Context) (_node *Book, err error) 
 			Type:   field.TypeTime,
 			Value:  value,
 			Column: book.FieldPublishedDate,
+		})
+	}
+	if value, ok := buo.mutation.ImageURL(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: book.FieldImageURL,
+		})
+	}
+	if buo.mutation.ImageURLCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: book.FieldImageURL,
 		})
 	}
 	if value, ok := buo.mutation.Description(); ok {

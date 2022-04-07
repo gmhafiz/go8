@@ -29,6 +29,7 @@ var (
 		{Name: "id", Type: field.TypeUint, Increment: true},
 		{Name: "title", Type: field.TypeString},
 		{Name: "published_date", Type: field.TypeTime},
+		{Name: "image_url", Type: field.TypeString, Nullable: true},
 		{Name: "description", Type: field.TypeString},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},

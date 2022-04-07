@@ -20,6 +20,8 @@ type Book struct {
 	Title string `json:"title,omitempty"`
 	// PublishedDate holds the value of the "published_date" field.
 	PublishedDate time.Time `json:"published_date,omitempty"`
+	// ImageURL holds the value of the "image_url" field.
+	ImageURL string `json:"image_url,omitempty"`
 	// Description holds the value of the "description" field.
 	Description string `json:"-"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -58,7 +60,7 @@ func (*Book) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case book.FieldID:
 			values[i] = new(sql.NullInt64)
-		case book.FieldTitle, book.FieldDescription:
+		case book.FieldTitle, book.FieldImageURL, book.FieldDescription:
 			values[i] = new(sql.NullString)
 		case book.FieldPublishedDate, book.FieldCreatedAt, book.FieldUpdatedAt, book.FieldDeletedAt:
 			values[i] = new(sql.NullTime)
@@ -94,6 +96,12 @@ func (b *Book) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field published_date", values[i])
 			} else if value.Valid {
 				b.PublishedDate = value.Time
+			}
+		case book.FieldImageURL:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field image_url", values[i])
+			} else if value.Valid {
+				b.ImageURL = value.String
 			}
 		case book.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -157,6 +165,8 @@ func (b *Book) String() string {
 	builder.WriteString(b.Title)
 	builder.WriteString(", published_date=")
 	builder.WriteString(b.PublishedDate.Format(time.ANSIC))
+	builder.WriteString(", image_url=")
+	builder.WriteString(b.ImageURL)
 	builder.WriteString(", description=<sensitive>")
 	builder.WriteString(", created_at=")
 	builder.WriteString(b.CreatedAt.Format(time.ANSIC))

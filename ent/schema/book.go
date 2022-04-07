@@ -1,10 +1,11 @@
 package schema
 
 import (
+	"time"
+
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
-	"time"
 )
 
 // Book holds the schema definition for the Book entity.
@@ -18,6 +19,7 @@ func (Book) Fields() []ent.Field {
 		field.Uint("id"),
 		field.String("title"),
 		field.Time("published_date"),
+		field.String("image_url").Optional(),
 		field.String("description").Sensitive(),
 		field.Time("created_at").Default(time.Now).Immutable().StructTag(`json:"-"`),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now).Immutable().StructTag(`json:"-"`),

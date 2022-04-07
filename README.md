@@ -44,7 +44,7 @@ This kit is composed of standard Go library together with some well-known librar
   - [x] Filters (input port), Resource (output port) for pagination and custom response respectively.
   - [x] Cache layer
   - [x] Uses [Task](https://taskfile.dev) to simplify various tasks like mocking, linting, test coverage, hot reload etc
-  - [x] Unit testing of repository, use case, and handler
+  - [x] Unit testing of repository, use case, and handler using mocks and [dockertest](https://github.com/ory/dockertest)
   - [ ] End-to-end test using ephemeral docker containers
 
 # Quick Start
@@ -53,8 +53,10 @@ It is advisable to use the latest [Go version installation](#appendix) (>= v1.17
 
 Get it
 
-    git clone https://github.com/gmhafiz/go8
-    cd go8
+```shell
+git clone https://github.com/gmhafiz/go8
+cd go8
+```
 
 Set database credentials by either
 
@@ -65,7 +67,8 @@ Set database credentials by either
 
 2. Or by exporting into environment variable
 
-```shellexport DB_DRIVER=postgres
+```shell
+export DB_DRIVER=postgres
 export DB_HOST=localhost
 export DB_PORT=5432
 export DB_USER=user
@@ -75,43 +78,50 @@ export DB_NAME=go8_db
 
 Have a database ready either by installing them yourself or the following command. The `docker-compose.yml` will use database credentials set in `.env` file which is initialized by the previous step if you chose that route. Optionally, you may want redis as well.
 
-    docker-compose up -d postgres
+```shell
+docker-compose up -d postgres
+```
 
 Once the database is up you may run the migration with,
 
-    go run cmd/extmigrate/main.go
+```shell
+go run cmd/extmigrate/main.go
+```
 
 Run the API with the following command. For the first time run, dependencies will be downloaded first.
 
-    go run cmd/go8/main.go
-
+```shell
+go run cmd/go8/main.go
+```
 
 You will see the address the API is running at as well as all registered routes.
 
-    2021/10/31 10:49:11 Starting API version: v0.12.0
-    2021/10/31 10:49:11 Connecting to database...
-    2021/10/31 10:49:11 Database connected
-            .,*/(#####(/*,.                               .,*((###(/*.
-        .*(%%%%%%%%%%%%%%#/.                           .*#%%%%####%%%%#/.
-      ./#%%%%#(/,,...,,***.           .......          *#%%%#*.   ,(%%%#/.
-     .(#%%%#/.                    .*(#%%%%%%%##/,.     ,(%%%#*    ,(%%%#*.
-    .*#%%%#/.    ..........     .*#%%%%#(/((#%%%%(,     ,/#%%%#(/#%%%#(,
-    ./#%%%(*    ,#%%%%%%%%(*   .*#%%%#*     .*#%%%#,      *(%%%%%%%#(,.
-    ./#%%%#*    ,(((##%%%%(*   ,/%%%%/.      .(%%%#/   .*#%%%#(*/(#%%%#/,
-     ,#%%%#(.        ,#%%%(*   ,/%%%%/.      .(%%%#/  ,/%%%#/.    .*#%%%(,
-      *#%%%%(*.      ,#%%%(*   .*#%%%#*     ./#%%%#,  ,(%%%#*      .(%%%#*
-       ,(#%%%%%##(((##%%%%(*    .*#%%%%#(((##%%%%(,   .*#%%%##(///(#%%%#/.
-         .*/###%%%%%%%###(/,      .,/##%%%%%##(/,.      .*(##%%%%%%##(*,
-              .........                ......                .......
-    2021/10/31 10:49:11 Serving at 0.0.0.0:3080
-
-
+```shell
+2021/10/31 10:49:11 Starting API version: v0.12.0
+2021/10/31 10:49:11 Connecting to database...
+2021/10/31 10:49:11 Database connected
+        .,*/(#####(/*,.                               .,*((###(/*.
+    .*(%%%%%%%%%%%%%%#/.                           .*#%%%%####%%%%#/.
+  ./#%%%%#(/,,...,,***.           .......          *#%%%#*.   ,(%%%#/.
+ .(#%%%#/.                    .*(#%%%%%%%##/,.     ,(%%%#*    ,(%%%#*.
+.*#%%%#/.    ..........     .*#%%%%#(/((#%%%%(,     ,/#%%%#(/#%%%#(,
+./#%%%(*    ,#%%%%%%%%(*   .*#%%%#*     .*#%%%#,      *(%%%%%%%#(,.
+./#%%%#*    ,(((##%%%%(*   ,/%%%%/.      .(%%%#/   .*#%%%#(*/(#%%%#/,
+ ,#%%%#(.        ,#%%%(*   ,/%%%%/.      .(%%%#/  ,/%%%#/.    .*#%%%(,
+  *#%%%%(*.      ,#%%%(*   .*#%%%#*     ./#%%%#,  ,(%%%#*      .(%%%#*
+   ,(#%%%%%##(((##%%%%(*    .*#%%%%#(((##%%%%(,   .*#%%%##(///(#%%%#/.
+     .*/###%%%%%%%###(/,      .,/##%%%%%##(/,.      .*(##%%%%%%##(*,
+          .........                ......                .......
+2021/10/31 10:49:11 Serving at 0.0.0.0:3080
+```
 
 To use, follow examples in the `examples/` folder
 
-    curl -v --location --request POST 'http://localhost:3080/api/v1/book' --header 'Content-Type: application/json' --data-raw '{"title": "Test title","image_url": "https://example.com","published_date": "2020-07-31T15:04:05.123499999Z","description": "test description"}' | jq
+```shell
+curl -v --location --request POST 'http://localhost:3080/api/v1/book' --header 'Content-Type: application/json' --data-raw '{"title": "Test title","image_url": "https://example.com","published_date": "2020-07-31T15:04:05.123499999Z","description": "test description"}' | jq
 
-    curl --location --request GET 'http://localhost:3080/api/v1/book' | jq
+curl --location --request GET 'http://localhost:3080/api/v1/book' | jq
+```
 
 To see all available routes, run
 
@@ -219,17 +229,15 @@ Various tooling can be installed automatically by running which includes
  * [golang-ci](https://golangci-lint.run)
     * An opinionated code linter from https://golangci-lint.run/
  * [swag](https://github.com/swaggo/swag)
-    * Generates swagger documentation 
- * [testify](https://github.com/stretchr/testify)
-    * A testing framework
- * [gomock](https://github.com/golang/mock/mockgen)
-    * Mock dependencies inside unit test
+    * Generates swagger documentation
  * [golang-migrate](https://github.com/golang-migrate/migrate)
     * Migration tool
  * [ent](https://entgo.io/docs/getting-started)
     * Database ORM tool
  * [gosec](https://github.com/securego/gosec)
     * Security Checker
+ * [mirip](https://github.com/gmhafiz/mirip)
+    * Generate mocks from interface 
  * [air](https://github.com/cosmtrek/air)
     * Hot reload app 
 
@@ -487,8 +495,10 @@ Custom theme is obtained from [https://github.com/ostranme/swagger-ui-themes](ht
 This project follows a layered architecture mainly consists of three layers:
 
  1. Handler
- 2. Business Logic
+ 2. Use Case
  3. Repository
+
+![layered-architecture](assets/layered-architecture.png)
 
 The handler is responsible to receiving requests, validating them hand over to business logic, then format the response to client.
 
@@ -496,7 +506,11 @@ Business logic is the meat of operations, and it calls a repository if necessary
 
 Database calls lives in this repository layer where data is retrieved from a store.
 
-All of these layers are encapsulated in a domain.
+All of these layers are encapsulated in a domain, and an API can contain many domain.
+
+Each layer communicates through an interface which means the layer depends on
+abstraction instead of concrete implementation. This achieves loose-coupling and 
+makes unit testing easier.
 
 ## Starting Point
 
@@ -591,14 +605,14 @@ Router multiplexer or mux is created for use by `Domain`. While [chi](https://gi
 Let us look at how this project attempts at layered architecture. A domain consists of: 
 
   1. Handler (Controllers)
-  2. Use case (Use Cases)
-  3. Repository (Entities)
+  2. Use case (Business Logic)
+  3. Repository (Database)
 
 Let us start by looking at how `repository` is implemented.
 
 ### Repository
 
-Starting wit, `Entities`. This is where all database operations are handled. Inside the `internal/domain/health` folder:
+Starting with `Database`. This is where all database operations are handled. Inside the `internal/domain/health` folder:
 
 ![book-domain](assets/domain-health.png)
 
@@ -652,19 +666,19 @@ func (s *Server) initBook() {
 
 ## Middleware
 
-A middleware is just a handler that returns a handler as can bee seen in the `internal/middleware/cors.go`
+A middleware is just a handler that returns a handler as can be seen in the `internal/middleware/cors.go`
 
 ```go
 func Cors(next http.Handler) http.Handler {
-   return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-           
-           // do something before going into Handler
-   
-           next.ServerHTTP(w, r)
-           
-           // do something after handler has been served
-       }
-   }
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+    
+        // do something before going into Handler
+        
+        next.ServerHTTP(w, r)
+        
+        // do something after handler has been served
+    }
+}
 ```
 
 Then you may choose to have this middleware to affect all routes by registering it in`initGlobalMiddleware()` or only a specific domain at `RegisterHTTPEndPoints()` function in its `register.go` file. 
@@ -683,17 +697,17 @@ Then:
 
 ```go
 func Auth(cfg configs.Configs) Adapter {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			claims, err := getClaims(r, cfg.Jwt.SecretKey)
-			if err != nil {
-				w.WriteHeader(http.StatusUnauthorized)
-				return
-			}
-
-			next.ServeHTTP(w, r)
-		})
-	}
+    return func(next http.Handler) http.Handler {
+        return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+            claims, err := getClaims(r, cfg.Jwt.SecretKey)
+            if err != nil {
+                w.WriteHeader(http.StatusUnauthorized)
+                return
+            }
+    
+            next.ServeHTTP(w, r)
+        })
+    }
 }
 ```
 
@@ -843,268 +857,585 @@ Unit testing can be run with
     
 Which runs `go test -v ./...`
 
-In Go, unit test file is handled by appending _test to a file's name. For example, to test `/internal/domain.book/handler/http/handler.go`, we add unit test file by creating `/internal/domain.book/handler/http/handler_test.go`
+In Go, unit test file is handled by appending `_test` to a file's name. For example, to test `/internal/domain/book/handler/http/handler.go`, we add unit test file by creating `/internal/domain/book/handler/http/handler_test.go`
 
 
-To perform a unit test we take advantage of go's interface. Our interfaces are defined in:
+To perform a unit test we take advantage of go's interface. Our interfaces are defined in where they are used:
 
-      internal/domain/book/handler.go
-      internal/domain/book/usecase.go
-      internal/domain/book/repository.go
+      internal/domain/author/handler/handler.go
+      internal/domain/author/usecase/usecase.go
+      internal/domain/author/repository/database.go
 
-The implementation if these interfaces are in separate files. For example our concrete 
-implementation for use case of `Create` is in `internal/book/usecase/http/usecase.go`.
+The implementation of these interfaces are right were they were declared. So you would find them in the same file.
 
-### Repository
-
-In this database unit test, we only concern with the behaviour of our database operations, not the actual interaction with a real database. Mocking a database call allows us to simulate that interaction. Here, we use a library from Data Dog called [go-sqlmock](github.com/DATA-DOG/go-sqlmock). It, can be installed with:
-
-
-      task install:sqlmock
-
-
-Then in our postgres_test.go file, we create a mock with
-
-```go
-db, mock, err := sqlmock.New()
-```
-
-And then we get a `DB` struct simply by
-
-```go
-sqlxDB := sqlx.NewDb(db, "sqlmock")
-```
-
-In each of our unit test, we get a mock repository with
-
-```go
-db, mock := NewMock()
-repo := New(db)
-```
-
-The basic idea is the same as use case unit tests. We
-1. create what we expect - in this case the SQL query
-2. create what the response should be
-
-In  `Create()` function in `postgres.go` file, we perform a few things
-1. Prepares an sql statement
-2. Perform sql insert
-3. Pass in sql arguments
-4. Returns a book id
-
-To mock these,
-1. Call `ExpectPrepare()` with the expected SQL query. `sqlmock` allows usage of regex
-
-    ExpectPrepare("^INSERT INTO books")
-
-2. Call `ExpectQuery()` because we are doing an insertion
-
-3. Tell the library what values are inserted
-
-    WithArgs(bookTest.Title, bookTest.PublishedDate, bookTest.ImageURL, bookTest.Description)
-
-4. Returns a book ID
-
-    WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
-
-Next, call the `repo.Create()` function and perform assertions.
-
-### Use Case
-
-Our use case unit tests may need to retrieve or store data from and into a database with the help of repository (or repositories). Thus, there isn't any direct usage of database object. So instead, we need to mock our repository with the help of [gomock](https://github.com/golang/mock/). It can be installed with
-
-      task install:gomock
-or
-
-    go install github.com/golang/mock/mockgen@v1.6.0            # for go >= v1.6
-    GO111MODULE=on go get github.com/golang/mock/mockgen@v1.6.0 # for go < v1.6
-
-
-We tell what response to be expected (using `EXPECT()` function) and then call our use case function. If the use case function returns a response of what we have expected as defined in `EXPECT()` function, then our unit test passes.
-
-Both use case and repository are created with
-
-```go
-uc, repo := newUseCase(t)
-```
-
-The `newUseCase()` function returns mock controller and repository generated by `sqlmock` and `gomock` library respectively. Generate these mocks by calling either `go generate ./...` or `task generate` (if you use `Task`). `go generate ./...` command looks at `//go:generate` tags in all `.go` files - notice the lack of a space between `//` and `go:generate` which is required for the tag to work.
-
-```go
-//go:generate mockgen -package mock -source ../usecase.go -destination=../mock/mock_usecase.go
-```
-
-When we look at `usecase.go` file, two repository calls were made, `Create()` and `Read()`.
-
-We expect `Create()` to return an ID and an error tuple while `Read()` function return a book model and error tuple.
-
-Knowing this, we tell the library what to expect in each of these calls.
-
-1. In `Create()`:
-* Receives a book model (without ID)
-* Returns one book ID
-
-Thus,
-
-```go
-repo.EXPECT().Create(ctx, gomock.Eq(expected)).Return(bookID, err).Times(1)
-```
-
-2. In `Read()`:
-* Receives a book ID
-* Return a book model with id == 1
-
-Thus,
-
-```go
-repo.EXPECT().Read(ctx, gomock.Eq(bookID)).Return(expectedCreated, err).Times(1)
-```
-
-Then we initiate the use case function with `bookGot, err := uc.Create(ctx, request)`
-and we can to several assertions to confirm what we've got is the one we expected.
-
-```go
-assert.NotEqual(t, bookGot.BookID, 0)
-assert.Equal(t, bookGot.Title, request.Title)
-assert.Equal(t, bookGot.PublishedDate.String(), request.PublishedDate.String())
-assert.Equal(t, bookGot.Description, request.Description)
-assert.Equal(t, bookGot.ImageURL.String, request.ImageURL.String)
-```
-
+This repository shows table-driven unit testing strategy  in all three layers.
+Both handler and usecase layers swaps the implementation of underneath layer 
+with mocks while in repository layer, we use real database in docker to test
+against, using `dockertest` library.
 
 ### Handler
 
-Handler unit testing is done by mocking any use cases done in it. The interface we are testing against is defined in `internal/domain/book.handler.go` file.
+We explore on how to perform unit testing on creating an Author. There are several things that need to happen namely:
+
+1. Bind `POST` request to a local struct.
+2. Validate.
+3. Call business logic layer underneath it and handle various error that may come up.
+    - We are not going to actually call our business logic layer. We use mocks instead.
+4. Perform data transformation for user consumption.
+
+In general, all unit tests will have `args` and `want` struct. `args` struct is
+what we need to supply to the unit test while `want` struct is where we define
+what we expect the result is going to be.
+
+Firstly, we create `handler_test.go` file in the same directory. Create a unit
+test function called `TestHandler_Create()`.
 
 ```go
-type HTTP interface {
-	Create(w http.ResponseWriter, r *http.Request)
-	Update(w http.ResponseWriter, r *http.Request)
-	List(w http.ResponseWriter, r *http.Request)
-	Get(w http.ResponseWriter, r *http.Request)
-	Delete(w http.ResponseWriter, r *http.Request)
+func TestHandler_Create(t *testing.T) {
+	
 }
 ```
 
-In general, these are the steps to make a handler unit test:
-
-  1. Generate stubs using `mockgen`.
-  2. Create a `gomock` controller.
-  3. Create a mock use case from the generated stub.
-  4. Create test input and expected output. Then, from these input and output, tell `gomock` what to take, and what to expect.
-  5. Create our test handler.
-  6. Call our method to be tested.
-  7. Assert results.
-
-Whew, this is a lot of steps! Let's dive in. 
-
-#### Generate stubs using `mockgen`
-
-Mocks are generated using `mockgen` and is generated with either running `go generate ./...` or `task generate`.
-The `//go:generate mockgen <options>...` tag tells `go generate` command to run this specific command in all `.go` files.
-
-The `mockgen` can take relative path like so:
+In there, we add `CreateRequest` to `args` struct.
 
 ```go
-//go:generate mockgen -package mock -source ../../handler.go -destination=../../mock/mock_handler.go
-```
-
-#### `gomock` controller
-
-For our usecase, we need to create a mock controller from the library. `defer ctrl.Finish()` can be omitted if you are using Go >= 1.14 and `mockgen` >= 1.5.0.
-
-```go
-ctrl := gomock.NewController(t)
-defer ctrl.Finish()
-```
-
-#### Mock use case
-
-Since our handler calls one use case, specifically `h.useCase.Create()`, we need to be able to mock the input and output. We don't want to call the actual implementation because this unit test should only concern with the handler. We use usecase stubs generated in the [Usecase](Use Case) section.  
-
-```go
-uc := mock.NewMockUseCase(ctrl)
-```
-
-#### EXPECT()
-
-We expect the use case to accept a context and a `model.Book` and also return `model.Book`, error tuple once. Thus,
-
-```go
-uc.EXPECT().Create(ctx, testBookRequest).Return(ucResp, e).Times(1)
-```
-
-Create these input and output
-
-```go
-// input
-ctx := context.Background()
-testBookRequest := &models.Book{
-    Title:         "test01",
-    PublishedDate: now.MustParse("2020-02-02"),
-    ImageURL: null.String{
-        String: "https://example.com/image.png",
-        Valid:  true,
-    },
-    Description: "test01",
+type args struct {
+    *author.CreateRequest
 }
-
-// output
-ucResp := &models.Book{
-    BookID:        1,
-    Title:         testBookRequest.Title,
-    PublishedDate: testBookRequest.PublishedDate,
-    ImageURL:      testBookRequest.ImageURL,
-    Description:   testBookRequest.Description,
-}
-var e error
 ```
 
+In `want` struct, we expect the usecase to return two things, the author and an 
+error.
 
-#### Test Handler
+```go
+type want struct {
+    *gen.Author
+    error
+}
+```
 
-One more thing left before we call our API is to create a handler which is going to be used to call our API endpoint. API registration is done from `RegisterHTTPEndPoints()`. 
+The final struct embeds both structs, and we give a name to it.
+
+```go
+type test struct {
+    name string
+    args
+    want
+    status int
+}
+```
+We also add an HTTP status response code because our handler can return different
+code depending on the result.
+
+Now that we have all necessary structs, we can begin with our table-driven tests.
+Itt is just a matter of filling `test` struct with our values.
+
+```go
+tests := []test{
+	{
+        name: "simple",
+        args: args {
+            CreateRequest: &author.CreateRequest{
+                FirstName:  "First",			
+                MiddleName: "Middle",			
+                LastName:   "Last",			
+            }   		
+        },
+        want: want {
+            Author: &gen.Author{
+                ID:         1,
+                FirstName:  "First",
+                MiddleName: "Middle",
+                LastName:   "Last",
+            },
+            error: nil,
+        },
+        status: http.StatusCreated,
+    }
+}
+```
+
+To make it simple, we only add three fields in `CreateRequest` struct. We expect
+the same values come out of use case layer, with an ID attached to it. We also
+expect no error to happen. Finally, we expect a `201` HTTP status is returned 
+by this handler.
+
+To run the tests, we loop over this slice of tests:
+
+```go
+for _, test := range tests {
+    t.Run(test.name, func(t *testing.T) {
+        
+    }
+}
+```
+
+We use `httptest` package to call our tests by creating a `writer`(request) to 
+call the handler, and a `recorder` to receive response from the handler.
+
+```go
+rr := httptest.NewRequest(http.MethodPost, "/api/v1/author", <body>)
+ww := httptest.NewRecorder()
+```
+
+The request points to the URL of the endpoint, and we make a `POST` request to it.
+Since we are sending a JSON payload, we send it in the third argument. It accepts
+an `io.Reader` so we need to encode our JSON payload into `buf`:
+
+```go
+var buf bytes.Buffer
+err = json.NewEncoder(&buf).Encode(test.args.CreateRequest)
+
+rr := httptest.NewRequest(http.MethodPost, "/api/v1/author", &buf)
+```
+
+This is a good place to assert that no error has happened.
+
+```go
+err = json.NewEncoder(&buf).Encode(test.args.CreateRequest)
+assert.Nil(t, err)
+```
+
+To call our handler, we need to instantiate it. It is created from `RegisterHTTPEndPoints()`.
 
 ```go
 h := RegisterHTTPEndPoints(router, val, uc)
 ```
 
-For the other dependencies, they can be simply new instances of router and validation library.
-
-#### Test Request
-
-All preparation is in place. What's left is to make a request to our endpoint `/api/v1/books`.  Our `Create()` method has the standard http handler which takes a `http.ResponseWriter` and `*http.Request`. We make use of `httptest` library. Form the request with the http method, path and any payload. Result will be written into `ww`.
+This function requires three dependencies. The `router` and `validator` are easy:
 
 ```go
-ww := httptest.NewRecorder()
-rr := httptest.NewRequest(http.MethodPost, "/api/v1/books", bytes.NewBuffer(body))
+router := chi.NewRouter()
+val := validator.New()
 ```
 
-Finally, we can call our `Create()` function.
+The final dependency requires a bit of work. The handler depends on the usecase
+interface, and it in turn calls the appropriate concrete implementation. For our
+unit test, we can swap out the implementation with a mock. And this mock returns
+value from our `want` struct. Now our unit test can work in isolation, and do not 
+depend on any underneath layer!
+
+Create a new file called `usecase_mock.go`. Declare a new mock struct and within it,
+contains a field that matches our usecase signature by looking at the usecase 
+interface.
+
+`usecase.go`
 ```go
+type UseCase interface {
+    Create(ctx context.Context, a *author.CreateRequest) (*gen.Author, error)
+}
+```
+
+`usecase_mock.go`
+```go
+type AuthorUseCaseMock struct {
+    CreateFunc func (ctx context.Context, a *author.CreateRequest) (*gen.Author, error)
+}
+```
+Notice that we append the `Create()` method with `Func` field. Now that we have
+the struct defined, we add a concrete implementation from it.
+
+`usecase_mock.go`
+```go
+type AuthorUseCaseMock struct {
+    CreateFunc func (ctx context.Context, a *author.CreateRequest) (*gen.Author, error)
+}
+
+func (a *AuthorUseCaseMock) Create(ctx context.Context, req *author.CreateRequest) (*gen.Author, error) {
+	return a.CreateFunc(ctx, req)
+}
+```
+
+Now that we have a usecase mock, we can now declare the missing `uc` variable.
+Using `AuthorUseCaseMock` struct from `mock` package, we initialize `CreateFunc`
+field from it. Then, it is just a matter of returning the values to what we have
+defined in our `want` struct.
+
+`handler_test.go`
+```go
+uc := &mock.AuthorUseCaseMock{
+    CreateFunc: func(ctx context.Context, a *author.CreateRequest) (*gen.Author, error) {
+        return test.want.Author, test.want.error
+    },
+}
+```
+
+We finally have all of our dependencies initialized. Now we can call `Create()`
+method. We pass in the writer(`ww`) and a recorder `rr` into it - which matches our
+handler signature (`Create(w http.ResponseWriter, r *http.Request)`)
+
+```go
+h := RegisterHTTPEndPoints(router, val, uc)
 h.Create(ww, rr)
 ```
 
-#### Assert Results
-
-Decode the json response into a `book.Res` struct - because that is what the handler ultimate turn our response from use case thanks to `book.Resource()` method.
-
-```go
-var gotBook book.Res
-err = json.NewDecoder(ww.Body).Decode(&gotBook)
-```
-
-Now we can assert http status and all values
+Response is recorded into `ww` variable. To receive the response, we decode from
+`ww.Body` into `gen.Author` struct:
 
 ```go
-assert.Equal(t, http.StatusCreated, ww.Code)
-assert.Equal(t, gotBook.Title, ucResp.Title)
-assert.Equal(t, gotBook.Description.String, ucResp.Description)
-assert.Equal(t, gotBook.PublishedDate.String(), ucResp.PublishedDate.String())
-assert.Equal(t, gotBook.ImageURL.String, ucResp.ImageURL.String)
+var got gen.Author
+if err = json.NewDecoder(ww.Body).Decode(&got); err != nil {
+    t.Fatal(err)
+}
 ```
+
+Finally, we can do some assertions to check if the returned response matches with
+what we expect.
+
+```go
+assert.Equal(t, ww.Code, test.status)
+assert.Equal(t, &got, test.want.Author)
+```
+
+While `go test ./...` runs all tests, we can choose to run only this specific test. We `cd` into the directory and use `-run` to specify the <function name/test name>. `-run` can also accept regex
+
+```shell
+cd internal/domain/author/handler
+go test -run="TestHandler_Create/simple"
+
+PASS
+ok      github.com/gmhafiz/go8/internal/domain/author/handler   0.010s
+```
+
+There are a lot of things going on in this unit test. It is very verbose, but it
+is clear on what happens here. A table-test allows us to quickly construct arguments,
+wants and what we expect. Constructing a mock file can be tedious, so a tool like
+[mirip](https://github.com/gmhafiz/mirip) can be used to generate a mock from your
+interface.
+
+### Use Case
+
+The idea is the same as unit testing a handler. We have a set of arguments, what
+is expected from it, and a slice of `test` struct that we iterate.
+
+This time, we do not have to worry about write and recorder. We only need to 
+instantiate usecase along with its dependencies. To make this simple, we will
+only mock database(repository struct).
+
+The `Create()` method expects a `context` and `*author.CreateRequest` and returns
+`*gen.Author` and an `error`.
+```go
+type args struct {
+    *author.CreateRequest
+}
+type want struct {
+    *gen.Author
+    error
+}
+```
+
+Our `test` struct becomes
+
+```go
+type test struct {
+    name string
+    args
+    want
+}
+```
+
+Like handler unit tests, we fill in the `test` slice with our data
+
+```go
+tests := []test{
+    {
+        name: "simple",
+        args: args{
+            CreateRequest: &author.CreateRequest{
+                FirstName:  "First",
+                MiddleName: "Middle",
+                LastName:   "Last",
+                Books:      nil,
+            },
+        },
+        want: want{
+            Author: &gen.Author{
+                ID:         1,
+                FirstName:  "First",
+                MiddleName: "Middle",
+                LastName:   "Last",
+                CreatedAt:  time.Time{},
+                UpdatedAt:  time.Time{},
+                DeletedAt:  nil,
+                Edges: gen.AuthorEdges{
+                    Books: nil,
+                },
+            },
+            error: nil,
+        },
+    },
+    }
+```
+
+To instantiate a usecase, we call the `New()` function.
+
+```go
+uc := New(repoAuthor, nil, nil, nil)
+```
+
+We only care about CRUD at this stage, we need to mock out the repository layer.
+We start by creating a mock file and create a struct containing methods that 
+matches the signature defined in repository interface.
+
+`postgres.go`
+```go
+type Repository interface {
+    Create(ctx context.Context, r *author.CreateRequest) (*gen.Author, error)
+}
+```
+`postgres_mock.go`
+```go
+package database
+
+type RepositoryMock struct {
+    CreateFunc func(ctx context.Context, r *author.CreateRequest) (*gen.Author, error)
+}
+```
+
+Then we implement `CreateFunc` method.
+
+```go
+package database
+
+type RepositoryMock struct {
+    CreateFunc func(ctx context.Context, r *author.CreateRequest) (*gen.Author, error)
+}
+
+func (m *RepositoryMock) Create(ctx context.Context, r *author.CreateRequest) (*gen.Author, error) {
+	return m.CreateFunc(ctx, r)
+}
+```
+
+As mentioned before, we can use [mirip](https://github.com/gmhafiz/mirip) to
+automatically generate this mock file.
+
+```go
+//go:generate mirip -rm -out postgres_mock.go . Repository
+type Repository interface {...
+```
+
+Now that we have repository mock, we can start looping through `tests` variable.
+```go
+for _, test := range tests {
+    t.Run(test.name, func(t *testing.T) {
+
+    }
+}
+```
+
+Inside, we declare `&database.RepositoryMock` for repository mock. It returns
+the author and error that we want as declare3d in the table-test.
+
+```go
+repoAuthor := &database.RepositoryMock{
+    CreateFunc: func(ctx context.Context, r *author.CreateRequest) (*gen.Author, error) {
+        return test.want.Author, test.want.error
+    },
+}
+
+uc := New(repoAuthor, nil, nil, nil)
+```
+
+With the usecase declared, we can call its `Create()` method.
+
+```go
+got, err := uc.Create(context.Background(), test.args.CreateRequest)
+```
+
+Finally, we perform a couple of assertions to check for error and response
+
+```go
+assert.Equal(t, test.want.error, err)
+assert.Equal(t, test.want.Author, got)
+```
+
+Run the test with
+
+```shell
+cd internal/domain/author/usecase
+go test -run="TestAuthorUseCase_Create/simple"
+
+PASS
+ok      github.com/gmhafiz/go8/internal/domain/author/usecase   0.004s
+```
+
+### Repository
+
+Unit testing repository layer is different from above in the way that we test
+them against real database using Docker, instead of using mocks. It is a lot
+more complex to set up because now we need to do at least two things:
+
+1. Instantiate a new database in Docker
+2. Perform migration to create the tables
+3. Seed, if necessary
+
+To set up, we use `TestMain`. It will run before all unit tests in this package. 
+The code is basically a copy-paste from https://github.com/ory/dockertest. We 
+can customize the image (`postgres`) and version using tag (`14`). The username,
+password and database name is not important and they can be anything. These 
+databases will be automatically shut down. In spite of spinning a database for 
+these tests, running these unit tests are still quick. For example, running all
+15 CRUD tests in this `database` package takes only **2** seconds.
+
+```go
+func TestMain(m *testing.M) {
+	
+}
+
+```
+Once the database is up, we need to create initial tables. Thus, we call
+`migrate("up")`. Full code is in `postgres_test.go`.
+
+Now that we have database set up, we write our first repository unit test on
+`Create()`.
+
+```go
+func TestAuthorRepository_Create(t *testing.T) {
+
+}
+```
+
+Like other unit tests, we supply `args`, `want`, and `test` struct. Look at
+`type Repository interface` to know the function's signature to infer what are
+needed and what it returns.
+
+```go
+type args struct {
+    author *author.CreateRequest
+}
+
+type want struct {
+    author *gen.Author
+    err    error
+}
+
+type test struct {
+    name string
+    args
+    want
+}
+```
+
+In the `test` slice, we supply the values
+
+```go
+tests := []test{
+    {
+        name: "normal",
+        args: args{
+            author: &author.CreateRequest{
+                FirstName:  "First",
+                MiddleName: "Middle",
+                LastName:   "Last",
+                Books:      nil,
+            },
+        },
+        want: want{
+            author: &gen.Author{
+                    ID:         1,
+                    FirstName:  "First",
+                    MiddleName: "Middle",
+                    LastName:   "Last",
+                    CreatedAt:  time.Time{},
+                    UpdatedAt:  time.Time{},
+                    DeletedAt:  &time.Time{},
+                },
+            err: nil,
+        },
+    },
+}
+```
+
+Eventually we need to call `Create()` method from this repository. For that we 
+need to instantiate a repository, and this repository requires a database client.
+
+```go
+var (
+    DockerDB *dockerDB
+)
+
+type dockerDB struct {
+    Conn *sql.DB
+    Ent  *gen.Client
+}
+
+func dbClient() *gen.Client {
+    sqlxDB := sqlx.NewDb(DockerDB.Conn, "postgres")
+    drv := entsql.OpenDB(dialect.Postgres, sqlxDB.DB)
+    client := gen.NewClient(gen.Driver(drv))
+    DockerDB.Ent = client
+    
+    return client
+}
+
+client := dbClient()
+```
+This database client is created from `sqlx`, and since we are using `ent` ORM,
+we create a client from it. Then we store the `client` in a variable local to `database` package. This way, the database client is accessible to all other unit tests.
+
+With a database client, we can now create a repository
+
+```go
+repo := New(client)
+```
+
+To run our table-test, like before, we iterate the `test` slice
+
+```go
+for _, test := range tests {
+    t.Run(test.name, func (t *testing.T) {
+        ctx := context.Background()
+        
+        created, err := repo.Create(ctx, test.args.author)
+    })
+}
+```
+It returns two values, `created` and `err`. So we assert them. Since we used real database, it returns values that we cannot know in advance like `created_at` field. For the moment, we only assert values we know:
+
+```go
+assert.Equal(t, err, test.want.err)
+assert.Equal(t, created.ID, test.want.author.ID)
+assert.Equal(t, created.FirstName, test.want.author.FirstName)
+assert.Equal(t, created.MiddleName, test.want.author.MiddleName)
+assert.Equal(t, created.LastName, test.want.author.LastName)
+```
+
+To run
+
+```shell
+cd internal/domain/author/repository/database
+go test -run="TestAuthorRepository_Create/normal"
+
+PASS
+ok      github.com/gmhafiz/go8/internal/domain/author/repository/database       2.320s
+
+```
+
+To get more test coverage, more tests need to be added to the table-test. For 
+example, inserting empty payload, test for errors, and inserting author with
+attached books. 
+
+When doing multiple inserts, the ID will be increased. Remember that we are 
+testing against real database. So your expected ID should follow the increment.
+
+The way tests are laid out, there is a single database client used by all
+unit tests. Alternatively, you can choose to have one database client for each
+of `Create()`, `Read()`, `Update()` and `Delete()` which would have mean 4 
+separate databases in its own Docker container.
+
+Note that in doing a `Read()` unit test, if you choose to seed by doing an 
+insert, instead of using SQL script before reading, you are already doing an 
+integration test. An integration test is simply several unit tests that work 
+together.
+
+In conclusion, unit testing repository layer is more verbose as it needed a
+third party library. However, the structure is still similar, with the addition
+of setting up the database. Another advantage is you can inspect the values
+inside the database by looking at the `databaseUrl` variable inside `TestMain()`.
 
 ## End-to-End Test
+
+TODO: E2E tests are still in progress.
 
 Technically End-to-End test (e2e test) can be done separately in another program and language. Having e2e binary integrated in the project has the advantage of reusing structs and migration which will be explained down below. 
 
@@ -1155,6 +1486,7 @@ or
 
 # Acknowledgements
 
+ * https://quii.gitbook.io/learn-go-with-tests/questions-and-answers/http-handlers-revisited
  * https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html
  * https://github.com/moemoe89/integration-test-golang
  * https://github.com/george-e-shaw-iv/integration-tests-example
@@ -1172,8 +1504,8 @@ For Ubuntu:
 
 ```shell
 sudo apt update && sudo apt install git curl build-essential jq
-wget https://golang.org/dl/go1.17.6.linux-amd64.tar.gz
-sudo tar -C /usr/local -xzf go1.17.6.linux-amd64.tar.gz
+wget https://golang.org/dl/go1.17.8.linux-amd64.tar.gz
+sudo tar -C /usr/local -xzf go1.17.8.linux-amd64.tar.gz
 export PATH=$PATH:/usr/local/go/bin
 echo 'PATH=$PATH:/usr/local/go/bin' >> ~/.bash_aliases
 source ~/.bashrc

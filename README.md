@@ -94,7 +94,7 @@ Run the API with the following command. For the first time run, dependencies wil
 go run cmd/go8/main.go
 ```
 
-You will see the address the API is running at as well as all registered routes.
+You will see the address the API is running at.
 
 ```shell
 2021/10/31 10:49:11 Starting API version: v0.12.0
@@ -115,7 +115,7 @@ You will see the address the API is running at as well as all registered routes.
 2021/10/31 10:49:11 Serving at 0.0.0.0:3080
 ```
 
-To use, follow examples in the `examples/` folder
+To use, open a new terminal and follow examples in the `examples/` folder
 
 ```shell
 curl -v --location --request POST 'http://localhost:3080/api/v1/book' --header 'Content-Type: application/json' --data-raw '{"title": "Test title","image_url": "https://example.com","published_date": "2020-07-31T15:04:05.123499999Z","description": "test description"}' | jq
@@ -130,6 +130,13 @@ go run cmd/route/main.go
 ```
 
 ![go run cmd/routes/main.go](assets/routes.png)
+
+
+To run all tests,
+
+```shell
+go test ./...
+```
 
 
 # Table of Contents
@@ -1504,12 +1511,12 @@ For Ubuntu:
 
 ```shell
 sudo apt update && sudo apt install git curl build-essential jq
-wget https://golang.org/dl/go1.17.8.linux-amd64.tar.gz
-sudo tar -C /usr/local -xzf go1.17.8.linux-amd64.tar.gz
+wget https://golang.org/dl/go1.18.linux-amd64.tar.gz
+sudo tar -C /usr/local -xzf go1.18.linux-amd64.tar.gz
 export PATH=$PATH:/usr/local/go/bin
 echo 'PATH=$PATH:/usr/local/go/bin' >> ~/.bash_aliases
 source ~/.bashrc
-go get -u golang.org/x/tools/...
+go install golang.org/x/tools/...@latest
 
 curl -s https://get.docker.com | sudo bash
 sudo usermod -aG docker ${USER}

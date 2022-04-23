@@ -8,7 +8,7 @@
             "url": "https://github.com/gmhafiz/go8",
             "email": "gmhafiz@gmail.com"
         },
-        "version": "0.12.0"
+        "version": "0.13.0"
     },
     "host": "localhost:3080",
     "basePath": "/",

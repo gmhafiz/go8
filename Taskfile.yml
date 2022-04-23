@@ -203,7 +203,7 @@ tasks:
   install:mirip:
     desc: Install mock generator
     cmds:
-      - go install github.com/gmhafiz/mirip@latest
+      - go install github.com/gmhafiz/mirip/cmd/mirip@latest
 
   install:golangmigrate:
     desc: Install golang migration tool

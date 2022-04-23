@@ -97,7 +97,7 @@ go run cmd/go8/main.go
 You will see the address the API is running at.
 
 ```shell
-2021/10/31 10:49:11 Starting API version: v0.12.0
+2021/10/31 10:49:11 Starting API version: v0.13.0
 2021/10/31 10:49:11 Connecting to database...
 2021/10/31 10:49:11 Database connected
         .,*/(#####(/*,.                               .,*((###(/*.
@@ -269,6 +269,18 @@ or
 
     task routes
 
+### Go generate
+
+    task generate
+
+Runs `go generate ./...`. It looks for `//go:generate` tags found in .go files. Useful for recreating mock file for unit tests.
+
+### Generate Swagger Documentation
+
+    task swagger
+
+Reads annotations from controller and model file to create a swagger documentation file. Can be accessed from [http://localhost:3080/swagger/](http://localhost:3080/swagger/)
+
 ### Format Code
 
     task fmt
@@ -277,26 +289,11 @@ Runs `go fmt ./...` to lint Go code
 
 `go fmt` is part of official Go toolchain that formats your code into an opinionated format.
 
-### Sync Dependencies
-
-    task tidy
-
-Runs `go mod tidy` to sync dependencies.
-
-
 ### Compile Check
 
     task vet
 
 Quickly catches compile error.
-
-
-### Unit tests
-
-    task test
-
-Runs unit tests.
-
 
 ### golangci Linter
 
@@ -310,31 +307,29 @@ Runs [https://golangci-lint.run](https://golangci-lint.run/) linter.
 
 Runs opinionated security checks from [https://github.com/securego/gosec](https://github.com/securego/gosec).
 
+### Unit tests
+
+    task test
+
+Runs unit tests.
+
 ### Check
 
     task check
 
 Runs all the above tasks (Format Code until Security Checks)
 
+### Sync Dependencies
+
+    task tidy
+
+Runs `go mod tidy` to sync dependencies.
+
 ### Hot reload
 
     task dev
 
 Runs `air` which watches for file changes and rebuilds binary. Configure in `.air.toml` file.
-
-### Generate Swagger Documentation
-    
-    task swagger
-
-Reads annotations from controller and model file to create a swagger documentation file. Can be accessed from [http://localhost:3080/swagger/](http://localhost:3080/swagger/)
-
-
-### Go generate
-
-    task generate
-
-Runs `go generate ./...`. It looks for `//go:generate` tags found in .go files. Useful for recreating mock file for unit tests.
-
 
 ### Test Coverage
 
@@ -499,7 +494,7 @@ Custom theme is obtained from [https://github.com/ostranme/swagger-ui-themes](ht
 
 # Structure
 
-This project follows a layered architecture mainly consists of three layers:
+This project follows a layered architecture mainly consisting of three layers:
 
  1. Handler
  2. Use Case
@@ -507,9 +502,10 @@ This project follows a layered architecture mainly consists of three layers:
 
 ![layered-architecture](assets/layered-architecture.png)
 
-The handler is responsible to receiving requests, validating them hand over to business logic, then format the response to client.
+The handler is responsible to receiving requests, validating them hand over to business logic.
+Values returned from use case layer is then formatted and to be returned to the client.
 
-Business logic is the meat of operations, and it calls a repository if necessary.
+Business logic (use case) is the meat of operations, and it calls a repository if necessary.
 
 Database calls lives in this repository layer where data is retrieved from a store.
 
@@ -667,7 +663,7 @@ Finally, a domain is initialized by wiring up all dependencies in server/initDom
 func (s *Server) initBook() {
    newBookRepo := bookRepo.New(s.GetDB())
    newBookUseCase := bookUseCase.New(newBookRepo)
-   bookHandler.RegisterHTTPEndPoints(s.router, newBookUseCase)
+    s.Domain.Book = bookHandler.RegisterHTTPEndPoints(s.router, newBookUseCase)
 }
 ```
 
@@ -688,22 +684,17 @@ func Cors(next http.Handler) http.Handler {
 }
 ```
 
-Then you may choose to have this middleware to affect all routes by registering it in`initGlobalMiddleware()` or only a specific domain at `RegisterHTTPEndPoints()` function in its `register.go` file. 
+Then you may choose to have this middleware to affect all routes by registering it in`setGlobalMiddleware()` or only a specific domain at `RegisterHTTPEndPoints()` function in its `register.go` file. 
 
 
 ### Middleware External Dependency
 
 Sometimes you need to add an external dependency to the middleware which is often the case for 
-authorization be that a config or a database. That middleware can be wrapped around by that 
-dependency by first aliasing `http.Handler` with:
+authorization be that a config or a database. To do that, we wrap our middleware with a
+`func(http.Handler) http.Handler`. Any dependencies can now be passed in into `Auth()`.
 
 ```go
-type Adapter func(http.Handler) http.Handler
-```
-Then:
-
-```go
-func Auth(cfg configs.Configs) Adapter {
+func Auth(cfg configs.Configs) func(http.Handler) http.Handler {
     return func(next http.Handler) http.Handler {
         return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
             claims, err := getClaims(r, cfg.Jwt.SecretKey)
@@ -720,7 +711,13 @@ func Auth(cfg configs.Configs) Adapter {
 
 ## Dependency Injection
 
-How does dependency injection happens? It starts with `InitDomains()` method. 
+Dependency injection in Go is simple. We can simply pass in whatever we need
+into the function or method signature. There is no need to make a dependency injection
+container like other object-oriented programming language.
+
+How does dependency injection happens? It starts with `InitDomains()` method. We
+initialize the dependency we want early in the start-up of the program and then 
+pass it down the layers.
 
 ```go
 healthHandler.RegisterHTTPEndPoints(s.router, usecase.NewHealthUseCase(postgres.NewHealthRepository(s.db)))
@@ -750,17 +747,34 @@ To make this work, we introduce another layer that sits between use case and dat
 
 `internal/author/repository/cache/lru.go` shows an example of using an LRU cache to tackle the biggest bottleneck. Once we get a result for the first time, we store it by using the requesting URL as its key. Subsequent requests of the same URL will return the result from the cache instead of from the database. 
 
-To make this work, we store the requesting URL in the handler layer.
+The request url only exists in the handler layer by accessing it from `*http.Request`.
+To pass the request url to our cache layer, we can either pass it down the layers as
+a method parameter, or we can use `context` to save this url. In general, `context`
+is not the way to store variables but since this url is scoped to this one request,
+it is okay.
+
 ```go
 ctx := context.WithValue(r.Context(), author.CacheURL, r.URL.String())
 ```
 
-Then in the cache layer, we retrieve it
+Then in the cache layer, we retrieve it using the same key (`author.CacheURL`)
+and we must assert the type to `string`.
+
 ```go
 url := ctx.Value(author.CacheURL).(string)
 ```
 
-We try and retrieve the key,
+The code above can panic if the key does not exist. To be safer, we can check if
+a value is retrieved successfully.
+
+```go
+url, ok := ctx.Value(author.CacheURL).(string)
+if !ok {
+	// handle if not ok, or call repository layer.
+}
+```
+
+Using the `url`, we try and retrieve a value from the cache,
 ```go
 val, ok := c.lru.Get(url)
 ```
@@ -1511,10 +1525,11 @@ For Ubuntu:
 
 ```shell
 sudo apt update && sudo apt install git curl build-essential jq
-wget https://golang.org/dl/go1.18.linux-amd64.tar.gz
-sudo tar -C /usr/local -xzf go1.18.linux-amd64.tar.gz
+wget https://golang.org/dl/go1.18.1.linux-amd64.tar.gz
+sudo tar -C /usr/local -xzf go1.18.1.linux-amd64.tar.gz
 export PATH=$PATH:/usr/local/go/bin
 echo 'PATH=$PATH:/usr/local/go/bin' >> ~/.bash_aliases
+echo 'PATH=$PATH:$HOME/go/bin' >> ~/.bash_aliases
 source ~/.bashrc
 go install golang.org/x/tools/...@latest
 

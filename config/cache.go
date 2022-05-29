@@ -5,6 +5,7 @@ import (
 )
 
 type Cache struct {
+	Enable    bool   `default:"false"`
 	Host      string `default:"0.0.0.0"`
 	Port      string `default:"6379"`
 	Name      int    `default:"1"`

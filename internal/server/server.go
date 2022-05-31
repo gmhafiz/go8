@@ -138,7 +138,6 @@ func (s *Server) setGlobalMiddleware() {
 	s.router.Use(middleware.Json)
 	s.router.Use(middleware.AuthN())
 	s.router.Use(middleware.Audit)
-	s.router.Use(middleware.CacheByURL)
 	s.router.Use(middleware.CORS)
 	if s.cfg.Api.RequestLog {
 		s.router.Use(chiMiddleware.Logger)

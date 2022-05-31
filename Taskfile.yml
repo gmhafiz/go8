@@ -33,11 +33,6 @@ tasks:
     cmds:
       - migrate -path database/migrations -database $DB_DRIVER://$DB_USER:$DB_PASS@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=$DB_SSL_MODE down "{{.n}}"
 
-  gen:orm:
-    desc: Reads your current database schema and creates models as well as orm.
-    cmds:
-      - sqlboiler --wipe --add-soft-deletes -t db psql
-
   run:
     desc: Runs the app
     cmds:
@@ -59,9 +54,14 @@ tasks:
 
   build:
     desc: Creates a compiled binary and copy configuration files into ./bin
+    vars:
+      GIT_TAG:
+        sh: git describe --abbrev=0 --tags
+      GIT_COMMIT:
+        sh: git rev-list -1 HEAD
     cmds:
       - task: check
-      - go mod download && CGO_ENABLED=0 GOOS=linux && go build -ldflags="-X main.Version=$(git describe --abbrev=0 --tags)-$(git rev-list -1 HEAD) -w -s"  -o go8 cmd/go8/main.go
+      - go build -ldflags="-X main.Version={{.GIT_TAG}}-{{.GIT_COMMIT}} -w -s"  -o go8 cmd/go8/main.go
       - mkdir -p bin
       - mv go8 bin/
       - cp .env bin
@@ -121,7 +121,7 @@ tasks:
       - go test -v ./...
 
   coverage:
-    desc: Peform test coverage
+    desc: Perform test coverage
     cmds:
       - go test -cover ./...
 
@@ -178,6 +178,17 @@ tasks:
     cmds:
       - docker-compose down -v
 
+  k8s:push:
+    desc: build and push
+    vars:
+      GIT_TAG:
+        sh: git describe --abbrev=0 --tags
+      GIT_COMMIT:
+        sh: git rev-list -1 HEAD
+    cmds:
+      - docker build . -t gmhafiz/go8:{{.GIT_TAG}}-{{.GIT_COMMIT}}
+      - docker push gmhafiz/go8:{{.GIT_TAG}}-{{.GIT_COMMIT}}
+
   install:tools:
     desc: Install all optional cli tools
     dir: scripts
@@ -221,8 +232,3 @@ tasks:
     desc: Install a hot reloader. Watch for file changes and automatically rebuilds binary
     cmds:
       - go install github.com/cosmtrek/air@latest
-
-  install:dockertest:
-    desc: Installs dockertest library
-    cmds:
-      - go get -u github.com/ory/dockertest/v3

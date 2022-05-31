@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	_ "github.com/gmhafiz/go8/ent/gen/runtime"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
@@ -97,7 +98,7 @@ func TestMain(m *testing.M) {
 	// exponential backoff-retry, because the application in the container might not be ready to accept connections yet
 	pool.MaxWait = 120 * time.Second
 	if err = pool.Retry(func() error {
-		dockerDB.Conn, err = sql.Open("pgx", databaseUrl)
+		dockerDB.Conn, err = sql.Open("postgres", databaseUrl)
 		if err != nil {
 			return err
 		}

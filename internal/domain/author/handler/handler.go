@@ -85,11 +85,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 	filters := author.Filters(r.URL.Query())
 
-	// For cache purpose, we use updateRequest URI as the key for our result.
-	// We save it into context so that we can pick it pick in our cache layer.
-	ctx := context.WithValue(r.Context(), middleware.CacheURL, r.URL.String())
-
-	authors, total, err := h.useCase.List(ctx, filters)
+	authors, total, err := h.useCase.List(r.Context(), filters)
 	if err != nil {
 		log.Println(err)
 		respond.Error(w, http.StatusInternalServerError, err)

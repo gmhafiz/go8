@@ -14,9 +14,13 @@ func CacheByURL(next http.Handler) http.Handler {
 
 		// For cache purpose, we use request URI as the key for our result.
 		// We save it into context so that we can pick it pick in our cache layer.
+		// We check if key exists and valid to prevent panic.
 		//
 		// To retrieve:
-		// 	  	url := ctx.Value(middleware.CacheURL).(string)
+		// 	  	url, ok := ctx.Value(middleware.CacheURL).(string)
+		//      if !ok {
+		//         call database layer
+		//      }
 		//
 		ctx := context.WithValue(r.Context(), CacheURL, r.URL.String())
 

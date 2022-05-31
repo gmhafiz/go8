@@ -9,8 +9,8 @@ const (
 	UserID key = "userID"
 )
 
-// AuthN is an authentication middleware that check user's identity
-// Pass in dependency as a parameter to AuthN()
+// AuthN is an authentication middleware that checks user's identity
+// Pass in dependencies as a parameters to AuthN()
 func AuthN() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

@@ -39,7 +39,10 @@ func (c *Cache) List(ctx context.Context, f *author.Filter) ([]*gen.Author, int,
 		Num  int           `json:"num"`
 	}
 
-	url := ctx.Value(middleware.CacheURL).(string)
+	url, ok := ctx.Value(middleware.CacheURL).(string)
+	if !ok {
+		return c.service.List(ctx, f)
+	}
 	res := &result{}
 
 	val, err := c.cache.Get(ctx, url).Result()
@@ -86,7 +89,11 @@ func (c *Cache) Delete(ctx context.Context, id uint) error {
 }
 
 func (c *Cache) invalidate(ctx context.Context) {
-	url := ctx.Value(middleware.CacheURL).(string)
+	url, ok := ctx.Value(middleware.CacheURL).(string)
+	if !ok {
+		return
+	}
+
 	split := strings.Split(url, "/")
 	baseURL := strings.Join(split[:4], "/")
 

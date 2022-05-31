@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"testing"
@@ -64,8 +63,6 @@ func (d db) migrate(upOrDown string) {
 }
 
 func TestMain(m *testing.M) {
-	log.SetOutput(io.Discard)
-
 	// uses a sensible default on windows (tcp/http) and linux/osx (socket)
 	pool, err := dockertest.NewPool("")
 	if err != nil {
@@ -103,6 +100,7 @@ func TestMain(m *testing.M) {
 	if err = pool.Retry(func() error {
 		dockerDB.Conn, err = sql.Open("postgres", databaseUrl)
 		if err != nil {
+			log.Println(err)
 			return err
 		}
 		return dockerDB.Conn.Ping()

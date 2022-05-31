@@ -8,11 +8,20 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/gmhafiz/go8/config"
 	"github.com/gmhafiz/go8/ent/gen"
 	"github.com/gmhafiz/go8/internal/domain/author"
 	"github.com/gmhafiz/go8/internal/domain/author/repository"
 	"github.com/gmhafiz/go8/internal/utility/filter"
 )
+
+var c config.Cache
+
+func TestMain(m *testing.M) {
+	c = config.Cache{
+		Enable: false,
+	}
+}
 
 func TestAuthorUseCase_Create(t *testing.T) {
 	type args struct {
@@ -68,7 +77,7 @@ func TestAuthorUseCase_Create(t *testing.T) {
 				},
 			}
 
-			uc := New(repoAuthor, nil, nil, nil)
+			uc := New(c, repoAuthor, nil, nil, nil)
 
 			got, err := uc.Create(context.Background(), test.args.CreateRequest)
 			assert.Equal(t, test.want.error, err)
@@ -207,7 +216,7 @@ func TestAuthorUseCase_List(t *testing.T) {
 				},
 			}
 
-			uc := New(repoAuthor, searchMock, nil, cacheMock)
+			uc := New(c, repoAuthor, searchMock, nil, cacheMock)
 
 			got, total, err := uc.List(test.args.Context, test.args.filter)
 			assert.Equal(t, test.want.error, err)
@@ -276,7 +285,7 @@ func TestAuthorUseCase_Read(t *testing.T) {
 				},
 			}
 
-			uc := New(repoAuthor, nil, nil, nil)
+			uc := New(c, repoAuthor, nil, nil, nil)
 
 			got, err := uc.Read(context.Background(), test.args.ID)
 			assert.Equal(t, test.want.error, err)
@@ -357,7 +366,7 @@ func TestAuthorUseCase_Update(t *testing.T) {
 				},
 			}
 
-			uc := New(repoAuthor, nil, nil, cacheMock)
+			uc := New(c, repoAuthor, nil, nil, cacheMock)
 
 			update, err := uc.Update(test.args.Context, test.args.Update)
 			assert.Equal(t, test.want.error, err)
@@ -424,7 +433,7 @@ func TestAuthorUseCase_Delete(t *testing.T) {
 				},
 			}
 
-			uc := New(repoAuthor, nil, nil, cacheMock)
+			uc := New(c, repoAuthor, nil, nil, cacheMock)
 
 			err := uc.Delete(test.args.Context, test.args.ID)
 			assert.Equal(t, test.want.error, err)

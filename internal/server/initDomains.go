@@ -72,6 +72,7 @@ func (s *Server) initAuthor() {
 	newAuthorSearchRepo := authorRepo.NewSearch(s.ent)
 
 	newAuthorUseCase := authorUseCase.New(
+		s.cfg.Cache,
 		newAuthorRepo,
 		newAuthorSearchRepo,
 		newLRUCache,

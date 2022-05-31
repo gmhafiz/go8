@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/gmhafiz/go8/config"
 	"github.com/gmhafiz/go8/ent/gen"
 	"github.com/gmhafiz/go8/internal/domain/author"
 	"github.com/gmhafiz/go8/internal/domain/author/repository"
@@ -16,6 +17,7 @@ type AuthorUseCase struct {
 
 	cacheLRU   repository.AuthorLRUService
 	cacheRedis repository.AuthorRedisService
+	cfg        config.Cache
 }
 
 //go:generate mirip -rm -out usecase_mock.go . Author
@@ -27,8 +29,9 @@ type Author interface {
 	Delete(ctx context.Context, authorID uint) error
 }
 
-func New(repo repository.Author, searcher repository.Searcher, cache repository.AuthorLRUService, redisCache repository.AuthorRedisService) *AuthorUseCase {
+func New(c config.Cache, repo repository.Author, searcher repository.Searcher, cache repository.AuthorLRUService, redisCache repository.AuthorRedisService) *AuthorUseCase {
 	return &AuthorUseCase{
+		cfg:        c,
 		repo:       repo,
 		searchRepo: searcher,
 		cacheLRU:   cache,
@@ -44,12 +47,15 @@ func (u *AuthorUseCase) List(ctx context.Context, f *author.Filter) ([]*gen.Auth
 	if f.Base.Search {
 		return u.searchRepo.Search(ctx, f)
 	}
-	// Use cacheRedis layer which is faster. But depends on TTL for cache
-	// invalidation. It will call repository layer if cache key is not found.
-	return u.cacheRedis.List(ctx, f)
+
+	if u.cfg.Enable {
+		// Use cacheRedis layer which is faster. But depends on TTL for cache
+		// invalidation. It will call repository layer if cache key is not found.
+		return u.cacheRedis.List(ctx, f)
+	}
 
 	// Call the database layer.
-	//return u.repo.List(ctx, f)
+	return u.repo.List(ctx, f)
 }
 
 func (u *AuthorUseCase) Read(ctx context.Context, authorID uint) (*gen.Author, error) {
@@ -60,14 +66,23 @@ func (u *AuthorUseCase) Read(ctx context.Context, authorID uint) (*gen.Author, e
 }
 
 func (u *AuthorUseCase) Update(ctx context.Context, author *author.Update) (*gen.Author, error) {
-	// Call cache layer instead to invalidate cache
-	return u.cacheRedis.Update(ctx, author)
+	if u.cfg.Enable {
+		// Call cache layer instead to invalidate cache
+		return u.cacheRedis.Update(ctx, author)
+	}
+
+	return u.repo.Update(ctx, author)
 }
 
 func (u *AuthorUseCase) Delete(ctx context.Context, authorID uint) error {
 	if authorID <= 0 {
 		return errors.New("ID cannot be 0 or less")
 	}
-	// As above
-	return u.cacheRedis.Delete(ctx, authorID)
+
+	if u.cfg.Enable {
+		// As above
+		return u.cacheRedis.Delete(ctx, authorID)
+	}
+
+	return u.repo.Delete(ctx, authorID)
 }

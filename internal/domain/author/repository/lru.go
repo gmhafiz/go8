@@ -36,7 +36,10 @@ func NewLRUCache(service Author) *AuthorLRU {
 
 func (c *AuthorLRU) Read(ctx context.Context, id uint) (*gen.Author, error) {
 	// (1) Picks up the key from context which is added in the handler layer.
-	url := ctx.Value(middleware.CacheURL).(string)
+	url, ok := ctx.Value(middleware.CacheURL).(string)
+	if !ok {
+		return c.service.Read(ctx, id)
+	}
 
 	if val, ok := c.lru.Get(url); ok {
 		// (3) Simply cast the returned value.
@@ -68,7 +71,10 @@ func (c *AuthorLRU) Delete(ctx context.Context, id uint) error {
 }
 
 func (c *AuthorLRU) invalidate(ctx context.Context) {
-	url := ctx.Value(middleware.CacheURL).(string)
+	url, ok := ctx.Value(middleware.CacheURL).(string)
+	if !ok {
+		return
+	}
 
 	keys := c.lru.Keys()
 	for _, key := range keys {

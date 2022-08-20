@@ -17,7 +17,7 @@ services:
     restart: always
     container_name: "go8_postgres"
     healthcheck:
-      test: pg_isready -U postgres
+      test: pg_isready -U ${DB_USER}
     environment:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASS}

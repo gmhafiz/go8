@@ -2,7 +2,11 @@ package middleware
 
 import (
 	"context"
+	"encoding/hex"
+	"log"
 	"net/http"
+
+	"github.com/cespare/xxhash"
 )
 
 type cacheKey string
@@ -22,7 +26,18 @@ func CacheByURL(next http.Handler) http.Handler {
 		//         call database layer
 		//      }
 		//
-		ctx := context.WithValue(r.Context(), CacheURL, r.URL.String())
+		h := xxhash.New()
+		_, err := h.Write([]byte(r.URL.String()))
+		if err != nil {
+			log.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			_, _ = w.Write([]byte(`{"error":"internal error"}`))
+			return
+		}
+		sum := h.Sum(nil)
+		str := hex.EncodeToString(sum)
+
+		ctx := context.WithValue(r.Context(), CacheURL, str)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})

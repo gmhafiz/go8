@@ -1497,7 +1497,7 @@ or
 
 # TODO
 
- - [ ] Fix end to end test
+ - [ ] Fix end-to-end test
  - [ ] Complete HTTP integration test
  - [x] Better return response
  - [x] LRU cache
@@ -1525,8 +1525,8 @@ For Ubuntu:
 
 ```shell
 sudo apt update && sudo apt install git curl build-essential jq
-wget https://golang.org/dl/go1.18.1.linux-amd64.tar.gz
-sudo tar -C /usr/local -xzf go1.18.1.linux-amd64.tar.gz
+wget https://go.dev/dl/go1.19.linux-amd64.tar.gz
+sudo tar -C /usr/local -xzf go1.19.linux-amd64.tar.gz
 export PATH=$PATH:/usr/local/go/bin
 echo 'PATH=$PATH:/usr/local/go/bin' >> ~/.bash_aliases
 echo 'PATH=$PATH:$HOME/go/bin' >> ~/.bash_aliases
@@ -1538,6 +1538,6 @@ sudo usermod -aG docker ${USER}
 newgrp docker
 su - ${USER} # or logout and login
 
-sudo curl -L "https://github.com/docker/compose/releases/download/v2.2.3/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo curl -L "https://github.com/docker/compose/releases/download/v2.9.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 ```

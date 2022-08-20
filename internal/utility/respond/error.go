@@ -17,6 +17,7 @@ var (
 )
 
 func Errors(w http.ResponseWriter, statusCode int, errors []string) {
+	w.Header().Set("Content-Type", "application/problem+json")
 	w.WriteHeader(statusCode)
 
 	if errors == nil {
@@ -40,6 +41,7 @@ func Errors(w http.ResponseWriter, statusCode int, errors []string) {
 }
 
 func Error(w http.ResponseWriter, statusCode int, message error) {
+	w.Header().Set("Content-Type", "application/problem+json")
 	w.WriteHeader(statusCode)
 
 	var p map[string]string

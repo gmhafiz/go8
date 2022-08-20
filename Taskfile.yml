@@ -75,7 +75,7 @@ tasks:
       - task fmt
       - task vet
       - task golint
-      - task security
+#      - task security
       - task test
     silent: true
 

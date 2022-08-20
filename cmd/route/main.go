@@ -13,6 +13,6 @@ func main() {
 	s := server.New()
 	s.InitDomains()
 	s.Version = Version
-	fmt.Printf("Registered Routes:\n\n")
+	fmt.Print("Registered Routes:\n\n")
 	s.PrintAllRegisteredRoutes()
 }

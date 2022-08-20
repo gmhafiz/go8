@@ -4,11 +4,11 @@
         "description": "Go + Postgres + Chi router + sqlx + ent + Unit Testing starter kit for API development.",
         "title": "Go8",
         "contact": {
-            "name": "Hafiz Shafruddin",
+            "name": "User Name",
             "url": "https://github.com/gmhafiz/go8",
-            "email": "gmhafiz@gmail.com"
+            "email": "email@example.com"
         },
-        "version": "0.13.0"
+        "version": "0.1.0"
     },
     "host": "localhost:3080",
     "basePath": "/",

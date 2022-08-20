@@ -18,9 +18,9 @@ var doc = `{
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
         "contact": {
-            "name": "Hafiz Shafruddin",
+            "name": "User Name",
             "url": "https://github.com/gmhafiz/go8",
-            "email": "gmhafiz@gmail.com"
+            "email": "email@example.com"
         },
         "version": "{{.Version}}"
     },
@@ -740,7 +740,7 @@ type swaggerInfo struct {
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = swaggerInfo{
-	Version:     "0.13.0",
+	Version:     "0.1.0",
 	Host:        "localhost:3080",
 	BasePath:    "/",
 	Schemes:     []string{},

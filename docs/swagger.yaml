@@ -172,13 +172,13 @@ definitions:
 host: localhost:3080
 info:
   contact:
-    email: gmhafiz@gmail.com
-    name: Hafiz Shafruddin
+    email: email@example.com
+    name: User Name
     url: https://github.com/gmhafiz/go8
   description: Go + Postgres + Chi router + sqlx + ent + Unit Testing starter kit
     for API development.
   title: Go8
-  version: 0.13.0
+  version: 0.1.0
 paths:
   /api/health:
     get:

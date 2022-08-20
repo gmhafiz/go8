@@ -7,14 +7,14 @@ import (
 )
 
 // Version is injected using ldflags during build time
-var Version = "v0.13.0"
+var Version = "v0.1.0"
 
 // @title Go8
-// @version 0.13.0
+// @version 0.1.0
 // @description Go + Postgres + Chi router + sqlx + ent + Unit Testing starter kit for API development.
-// @contact.name Hafiz Shafruddin
+// @contact.name User Name
 // @contact.url https://github.com/gmhafiz/go8
-// @contact.email gmhafiz@gmail.com
+// @contact.email email@example.com
 // @host localhost:3080
 // @BasePath /
 func main() {

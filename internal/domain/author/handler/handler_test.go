@@ -52,100 +52,101 @@ func TestHandler_Create(t *testing.T) {
 		status int
 	}
 
-	tests := []test{
-		{
-			name: "simple",
-			args: args{
-				CreateRequest: &author.CreateRequest{
-					FirstName:  "First",
-					MiddleName: "Middle",
-					LastName:   "Last",
-					Books:      nil,
-				},
+	namedTests := map[string]test{}
+
+	namedTests["simple"] = test{
+		args: args{
+			CreateRequest: &author.CreateRequest{
+				FirstName:  "First",
+				MiddleName: "Middle",
+				LastName:   "Last",
+				Books:      nil,
 			},
-			want: want{
-				Author: &gen.Author{
-					ID:         1,
-					FirstName:  "First",
-					MiddleName: "Middle",
-					LastName:   "Last",
-					CreatedAt:  time.Time{},
-					UpdatedAt:  time.Time{},
-					DeletedAt:  nil,
-					Edges: gen.AuthorEdges{
-						Books: nil,
-					},
-				},
-				error: nil,
-			},
-			status: http.StatusCreated,
 		},
-		{
-			name: "invalid create request",
-			args: args{
-				nil,
-				invalidCreateRequest{
-					LastName: "last Name",
+		want: want{
+			Author: &gen.Author{
+				ID:         1,
+				FirstName:  "First",
+				MiddleName: "Middle",
+				LastName:   "Last",
+				CreatedAt:  time.Time{},
+				UpdatedAt:  time.Time{},
+				DeletedAt:  nil,
+				Edges: gen.AuthorEdges{
+					Books: nil,
 				},
 			},
-			want: want{
-				Author: &gen.Author{},
-				Errs: Errs{
-					Message: []string{"CreateRequest.FirstName is required"},
-				},
-			},
-			status: http.StatusBadRequest,
+			error: nil,
 		},
-		{
-			name: "simulate transaction rollback",
-			args: args{
-				CreateRequest: &author.CreateRequest{
-					FirstName:  "First",
-					MiddleName: "Middle",
-					LastName:   "Last",
-					Books:      nil,
-				},
-			},
-			want: want{
-				Author: &gen.Author{},
-				error:  ErrTransactionFailed,
-			},
-			status: http.StatusInternalServerError,
-		},
-		{
-			name: "no row",
-			args: args{
-				CreateRequest: &author.CreateRequest{
-					FirstName:  "First",
-					MiddleName: "Middle",
-					LastName:   "Last",
-				},
-			},
-			want: want{
-				Author: &gen.Author{},
-				error:  sql.ErrNoRows,
-			},
-			status: http.StatusBadRequest,
-		},
-		{
-			name: "other error",
-			args: args{
-				CreateRequest: &author.CreateRequest{
-					FirstName:  "First",
-					MiddleName: "Middle",
-					LastName:   "Last",
-				},
-			},
-			want: want{
-				Author: &gen.Author{},
-				error:  errors.New("other error"),
-			},
-			status: http.StatusInternalServerError,
-		},
+		status: http.StatusCreated,
 	}
 
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
+	namedTests["invalid create request"] = test{
+		args: args{
+			nil,
+			invalidCreateRequest{
+				LastName: "last Name",
+			},
+		},
+		want: want{
+			Author: &gen.Author{},
+			Errs: Errs{
+				Message: []string{"CreateRequest.FirstName is required"},
+			},
+		},
+		status: http.StatusBadRequest,
+	}
+
+	namedTests["simulate transaction rollback"] = test{
+		name: "",
+		args: args{
+			CreateRequest: &author.CreateRequest{
+				FirstName:  "First",
+				MiddleName: "Middle",
+				LastName:   "Last",
+				Books:      nil,
+			},
+		},
+		want: want{
+			Author: &gen.Author{},
+			error:  ErrTransactionFailed,
+		},
+		status: http.StatusInternalServerError,
+	}
+
+	namedTests["no row"] = test{
+		args: args{
+			CreateRequest: &author.CreateRequest{
+				FirstName:  "First",
+				MiddleName: "Middle",
+				LastName:   "Last",
+			},
+		},
+		want: want{
+			Author: &gen.Author{},
+			error:  sql.ErrNoRows,
+		},
+		status: http.StatusBadRequest,
+	}
+
+	namedTests["other error"] = test{
+		name: "",
+		args: args{
+			CreateRequest: &author.CreateRequest{
+				FirstName:  "First",
+				MiddleName: "Middle",
+				LastName:   "Last",
+			},
+		},
+		want: want{
+			Author: &gen.Author{},
+			error:  errors.New("other error"),
+		},
+		status: http.StatusInternalServerError,
+	}
+
+	for name, test := range namedTests {
+		t.Run(name, func(t *testing.T) {
 			var buf bytes.Buffer
 			var err error
 			if test.args.CreateRequest != nil {
@@ -188,6 +189,143 @@ func TestHandler_Create(t *testing.T) {
 			}
 		})
 	}
+
+	//tests := []test{
+	//	{
+	//		name: "simple",
+	//		args: args{
+	//			CreateRequest: &author.CreateRequest{
+	//				FirstName:  "First",
+	//				MiddleName: "Middle",
+	//				LastName:   "Last",
+	//				Books:      nil,
+	//			},
+	//		},
+	//		want: want{
+	//			Author: &gen.Author{
+	//				ID:         1,
+	//				FirstName:  "First",
+	//				MiddleName: "Middle",
+	//				LastName:   "Last",
+	//				CreatedAt:  time.Time{},
+	//				UpdatedAt:  time.Time{},
+	//				DeletedAt:  nil,
+	//				Edges: gen.AuthorEdges{
+	//					Books: nil,
+	//				},
+	//			},
+	//			error: nil,
+	//		},
+	//		status: http.StatusCreated,
+	//	},
+	//	{
+	//		name: "invalid create request",
+	//		args: args{
+	//			nil,
+	//			invalidCreateRequest{
+	//				LastName: "last Name",
+	//			},
+	//		},
+	//		want: want{
+	//			Author: &gen.Author{},
+	//			Errs: Errs{
+	//				Message: []string{"CreateRequest.FirstName is required"},
+	//			},
+	//		},
+	//		status: http.StatusBadRequest,
+	//	},
+	//	{
+	//		name: "simulate transaction rollback",
+	//		args: args{
+	//			CreateRequest: &author.CreateRequest{
+	//				FirstName:  "First",
+	//				MiddleName: "Middle",
+	//				LastName:   "Last",
+	//				Books:      nil,
+	//			},
+	//		},
+	//		want: want{
+	//			Author: &gen.Author{},
+	//			error:  ErrTransactionFailed,
+	//		},
+	//		status: http.StatusInternalServerError,
+	//	},
+	//	{
+	//		name: "no row",
+	//		args: args{
+	//			CreateRequest: &author.CreateRequest{
+	//				FirstName:  "First",
+	//				MiddleName: "Middle",
+	//				LastName:   "Last",
+	//			},
+	//		},
+	//		want: want{
+	//			Author: &gen.Author{},
+	//			error:  sql.ErrNoRows,
+	//		},
+	//		status: http.StatusBadRequest,
+	//	},
+	//	{
+	//		name: "other error",
+	//		args: args{
+	//			CreateRequest: &author.CreateRequest{
+	//				FirstName:  "First",
+	//				MiddleName: "Middle",
+	//				LastName:   "Last",
+	//			},
+	//		},
+	//		want: want{
+	//			Author: &gen.Author{},
+	//			error:  errors.New("other error"),
+	//		},
+	//		status: http.StatusInternalServerError,
+	//	},
+	//}
+	//
+	//for _, test := range tests {
+	//	t.Run(test.name, func(t *testing.T) {
+	//		var buf bytes.Buffer
+	//		var err error
+	//		if test.args.CreateRequest != nil {
+	//			err = json.NewEncoder(&buf).Encode(test.args.CreateRequest)
+	//		} else {
+	//			err = json.NewEncoder(&buf).Encode(test.args.invalidCreateRequest)
+	//		}
+	//		assert.Nil(t, err)
+	//
+	//		rr := httptest.NewRequest(http.MethodPost, "/api/v1/author", &buf)
+	//		ww := httptest.NewRecorder()
+	//
+	//		router := chi.NewRouter()
+	//
+	//		val := validator.New()
+	//
+	//		uc := &usecase.AuthorMock{
+	//			CreateFunc: func(ctx context.Context, a *author.CreateRequest) (*gen.Author, error) {
+	//				return test.want.Author, test.want.error
+	//			},
+	//		}
+	//
+	//		h := RegisterHTTPEndPoints(router, val, uc)
+	//		h.Create(ww, rr)
+	//
+	//		if test.args.CreateRequest == nil {
+	//			var errs Errs
+	//			if err = json.NewDecoder(ww.Body).Decode(&errs); err != nil {
+	//				t.Fatal(err)
+	//			}
+	//			assert.Equal(t, test.want.Errs, errs)
+	//		} else {
+	//			var got gen.Author
+	//			if err = json.NewDecoder(ww.Body).Decode(&got); err != nil {
+	//				t.Fatal(err)
+	//			}
+	//
+	//			assert.Equal(t, ww.Code, test.status)
+	//			assert.Equal(t, &got, test.want.Author)
+	//		}
+	//	})
+	//}
 }
 
 func TestHandler_List(t *testing.T) {

@@ -25,20 +25,29 @@ func CacheByURL(next http.Handler) http.Handler {
 		//      if !ok {
 		//         call database layer
 		//      }
-		//
-		h := xxhash.New()
-		_, err := h.Write([]byte(r.URL.String()))
+		str, err := sum(r.URL.String())
 		if err != nil {
 			log.Println(err)
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(`{"error":"internal error"}`))
 			return
 		}
-		sum := h.Sum(nil)
-		str := hex.EncodeToString(sum)
 
 		ctx := context.WithValue(r.Context(), CacheURL, str)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+func sum(url string) (string, error) {
+	h := xxhash.New()
+	_, err := h.Write([]byte(url))
+	if err != nil {
+
+		return "", err
+	}
+	sum := h.Sum(nil)
+	str := hex.EncodeToString(sum)
+
+	return str, err
 }

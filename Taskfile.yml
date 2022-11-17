@@ -21,17 +21,17 @@ tasks:
   migrate:
     desc: Migrates UP the database
     cmds:
-      - migrate -path database/migrations -database $DB_DRIVER://$DB_USER:$DB_PASS@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=$DB_SSL_MODE up
+      - migrate -path database/migrations -database $DB_DRIVER://$DB_USER:$DB_PASS@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=$DB_SSLMODE up
 
   migrate:step:
     desc: Migrates UP the database
     cmds:
-      - migrate -path database/migrations -database $DB_DRIVER://$DB_USER:$DB_PASS@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=$DB_SSL_MODE up "{{.n}}"
+      - migrate -path database/migrations -database $DB_DRIVER://$DB_USER:$DB_PASS@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=$DB_SSLMODE up "{{.n}}"
 
   migrate:rollback:
     desc: Rollback the database by 'n' step(s)
     cmds:
-      - migrate -path database/migrations -database $DB_DRIVER://$DB_USER:$DB_PASS@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=$DB_SSL_MODE down "{{.n}}"
+      - migrate -path database/migrations -database $DB_DRIVER://$DB_USER:$DB_PASS@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=$DB_SSLMODE down "{{.n}}"
 
   run:
     desc: Runs the app
@@ -104,6 +104,11 @@ tasks:
     desc: Run golang security
     cmds:
       - gosec -quiet ./...
+
+  vuln:
+    desc: Run Go Vulnerability Check
+    cmds:
+      - govulncheck ./...
 
   fmt:
     desc: Lint code
@@ -199,6 +204,7 @@ tasks:
       - task: install:mirip
       - task: install:gosec
       - task: install:air
+      - task: install:vuln
     silent: true
 
   install:golangci:
@@ -209,7 +215,7 @@ tasks:
   install:swagger:
     desc: Install swagger cli
     cmds:
-      - go install  github.com/swaggo/swag/cmd/swag@latest
+      - go install github.com/swaggo/swag/cmd/swag@latest
 
   install:mirip:
     desc: Install mock generator
@@ -232,3 +238,8 @@ tasks:
     desc: Install a hot reloader. Watch for file changes and automatically rebuilds binary
     cmds:
       - go install github.com/cosmtrek/air@latest
+
+  install:vuln:
+    desc: Install Go Vulnerability Check
+    cmds:
+      - go install golang.org/x/vuln/cmd/govulncheck@latest

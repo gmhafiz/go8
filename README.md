@@ -49,7 +49,7 @@ This kit is composed of standard Go library together with some well-known librar
 
 # Quick Start
 
-It is advisable to use the latest [Go version installation](#appendix) (>= v1.17). Optionally `docker` and `docker-compose` for easier start up.
+It is advisable to use the latest supported [Go version](#appendix) (>= v1.18). Optionally `docker` and `docker-compose` for easier start up.
 
 Get it
 
@@ -97,7 +97,7 @@ go run cmd/go8/main.go
 You will see the address the API is running at.
 
 ```shell
-2021/10/31 10:49:11 Starting API version: v0.13.0
+2021/10/31 10:49:11 Starting API version: v0.1.0
 2021/10/31 10:49:11 Connecting to database...
 2021/10/31 10:49:11 Database connected
         .,*/(#####(/*,.                               .,*((###(/*.
@@ -118,7 +118,16 @@ You will see the address the API is running at.
 To use, open a new terminal and follow examples in the `examples/` folder
 
 ```shell
-curl -v --location --request POST 'http://localhost:3080/api/v1/book' --header 'Content-Type: application/json' --data-raw '{"title": "Test title","image_url": "https://example.com","published_date": "2020-07-31T15:04:05.123499999Z","description": "test description"}' | jq
+curl -v --location --request POST 'http://localhost:3080/api/v1/book' \
+ --header 'Content-Type: application/json' \
+ --data-raw '{
+    "title": "Test title",
+    "image_url": "https://example.com",
+    "published_date": "2020-07-31T15:04:05.123499999Z",
+    "description": 
+    "test description"
+  }' \
+ | jq
 
 curl --location --request GET 'http://localhost:3080/api/v1/book' | jq
 ```
@@ -601,7 +610,7 @@ Migrations files are stored in `database/migrations` folder. [golang-migrate](ht
 
 ## Router
 
-Router multiplexer or mux is created for use by `Domain`. While [chi](https://github.com/go-chi/chi) library is being used here, you can swap out the router tto an alternative one when assigning `s.router` field. However, you will need to adjust how you register your handlers in each domain.
+Router multiplexer or mux is created for use by `Domain`. While [chi](https://github.com/go-chi/chi) library is being used here, you can swap out the router to an alternative one when assigning `s.router` field. However, you will need to adjust how you register your handlers in each domain.
 
 ## Domain
 
@@ -720,10 +729,19 @@ initialize the dependency we want early in the start-up of the program and then
 pass it down the layers.
 
 ```go
-healthHandler.RegisterHTTPEndPoints(s.router, usecase.NewHealthUseCase(postgres.NewHealthRepository(s.db)))
+newBookRepo := bookRepo.New(s.DB())
+newBookUseCase := bookUseCase.New(newBookRepo)
+s.Domain.Book = bookHandler.RegisterHTTPEndPoints(
+	s.router,
+	s.validator,
+	newBookUseCase,
+)
 ```
 
-The repository gets access to a pointer to `sql.DB` to perform database operations. This layer also knows nothing of layers above it. `NewBookUseCase` depends on that repository and finally the handler depends on the use case.
+The repository gets access to a pointer to `sql.DB` from the `s.DB()` 
+initialisation to perform database operations. This layer also knows nothing of
+layers above it. `NewBookUseCase` depends on that repository and finally the
+handler depends on the use case.
 
 ## Libraries
 
@@ -867,6 +885,9 @@ Transfer/sec:     15.84MB
 # Utility
 
 Common tasks like retrieving query parameters or `filters` are done inside `utility` folder. It serves as one place abstract functionalities used across packages.
+
+Note that further packages are in the subdirectories of `utilty`. No files
+ar under `utilty` package because it is [unclear from the name](https://go.dev/doc/effective_go#package-names) on what it does. 
 
 # Testing
 
@@ -1525,8 +1546,8 @@ For Ubuntu:
 
 ```shell
 sudo apt update && sudo apt install git curl build-essential jq
-wget https://go.dev/dl/go1.19.linux-amd64.tar.gz
-sudo tar -C /usr/local -xzf go1.19.linux-amd64.tar.gz
+wget https://go.dev/dl/go1.19.3.linux-amd64.tar.gz
+sudo tar -C /usr/local -xzf go1.19.3.linux-amd64.tar.gz
 export PATH=$PATH:/usr/local/go/bin
 echo 'PATH=$PATH:/usr/local/go/bin' >> ~/.bash_aliases
 echo 'PATH=$PATH:$HOME/go/bin' >> ~/.bash_aliases

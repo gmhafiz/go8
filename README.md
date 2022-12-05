@@ -94,7 +94,7 @@ Run the API with the following command. For the first time run, dependencies wil
 go run cmd/go8/main.go
 ```
 
-You will see the address the API is running at.
+You will see the address of the API is running at.
 
 ```shell
 2021/10/31 10:49:11 Starting API version: v0.1.0

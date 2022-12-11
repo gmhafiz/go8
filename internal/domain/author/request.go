@@ -1,12 +1,13 @@
-package author
+package handler
 
 import (
 	"encoding/json"
+	"github.com/gmhafiz/go8/internal/domain/author"
 	"io"
 )
 
-type Request struct {
-	Filter
+type request struct {
+	author.Filter
 	FirstName  string `json:"first_name" validate:"required"`
 	MiddleName string `json:"middle_name"`
 	LastName   string `json:"last_name" validate:"required"`
@@ -42,6 +43,6 @@ func (r *CreateRequest) Bind(body io.ReadCloser) error {
 	return json.NewDecoder(body).Decode(r)
 }
 
-func (r *Request) Bind(body io.ReadCloser) error {
+func (r *request) Bind(body io.ReadCloser) error {
 	return json.NewDecoder(body).Decode(r)
 }

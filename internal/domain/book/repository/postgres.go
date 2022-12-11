@@ -2,9 +2,9 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
-
 	"github.com/jmoiron/sqlx"
 
 	"github.com/gmhafiz/go8/internal/domain/book"
@@ -14,11 +14,11 @@ import (
 //go:generate mirip -rm -pkg repository -out repo_mock.go . Book
 type Book interface {
 	Create(ctx context.Context, book *book.CreateRequest) (int, error)
-	List(ctx context.Context, f *book.Filter) ([]*book.DB, error)
-	Read(ctx context.Context, bookID int) (*book.DB, error)
+	List(ctx context.Context, f *book.Filter) ([]*book.Schema, error)
+	Read(ctx context.Context, bookID int) (*book.Schema, error)
 	Update(ctx context.Context, book *book.UpdateRequest) error
 	Delete(ctx context.Context, bookID int) error
-	Search(ctx context.Context, req *book.Filter) ([]*book.DB, error)
+	Search(ctx context.Context, req *book.Filter) ([]*book.Schema, error)
 }
 
 type bookRepository struct {
@@ -48,12 +48,12 @@ func (r *bookRepository) Create(ctx context.Context, req *book.CreateRequest) (b
 	return bookID, nil
 }
 
-func (r *bookRepository) List(ctx context.Context, f *book.Filter) ([]*book.DB, error) {
+func (r *bookRepository) List(ctx context.Context, f *book.Filter) ([]*book.Schema, error) {
 	if f == nil {
 		return nil, errors.New("filter cannot be nil")
 	}
 	if f.Base.DisablePaging {
-		var books []*book.DB
+		var books []*book.Schema
 		err := r.db.SelectContext(ctx, &books, SelectFromBooks)
 		if err != nil {
 			return nil, message.ErrFetchingBook
@@ -61,7 +61,7 @@ func (r *bookRepository) List(ctx context.Context, f *book.Filter) ([]*book.DB, 
 
 		return books, nil
 	} else {
-		var books []*book.DB
+		var books []*book.Schema
 		err := r.db.SelectContext(ctx, &books, SelectFromBooksPaginate, f.Base.Limit, f.Base.Offset)
 		if err != nil {
 			return nil, message.ErrFetchingBook
@@ -70,10 +70,13 @@ func (r *bookRepository) List(ctx context.Context, f *book.Filter) ([]*book.DB, 
 	}
 }
 
-func (r *bookRepository) Read(ctx context.Context, bookID int) (*book.DB, error) {
-	var b book.DB
+func (r *bookRepository) Read(ctx context.Context, bookID int) (*book.Schema, error) {
+	var b book.Schema
 	err := r.db.GetContext(ctx, &b, SelectBookByID, bookID)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, message.ErrBadRequest
+		}
 		return nil, err
 	}
 
@@ -107,11 +110,11 @@ func (r *bookRepository) Delete(ctx context.Context, bookID int) error {
 	return nil
 }
 
-func (r *bookRepository) Search(ctx context.Context, f *book.Filter) ([]*book.DB, error) {
+func (r *bookRepository) Search(ctx context.Context, f *book.Filter) ([]*book.Schema, error) {
 	if f == nil {
 		return nil, errors.New("filter cannot be nil")
 	}
-	var books []*book.DB
+	var books []*book.Schema
 	err := r.db.SelectContext(ctx, &books, SearchBooksPaginate,
 		f.Title,
 		f.Description,

@@ -31,11 +31,11 @@ definitions:
     - first_name
     - last_name
     type: object
-  author.CreateResponse:
+  author.GetResponse:
     properties:
       books:
         items:
-          $ref: '#/definitions/gen.Book'
+          $ref: '#/definitions/book.Schema'
         type: array
       first_name:
         type: string
@@ -46,7 +46,7 @@ definitions:
       middle_name:
         type: string
     type: object
-  author.Update:
+  author.UpdateRequest:
     properties:
       first_name:
         type: string
@@ -85,6 +85,25 @@ definitions:
       title:
         type: string
     type: object
+  book.Schema:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      imageURL:
+        type: string
+      publishedDate:
+        type: string
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
   book.UpdateRequest:
     properties:
       description:
@@ -103,7 +122,8 @@ definitions:
   gen.Author:
     properties:
       edges:
-        $ref: '#/definitions/gen.AuthorEdges'
+        allOf:
+        - $ref: '#/definitions/gen.AuthorEdges'
         description: |-
           Edges holds the relations/edges for other nodes in the graph.
           The values are being populated by the AuthorQuery when eager-loading is set.
@@ -131,7 +151,8 @@ definitions:
   gen.Book:
     properties:
       edges:
-        $ref: '#/definitions/gen.BookEdges'
+        allOf:
+        - $ref: '#/definitions/gen.BookEdges'
         description: |-
           Edges holds the relations/edges for other nodes in the graph.
           The values are being populated by the BookQuery when eager-loading is set.
@@ -185,9 +206,9 @@ paths:
       description: Hits this API to see if API is running in the server
       responses:
         "200":
-          description: ""
+          description: OK
         "500":
-          description: ""
+          description: Internal Server Error
       summary: Checks if API is up
   /api/health/readiness:
     get:
@@ -195,9 +216,9 @@ paths:
         server
       responses:
         "200":
-          description: ""
+          description: OK
         "500":
-          description: ""
+          description: Internal Server Error
       summary: Checks if both API and Database are up
   /api/v1/author:
     get:
@@ -258,7 +279,7 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/author.CreateResponse'
+            $ref: '#/definitions/author.GetResponse'
         "400":
           description: Bad Request
           schema:
@@ -325,7 +346,7 @@ paths:
         name: Author
         required: true
         schema:
-          $ref: '#/definitions/author.Update'
+          $ref: '#/definitions/author.UpdateRequest'
       produces:
       - application/json
       responses:

@@ -36,7 +36,7 @@ func NewHandler(useCase usecase.Author, v *validator.Validate) *Handler {
 // @Accept json
 // @Produce json
 // @Param Author body author.CreateRequest true "Create an author using the following format"
-// @Success 201 {object} author.CreateResponse
+// @Success 201 {object} author.GetResponse
 // @Failure 400 {string} Bad Request
 // @Failure 500 {string} Internal Server Error
 // @router /api/v1/author [post]
@@ -65,7 +65,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respond.Json(w, http.StatusCreated, create)
+	respond.Json(w, http.StatusCreated, author.Resource(create))
 }
 
 // List will fetch the authors based on given params
@@ -93,7 +93,7 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respond.Json(w, http.StatusOK, respond.Standard{
-		Data: authors,
+		Data: author.Resources(authors),
 		Meta: respond.Meta{
 			Size:  len(authors),
 			Total: total,
@@ -127,7 +127,7 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respond.Json(w, http.StatusOK, res)
+	respond.Json(w, http.StatusOK, author.Resource(res))
 }
 
 // Update an author
@@ -135,7 +135,7 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 // @Description Update an author by its model.
 // @Accept json
 // @Produce json
-// @Param Author body author.Update true "Author Request"
+// @Param Author body author.UpdateRequest true "Author Request"
 // @Success 200 {object} gen.Author
 // @Failure 400 {string} Bad Request
 // @Failure 500 {string} Internal Server Error
@@ -149,7 +149,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 
 	ctx := context.WithValue(r.Context(), middleware.CacheURL, r.URL.String())
 
-	var req author.Update
+	var req author.UpdateRequest
 	err = req.Bind(r.Body)
 	if err != nil {
 		respond.Error(w, http.StatusBadRequest, err)
@@ -164,7 +164,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respond.Json(w, http.StatusOK, updated)
+	respond.Json(w, http.StatusOK, author.Resource(updated))
 }
 
 // Delete an author by its ID

@@ -19,10 +19,10 @@
                 "summary": "Checks if API is up",
                 "responses": {
                     "200": {
-                        "description": ""
+                        "description": "OK"
                     },
                     "500": {
-                        "description": ""
+                        "description": "Internal Server Error"
                     }
                 }
             }
@@ -33,10 +33,10 @@
                 "summary": "Checks if both API and Database are up",
                 "responses": {
                     "200": {
-                        "description": ""
+                        "description": "OK"
                     },
                     "500": {
-                        "description": ""
+                        "description": "Internal Server Error"
                     }
                 }
             }
@@ -128,7 +128,7 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/author.CreateResponse"
+                            "$ref": "#/definitions/author.GetResponse"
                         }
                     },
                     "400": {
@@ -202,7 +202,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/author.Update"
+                            "$ref": "#/definitions/author.UpdateRequest"
                         }
                     }
                 ],
@@ -514,13 +514,13 @@
                 }
             }
         },
-        "author.CreateResponse": {
+        "author.GetResponse": {
             "type": "object",
             "properties": {
                 "books": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/gen.Book"
+                        "$ref": "#/definitions/book.Schema"
                     }
                 },
                 "first_name": {
@@ -537,7 +537,7 @@
                 }
             }
         },
-        "author.Update": {
+        "author.UpdateRequest": {
             "type": "object",
             "properties": {
                 "first_name": {
@@ -596,6 +596,35 @@
                 }
             }
         },
+        "book.Schema": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "imageURL": {
+                    "type": "string"
+                },
+                "publishedDate": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
         "book.UpdateRequest": {
             "type": "object",
             "required": [
@@ -623,7 +652,11 @@
             "properties": {
                 "edges": {
                     "description": "Edges holds the relations/edges for other nodes in the graph.\nThe values are being populated by the AuthorQuery when eager-loading is set.",
-                    "$ref": "#/definitions/gen.AuthorEdges"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/gen.AuthorEdges"
+                        }
+                    ]
                 },
                 "first_name": {
                     "description": "FirstName holds the value of the \"first_name\" field.",
@@ -660,7 +693,11 @@
             "properties": {
                 "edges": {
                     "description": "Edges holds the relations/edges for other nodes in the graph.\nThe values are being populated by the BookQuery when eager-loading is set.",
-                    "$ref": "#/definitions/gen.BookEdges"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/gen.BookEdges"
+                        }
+                    ]
                 },
                 "id": {
                     "description": "ID of the ent.",

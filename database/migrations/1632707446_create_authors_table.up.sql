@@ -6,7 +6,12 @@ create table IF not exists authors
     first_name text not null,
     middle_name text,
     last_name text not null,
-    created_at timestamp with time zone,
-    updated_at timestamp with time zone,
+    created_at timestamp with time zone default current_timestamp,
+    updated_at timestamp with time zone default current_timestamp,
     deleted_at timestamp with time zone
 );
+
+
+CREATE TRIGGER update_author_updated_at BEFORE UPDATE
+    ON authors FOR EACH ROW EXECUTE PROCEDURE
+    update_updated_at_column();

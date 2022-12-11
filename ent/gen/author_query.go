@@ -332,6 +332,11 @@ func (aq *AuthorQuery) Select(fields ...string) *AuthorSelect {
 	return selbuild
 }
 
+// Aggregate returns a AuthorSelect configured with the given aggregations.
+func (aq *AuthorQuery) Aggregate(fns ...AggregateFunc) *AuthorSelect {
+	return aq.Select().Aggregate(fns...)
+}
+
 func (aq *AuthorQuery) prepareQuery(ctx context.Context) error {
 	for _, f := range aq.fields {
 		if !author.ValidColumn(f) {
@@ -356,10 +361,10 @@ func (aq *AuthorQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Autho
 			aq.withBooks != nil,
 		}
 	)
-	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
+	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Author).scanValues(nil, columns)
 	}
-	_spec.Assign = func(columns []string, values []interface{}) error {
+	_spec.Assign = func(columns []string, values []any) error {
 		node := &Author{config: aq.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
@@ -410,18 +415,18 @@ func (aq *AuthorQuery) loadBooks(ctx context.Context, query *BookQuery, nodes []
 	neighbors, err := query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
 		assign := spec.Assign
 		values := spec.ScanValues
-		spec.ScanValues = func(columns []string) ([]interface{}, error) {
+		spec.ScanValues = func(columns []string) ([]any, error) {
 			values, err := values(columns[1:])
 			if err != nil {
 				return nil, err
 			}
-			return append([]interface{}{new(sql.NullInt64)}, values...), nil
+			return append([]any{new(sql.NullInt64)}, values...), nil
 		}
-		spec.Assign = func(columns []string, values []interface{}) error {
+		spec.Assign = func(columns []string, values []any) error {
 			outValue := uint(values[0].(*sql.NullInt64).Int64)
 			inValue := uint(values[1].(*sql.NullInt64).Int64)
 			if nids[inValue] == nil {
-				nids[inValue] = map[*Author]struct{}{byID[outValue]: struct{}{}}
+				nids[inValue] = map[*Author]struct{}{byID[outValue]: {}}
 				return assign(columns[1:], values[1:])
 			}
 			nids[inValue][byID[outValue]] = struct{}{}
@@ -453,11 +458,14 @@ func (aq *AuthorQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (aq *AuthorQuery) sqlExist(ctx context.Context) (bool, error) {
-	n, err := aq.sqlCount(ctx)
-	if err != nil {
+	switch _, err := aq.FirstID(ctx); {
+	case IsNotFound(err):
+		return false, nil
+	case err != nil:
 		return false, fmt.Errorf("gen: check existence: %w", err)
+	default:
+		return true, nil
 	}
-	return n > 0, nil
 }
 
 func (aq *AuthorQuery) querySpec() *sqlgraph.QuerySpec {
@@ -558,7 +566,7 @@ func (agb *AuthorGroupBy) Aggregate(fns ...AggregateFunc) *AuthorGroupBy {
 }
 
 // Scan applies the group-by query and scans the result into the given value.
-func (agb *AuthorGroupBy) Scan(ctx context.Context, v interface{}) error {
+func (agb *AuthorGroupBy) Scan(ctx context.Context, v any) error {
 	query, err := agb.path(ctx)
 	if err != nil {
 		return err
@@ -567,7 +575,7 @@ func (agb *AuthorGroupBy) Scan(ctx context.Context, v interface{}) error {
 	return agb.sqlScan(ctx, v)
 }
 
-func (agb *AuthorGroupBy) sqlScan(ctx context.Context, v interface{}) error {
+func (agb *AuthorGroupBy) sqlScan(ctx context.Context, v any) error {
 	for _, f := range agb.fields {
 		if !author.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
@@ -592,8 +600,6 @@ func (agb *AuthorGroupBy) sqlQuery() *sql.Selector {
 	for _, fn := range agb.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	// If no columns were selected in a custom aggregation function, the default
-	// selection is the fields used for "group-by", and the aggregation functions.
 	if len(selector.SelectedColumns()) == 0 {
 		columns := make([]string, 0, len(agb.fields)+len(agb.fns))
 		for _, f := range agb.fields {
@@ -613,8 +619,14 @@ type AuthorSelect struct {
 	sql *sql.Selector
 }
 
+// Aggregate adds the given aggregation functions to the selector query.
+func (as *AuthorSelect) Aggregate(fns ...AggregateFunc) *AuthorSelect {
+	as.fns = append(as.fns, fns...)
+	return as
+}
+
 // Scan applies the selector query and scans the result into the given value.
-func (as *AuthorSelect) Scan(ctx context.Context, v interface{}) error {
+func (as *AuthorSelect) Scan(ctx context.Context, v any) error {
 	if err := as.prepareQuery(ctx); err != nil {
 		return err
 	}
@@ -622,7 +634,17 @@ func (as *AuthorSelect) Scan(ctx context.Context, v interface{}) error {
 	return as.sqlScan(ctx, v)
 }
 
-func (as *AuthorSelect) sqlScan(ctx context.Context, v interface{}) error {
+func (as *AuthorSelect) sqlScan(ctx context.Context, v any) error {
+	aggregation := make([]string, 0, len(as.fns))
+	for _, fn := range as.fns {
+		aggregation = append(aggregation, fn(as.sql))
+	}
+	switch n := len(*as.selector.flds); {
+	case n == 0 && len(aggregation) > 0:
+		as.sql.Select(aggregation...)
+	case n != 0 && len(aggregation) > 0:
+		as.sql.AppendSelect(aggregation...)
+	}
 	rows := &sql.Rows{}
 	query, args := as.sql.Query()
 	if err := as.driver.Query(ctx, query, args, rows); err != nil {

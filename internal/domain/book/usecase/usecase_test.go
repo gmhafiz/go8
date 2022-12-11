@@ -20,7 +20,7 @@ func TestBookUseCase_Create(t *testing.T) {
 	}
 
 	type want struct {
-		book *book.DB
+		book *book.Schema
 		err  error
 	}
 
@@ -47,7 +47,7 @@ func TestBookUseCase_Create(t *testing.T) {
 				},
 			},
 			want: want{
-				book: &book.DB{
+				book: &book.Schema{
 					ID:            1,
 					Title:         "title",
 					PublishedDate: timeParsed,
@@ -60,8 +60,8 @@ func TestBookUseCase_Create(t *testing.T) {
 				CreateFunc: func(ctx context.Context, bookMiripParam *book.CreateRequest) (int, error) {
 					return 1, nil
 				},
-				ReadFunc: func(ctx context.Context, bookID int) (*book.DB, error) {
-					return &book.DB{
+				ReadFunc: func(ctx context.Context, bookID int) (*book.Schema, error) {
+					return &book.Schema{
 						ID:            1,
 						Title:         "title",
 						PublishedDate: timeParsed,
@@ -101,7 +101,7 @@ func TestBookUseCase_List(t *testing.T) {
 	timeParsed, err := time.Parse(time.RFC3339, "2020-02-02T00:00:00Z")
 	assert.Nil(t, err)
 
-	oneBook := []*book.DB{
+	oneBook := []*book.Schema{
 		{
 			ID:            1,
 			Title:         "title 1",
@@ -115,14 +115,14 @@ func TestBookUseCase_List(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    []*book.DB
+		want    []*book.Schema
 		wantErr error
 	}{
 		{
 			name: "simple",
 			fields: fields{
 				bookRepo: repository.BookMock{
-					ListFunc: func(ctx context.Context, f *book.Filter) ([]*book.DB, error) {
+					ListFunc: func(ctx context.Context, f *book.Filter) ([]*book.Schema, error) {
 						return oneBook, nil
 					},
 				},
@@ -175,15 +175,15 @@ func TestBookUseCase_Read(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    *book.DB
+		want    *book.Schema
 		wantErr error
 	}{
 		{
 			name: "simple",
 			fields: fields{
 				bookRepo: &repository.BookMock{
-					ReadFunc: func(ctx context.Context, bookID int) (*book.DB, error) {
-						return &book.DB{
+					ReadFunc: func(ctx context.Context, bookID int) (*book.Schema, error) {
+						return &book.Schema{
 							ID:            1,
 							Title:         "title",
 							PublishedDate: timeParsed,
@@ -196,7 +196,7 @@ func TestBookUseCase_Read(t *testing.T) {
 				ctx:    context.Background(),
 				bookID: 1,
 			},
-			want: &book.DB{
+			want: &book.Schema{
 				ID:            1,
 				Title:         "title",
 				PublishedDate: timeParsed,
@@ -235,7 +235,7 @@ func TestBookUseCase_Update(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    *book.DB
+		want    *book.Schema
 		wantErr error
 	}{
 		{
@@ -245,8 +245,8 @@ func TestBookUseCase_Update(t *testing.T) {
 					UpdateFunc: func(ctx context.Context, book *book.UpdateRequest) error {
 						return nil
 					},
-					ReadFunc: func(ctx context.Context, bookID int) (*book.DB, error) {
-						return &book.DB{
+					ReadFunc: func(ctx context.Context, bookID int) (*book.Schema, error) {
+						return &book.Schema{
 							ID:            1,
 							Title:         "title",
 							PublishedDate: timeParsed,
@@ -265,7 +265,7 @@ func TestBookUseCase_Update(t *testing.T) {
 					Description:   "description",
 				},
 			},
-			want: &book.DB{
+			want: &book.Schema{
 				ID:            1,
 				Title:         "title",
 				PublishedDate: timeParsed,
@@ -345,15 +345,15 @@ func TestBookUseCase_Search(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    []*book.DB
+		want    []*book.Schema
 		wantErr error
 	}{
 		{
 			name: "simple",
 			fields: fields{
 				bookRepo: &repository.BookMock{
-					SearchFunc: func(ctx context.Context, req *book.Filter) ([]*book.DB, error) {
-						return []*book.DB{
+					SearchFunc: func(ctx context.Context, req *book.Filter) ([]*book.Schema, error) {
+						return []*book.Schema{
 							{
 								ID:            1,
 								Title:         "searched 1",
@@ -381,7 +381,7 @@ func TestBookUseCase_Search(t *testing.T) {
 					PublishedDate: "",
 				},
 			},
-			want: []*book.DB{
+			want: []*book.Schema{
 				{
 					ID:            1,
 					Title:         "searched 1",

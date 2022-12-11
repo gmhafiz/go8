@@ -9,12 +9,12 @@ import (
 
 //go:generate mirip -rm -pkg usecase -out usecase_mock.go . Book
 type Book interface {
-	Create(ctx context.Context, book *book.CreateRequest) (*book.DB, error)
-	List(ctx context.Context, f *book.Filter) ([]*book.DB, error)
-	Read(ctx context.Context, bookID int) (*book.DB, error)
-	Update(ctx context.Context, book *book.UpdateRequest) (*book.DB, error)
+	Create(ctx context.Context, book *book.CreateRequest) (*book.Schema, error)
+	List(ctx context.Context, f *book.Filter) ([]*book.Schema, error)
+	Read(ctx context.Context, bookID int) (*book.Schema, error)
+	Update(ctx context.Context, book *book.UpdateRequest) (*book.Schema, error)
 	Delete(ctx context.Context, bookID int) error
-	Search(ctx context.Context, req *book.Filter) ([]*book.DB, error)
+	Search(ctx context.Context, req *book.Filter) ([]*book.Schema, error)
 }
 
 type BookUseCase struct {
@@ -27,27 +27,27 @@ func New(bookRepo repository.Book) *BookUseCase {
 	}
 }
 
-func (u *BookUseCase) Create(ctx context.Context, book *book.CreateRequest) (*book.DB, error) {
+func (u *BookUseCase) Create(ctx context.Context, book *book.CreateRequest) (*book.Schema, error) {
 	bookID, err := u.bookRepo.Create(ctx, book)
 	if err != nil {
 		return nil, err
 	}
-	bookFound, err := u.bookRepo.Read(context.Background(), bookID)
+	bookFound, err := u.bookRepo.Read(ctx, bookID)
 	if err != nil {
 		return nil, err
 	}
 	return bookFound, err
 }
 
-func (u *BookUseCase) List(ctx context.Context, f *book.Filter) ([]*book.DB, error) {
+func (u *BookUseCase) List(ctx context.Context, f *book.Filter) ([]*book.Schema, error) {
 	return u.bookRepo.List(ctx, f)
 }
 
-func (u *BookUseCase) Read(ctx context.Context, bookID int) (*book.DB, error) {
+func (u *BookUseCase) Read(ctx context.Context, bookID int) (*book.Schema, error) {
 	return u.bookRepo.Read(ctx, bookID)
 }
 
-func (u *BookUseCase) Update(ctx context.Context, book *book.UpdateRequest) (*book.DB, error) {
+func (u *BookUseCase) Update(ctx context.Context, book *book.UpdateRequest) (*book.Schema, error) {
 	err := u.bookRepo.Update(ctx, book)
 	if err != nil {
 		return nil, err
@@ -59,6 +59,6 @@ func (u *BookUseCase) Delete(ctx context.Context, bookID int) error {
 	return u.bookRepo.Delete(ctx, bookID)
 }
 
-func (u *BookUseCase) Search(ctx context.Context, req *book.Filter) ([]*book.DB, error) {
+func (u *BookUseCase) Search(ctx context.Context, req *book.Filter) ([]*book.Schema, error) {
 	return u.bookRepo.Search(ctx, req)
 }

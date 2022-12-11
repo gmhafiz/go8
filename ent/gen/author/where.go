@@ -34,7 +34,7 @@ func IDNEQ(id uint) predicate.Author {
 // IDIn applies the In predicate on the ID field.
 func IDIn(ids ...uint) predicate.Author {
 	return predicate.Author(func(s *sql.Selector) {
-		v := make([]interface{}, len(ids))
+		v := make([]any, len(ids))
 		for i := range v {
 			v[i] = ids[i]
 		}
@@ -45,7 +45,7 @@ func IDIn(ids ...uint) predicate.Author {
 // IDNotIn applies the NotIn predicate on the ID field.
 func IDNotIn(ids ...uint) predicate.Author {
 	return predicate.Author(func(s *sql.Selector) {
-		v := make([]interface{}, len(ids))
+		v := make([]any, len(ids))
 		for i := range v {
 			v[i] = ids[i]
 		}
@@ -139,7 +139,7 @@ func FirstNameNEQ(v string) predicate.Author {
 
 // FirstNameIn applies the In predicate on the "first_name" field.
 func FirstNameIn(vs ...string) predicate.Author {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -150,7 +150,7 @@ func FirstNameIn(vs ...string) predicate.Author {
 
 // FirstNameNotIn applies the NotIn predicate on the "first_name" field.
 func FirstNameNotIn(vs ...string) predicate.Author {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -238,7 +238,7 @@ func MiddleNameNEQ(v string) predicate.Author {
 
 // MiddleNameIn applies the In predicate on the "middle_name" field.
 func MiddleNameIn(vs ...string) predicate.Author {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -249,7 +249,7 @@ func MiddleNameIn(vs ...string) predicate.Author {
 
 // MiddleNameNotIn applies the NotIn predicate on the "middle_name" field.
 func MiddleNameNotIn(vs ...string) predicate.Author {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -351,7 +351,7 @@ func LastNameNEQ(v string) predicate.Author {
 
 // LastNameIn applies the In predicate on the "last_name" field.
 func LastNameIn(vs ...string) predicate.Author {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -362,7 +362,7 @@ func LastNameIn(vs ...string) predicate.Author {
 
 // LastNameNotIn applies the NotIn predicate on the "last_name" field.
 func LastNameNotIn(vs ...string) predicate.Author {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -450,7 +450,7 @@ func CreatedAtNEQ(v time.Time) predicate.Author {
 
 // CreatedAtIn applies the In predicate on the "created_at" field.
 func CreatedAtIn(vs ...time.Time) predicate.Author {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -461,7 +461,7 @@ func CreatedAtIn(vs ...time.Time) predicate.Author {
 
 // CreatedAtNotIn applies the NotIn predicate on the "created_at" field.
 func CreatedAtNotIn(vs ...time.Time) predicate.Author {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -514,7 +514,7 @@ func UpdatedAtNEQ(v time.Time) predicate.Author {
 
 // UpdatedAtIn applies the In predicate on the "updated_at" field.
 func UpdatedAtIn(vs ...time.Time) predicate.Author {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -525,7 +525,7 @@ func UpdatedAtIn(vs ...time.Time) predicate.Author {
 
 // UpdatedAtNotIn applies the NotIn predicate on the "updated_at" field.
 func UpdatedAtNotIn(vs ...time.Time) predicate.Author {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -578,7 +578,7 @@ func DeletedAtNEQ(v time.Time) predicate.Author {
 
 // DeletedAtIn applies the In predicate on the "deleted_at" field.
 func DeletedAtIn(vs ...time.Time) predicate.Author {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -589,7 +589,7 @@ func DeletedAtIn(vs ...time.Time) predicate.Author {
 
 // DeletedAtNotIn applies the NotIn predicate on the "deleted_at" field.
 func DeletedAtNotIn(vs ...time.Time) predicate.Author {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}

@@ -14,17 +14,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gmhafiz/go8/internal/domain/book"
-	"github.com/gmhafiz/go8/internal/domain/book/usecase"
-	"github.com/gmhafiz/go8/internal/utility/message"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
 	"github.com/stretchr/testify/assert"
-)
 
-type Err struct {
-	Message string `json:"message"`
-}
+	"github.com/gmhafiz/go8/internal/domain/book"
+	"github.com/gmhafiz/go8/internal/domain/book/usecase"
+	"github.com/gmhafiz/go8/internal/utility/message"
+)
 
 type Errs struct {
 	Message []string `json:"message"`
@@ -44,10 +41,12 @@ func TestHandler_Create(t *testing.T) {
 	}
 	type want struct {
 		usecase struct {
-			book *book.DB
+			book *book.Schema
 			err  error
-			errs Errs
 		}
+		res    *book.Res
+		err    error
+		errs   Errs
 		status int
 	}
 
@@ -73,20 +72,28 @@ func TestHandler_Create(t *testing.T) {
 			},
 			want: want{
 				usecase: struct {
-					book *book.DB
+					book *book.Schema
 					err  error
-					errs Errs
 				}{
-					book: &book.DB{
+					book: &book.Schema{
 						ID:            1,
 						Title:         "Test Title",
 						PublishedDate: parsedTime,
 						ImageURL:      "https://example.com/image-test.png",
 						Description:   "Test Description",
+						CreatedAt:     time.Now(),
+						UpdatedAt:     time.Now(),
+						DeletedAt:     sql.NullTime{},
 					},
 					err: nil,
 				},
-
+				res: &book.Res{
+					ID:            1,
+					Title:         "Test Title",
+					PublishedDate: parsedTime,
+					ImageURL:      "https://example.com/image-test.png",
+					Description:   "Test Description",
+				},
 				status: http.StatusCreated,
 			},
 		},
@@ -101,18 +108,18 @@ func TestHandler_Create(t *testing.T) {
 			},
 			want: want{
 				usecase: struct {
-					book *book.DB
+					book *book.Schema
 					err  error
-					errs Errs
 				}{
-					book: &book.DB{},
+					book: &book.Schema{},
 					err:  nil,
-					errs: Errs{Message: []string{
-						"CreateRequest.Title is required",
-						"CreateRequest.ImageURL is url",
-						"CreateRequest.Description is required",
-					}},
 				},
+				res: &book.Res{},
+				errs: Errs{Message: []string{
+					"CreateRequest.Title is required",
+					"CreateRequest.ImageURL is url",
+					"CreateRequest.Description is required",
+				}},
 				status: http.StatusBadRequest,
 			},
 		},
@@ -130,13 +137,14 @@ func TestHandler_Create(t *testing.T) {
 			},
 			want: want{
 				usecase: struct {
-					book *book.DB
+					book *book.Schema
 					err  error
-					errs Errs
 				}{
-					book: &book.DB{},
+					book: &book.Schema{},
 					err:  sql.ErrNoRows,
 				},
+				res:    &book.Res{},
+				err:    message.ErrBadRequest,
 				status: http.StatusBadRequest,
 			},
 		},
@@ -154,17 +162,19 @@ func TestHandler_Create(t *testing.T) {
 			},
 			want: want{
 				usecase: struct {
-					book *book.DB
+					book *book.Schema
 					err  error
-					errs Errs
 				}{
-					book: &book.DB{},
+					book: &book.Schema{},
 					err:  errors.New("other error"),
 				},
+				res:    &book.Res{},
+				err:    errors.New("other error"),
 				status: http.StatusInternalServerError,
 			},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
@@ -180,7 +190,7 @@ func TestHandler_Create(t *testing.T) {
 			ww := httptest.NewRecorder()
 
 			uc := &usecase.BookMock{
-				CreateFunc: func(ctx context.Context, bookMiripParam *book.CreateRequest) (*book.DB, error) {
+				CreateFunc: func(ctx context.Context, bookMiripParam *book.CreateRequest) (*book.Schema, error) {
 					return tt.want.usecase.book, tt.want.usecase.err
 				},
 			}
@@ -189,26 +199,56 @@ func TestHandler_Create(t *testing.T) {
 
 			h.Create(ww, rr)
 
-			var got book.DB
+			//if tt.args.CreateRequest == nil {
+			//	var errs Errs
+			//	if err := json.NewDecoder(ww.Body).Decode(&errs); err != nil {
+			//		t.Fatal(err)
+			//	}
+			//	assert.Equal(t, tt.want.errs, errs)
+			//} else {
 
-			if tt.args.CreateRequest == nil {
-				var errs Errs
-				if err := json.NewDecoder(ww.Body).Decode(&errs); err != nil {
-					t.Fatal(err)
-				}
-				assert.Equal(t, tt.want.usecase.errs, errs)
-			} else {
+			assert.Equal(t, tt.want.status, ww.Code)
+
+			if ww.Code >= 200 && ww.Code < 300 {
+				var got book.Res
+
 				if err = json.NewDecoder(ww.Body).Decode(&got); err != nil {
 					t.Fatal(err)
 				}
 
-				assert.Equal(t, tt.want.status, ww.Code)
-				assert.Equal(t, tt.want.usecase.book.ID, got.ID)
-				assert.Equal(t, tt.want.usecase.book.Title, got.Title)
-				assert.Equal(t, tt.want.usecase.book.PublishedDate, got.PublishedDate)
-				assert.Equal(t, tt.want.usecase.book.ImageURL, got.ImageURL)
-				assert.Equal(t, tt.want.usecase.book.Description, got.Description)
+				assert.Equal(t, tt.want.res.ID, got.ID)
+				assert.Equal(t, tt.want.res.Title, got.Title)
+				assert.Equal(t, tt.want.res.PublishedDate, got.PublishedDate)
+				assert.Equal(t, tt.want.res.ImageURL, got.ImageURL)
+				assert.Equal(t, tt.want.res.Description, got.Description)
+			} else {
+				b, err := io.ReadAll(ww.Body)
+				assert.Nil(t, err)
+
+				if len(tt.want.errs.Message) > 0 {
+					errStruct := Errs{}
+
+					err = json.Unmarshal(b, &errStruct)
+					assert.Nil(t, err)
+
+					for i := range errStruct.Message {
+						assert.Equal(t, tt.want.errs.Message[i], errStruct.Message[i])
+					}
+
+				} else {
+					errStruct := struct {
+						Message string `json:"message"`
+					}{
+						Message: string(b),
+					}
+
+					err = json.Unmarshal(b, &errStruct)
+					assert.Nil(t, err)
+					assert.Equal(t, tt.want.err.Error(), errStruct.Message)
+				}
 			}
+
+			//}
 		})
 	}
 }
@@ -223,9 +263,11 @@ func TestHandler_Get(t *testing.T) {
 	}
 	type want struct {
 		usecase struct {
-			book *book.DB
+			book *book.Schema
 			err  error
 		}
+		res    *book.Res
+		err    error
 		status int
 	}
 
@@ -244,10 +286,10 @@ func TestHandler_Get(t *testing.T) {
 			},
 			want: want{
 				usecase: struct {
-					book *book.DB
+					book *book.Schema
 					err  error
 				}{
-					&book.DB{
+					&book.Schema{
 						ID:            1,
 						Title:         "",
 						PublishedDate: time.Time{},
@@ -269,12 +311,14 @@ func TestHandler_Get(t *testing.T) {
 			},
 			want: want{
 				usecase: struct {
-					book *book.DB
+					book *book.Schema
 					err  error
 				}{
-					&book.DB{},
+					&book.Schema{},
 					nil,
 				},
+				res:    &book.Res{},
+				err:    message.ErrBadRequest,
 				status: http.StatusBadRequest,
 			},
 		},
@@ -288,12 +332,14 @@ func TestHandler_Get(t *testing.T) {
 			},
 			want: want{
 				usecase: struct {
-					book *book.DB
+					book *book.Schema
 					err  error
 				}{
-					&book.DB{},
+					&book.Schema{},
 					sql.ErrNoRows,
 				},
+				res:    &book.Res{},
+				err:    errors.New("no book is found for this ID"),
 				status: http.StatusBadRequest,
 			},
 		},
@@ -307,12 +353,14 @@ func TestHandler_Get(t *testing.T) {
 			},
 			want: want{
 				usecase: struct {
-					book *book.DB
+					book *book.Schema
 					err  error
 				}{
-					&book.DB{},
+					&book.Schema{},
 					errors.New("some other error"),
 				},
+				res:    &book.Res{},
+				err:    nil,
 				status: http.StatusInternalServerError,
 			},
 		},
@@ -329,7 +377,7 @@ func TestHandler_Get(t *testing.T) {
 			rr = rr.WithContext(context.WithValue(rr.Context(), chi.RouteCtxKey, rctx))
 
 			uc := &usecase.BookMock{
-				ReadFunc: func(ctx context.Context, bookID int) (*book.DB, error) {
+				ReadFunc: func(ctx context.Context, bookID int) (*book.Schema, error) {
 					return tt.want.usecase.book, tt.want.usecase.err
 				},
 			}
@@ -340,30 +388,45 @@ func TestHandler_Get(t *testing.T) {
 
 			assert.Equal(t, tt.want.status, ww.Code)
 
-			if ww.Body.Len() == 0 {
-				return
-			}
-			var got book.DB
-			if err := json.NewDecoder(ww.Body).Decode(&got); err != nil {
-				t.Fatal(err)
-			}
+			if ww.Code >= 200 && ww.Code < 300 {
+				var got book.Schema
+				if err := json.NewDecoder(ww.Body).Decode(&got); err != nil {
+					t.Fatal(err)
+				}
 
-			assert.Equal(t, tt.want.usecase.book.ID, got.ID)
-			assert.Equal(t, tt.want.usecase.book.Title, got.Title)
-			assert.Equal(t, tt.want.usecase.book.PublishedDate, got.PublishedDate)
-			assert.Equal(t, tt.want.usecase.book.ImageURL, got.ImageURL)
-			assert.Equal(t, tt.want.usecase.book.Description, got.Description)
+				assert.Equal(t, tt.want.usecase.book.ID, got.ID)
+				assert.Equal(t, tt.want.usecase.book.Title, got.Title)
+				assert.Equal(t, tt.want.usecase.book.PublishedDate, got.PublishedDate)
+				assert.Equal(t, tt.want.usecase.book.ImageURL, got.ImageURL)
+				assert.Equal(t, tt.want.usecase.book.Description, got.Description)
+			} else {
+				b, err := io.ReadAll(ww.Body)
+				assert.Nil(t, err)
+
+				errStruct := struct {
+					Message string `json:"message"`
+				}{
+					Message: string(b),
+				}
+
+				if len(b) == 0 {
+					return
+				}
+
+				err = json.Unmarshal(b, &errStruct)
+				assert.Nil(t, err)
+				assert.Equal(t, tt.want.err, errors.New(errStruct.Message))
+			}
 		})
 	}
 }
 
 func TestHandler_List(t *testing.T) {
-
 	type args struct {
 	}
 	type want struct {
 		usecase struct {
-			books []*book.DB
+			books []*book.Schema
 			err   error
 		}
 
@@ -382,10 +445,10 @@ func TestHandler_List(t *testing.T) {
 			args: args{},
 			want: want{
 				usecase: struct {
-					books []*book.DB
+					books []*book.Schema
 					err   error
 				}{
-					books: []*book.DB{
+					books: []*book.Schema{
 						{
 							ID:            1,
 							Title:         "test title",
@@ -393,7 +456,7 @@ func TestHandler_List(t *testing.T) {
 							ImageURL:      "",
 							Description:   "",
 							CreatedAt:     time.Time{},
-							UpdatedAt:     sql.NullTime{},
+							UpdatedAt:     time.Time{},
 							DeletedAt:     sql.NullTime{},
 						},
 					},
@@ -416,7 +479,7 @@ func TestHandler_List(t *testing.T) {
 			args: args{},
 			want: want{
 				usecase: struct {
-					books []*book.DB
+					books []*book.Schema
 					err   error
 				}{
 					books: nil,
@@ -432,7 +495,7 @@ func TestHandler_List(t *testing.T) {
 			args: args{},
 			want: want{
 				usecase: struct {
-					books []*book.DB
+					books []*book.Schema
 					err   error
 				}{
 					books: nil,
@@ -448,10 +511,10 @@ func TestHandler_List(t *testing.T) {
 			args: args{},
 			want: want{
 				usecase: struct {
-					books []*book.DB
+					books []*book.Schema
 					err   error
 				}{
-					books: []*book.DB{},
+					books: []*book.Schema{},
 					err:   nil,
 				},
 				books:  []*book.Res{},
@@ -467,7 +530,7 @@ func TestHandler_List(t *testing.T) {
 			ww := httptest.NewRecorder()
 
 			uc := &usecase.BookMock{
-				ListFunc: func(ctx context.Context, f *book.Filter) ([]*book.DB, error) {
+				ListFunc: func(ctx context.Context, f *book.Filter) ([]*book.Schema, error) {
 					return tt.want.usecase.books, tt.want.usecase.err
 				},
 			}
@@ -478,36 +541,38 @@ func TestHandler_List(t *testing.T) {
 
 			assert.Equal(t, tt.want.status, ww.Code)
 
-			if ww.Body.Len() == 0 {
-				return
-			}
-
-			if ww.Code != http.StatusOK {
-				var err Err
-				if err := json.NewDecoder(ww.Body).Decode(&err); err != nil {
+			if ww.Code >= 200 && ww.Code < 300 {
+				var got []*book.Res
+				if err := json.NewDecoder(ww.Body).Decode(&got); err != nil {
 					t.Fatal(err)
 				}
 
-				assert.Equal(t, tt.want.usecase.err.Error(), err.Message)
-				assert.Equal(t, tt.want.err.Error(), err.Message)
+				for i := 0; i < len(got); i++ {
+					for j := 0; j < len(tt.want.books); j++ {
+						assert.Equal(t, tt.want.books[j].ID, got[i].ID)
+						assert.Equal(t, tt.want.books[j].Title, got[i].Title)
+						assert.Equal(t, tt.want.books[j].Description, got[i].Description)
+						assert.Equal(t, tt.want.books[j].ImageURL, got[i].ImageURL)
+						assert.Equal(t, tt.want.books[j].PublishedDate.String(), got[i].PublishedDate.String())
+					}
+				}
 
 				return
-			}
+			} else {
+				b, err := io.ReadAll(ww.Body)
+				assert.Nil(t, err)
 
-			var got []*book.Res
-			if err := json.NewDecoder(ww.Body).Decode(&got); err != nil {
-				t.Fatal(err)
-			}
-
-			for i := 0; i < len(got); i++ {
-				for j := 0; j < len(tt.want.books); j++ {
-					assert.Equal(t, tt.want.books[j].ID, got[i].ID)
-					assert.Equal(t, tt.want.books[j].Title, got[i].Title)
-					assert.Equal(t, tt.want.books[j].Description, got[i].Description)
-					assert.Equal(t, tt.want.books[j].ImageURL, got[i].ImageURL)
-					assert.Equal(t, tt.want.books[j].PublishedDate.String(), got[i].PublishedDate.String())
+				errStruct := struct {
+					Message string `json:"message"`
+				}{
+					Message: string(b),
 				}
+
+				err = json.Unmarshal(b, &errStruct)
+				assert.Nil(t, err)
+				assert.Equal(t, tt.want.err.Error(), errStruct.Message)
 			}
+
 		})
 	}
 }
@@ -528,12 +593,13 @@ func TestHandler_Update(t *testing.T) {
 	}
 	type want struct {
 		usecase struct {
-			book *book.DB
+			book *book.Schema
 			err  error
 		}
 		status int
 		book   *book.Res
-		err    string
+		err    error
+		errs   Errs
 	}
 
 	tests := []struct {
@@ -556,10 +622,10 @@ func TestHandler_Update(t *testing.T) {
 			},
 			want: want{
 				usecase: struct {
-					book *book.DB
+					book *book.Schema
 					err  error
 				}{
-					book: &book.DB{
+					book: &book.Schema{
 						ID:            1,
 						Title:         "mock title",
 						PublishedDate: parsedTime,
@@ -593,12 +659,12 @@ func TestHandler_Update(t *testing.T) {
 			},
 			want: want{
 				usecase: struct {
-					book *book.DB
+					book *book.Schema
 					err  error
 				}{},
 				book:   &book.Res{},
 				status: http.StatusBadRequest,
-				err:    `{"message":"strconv.Atoi: parsing \"\": invalid syntax"}`,
+				err:    message.ErrBadRequest,
 			},
 		},
 		{
@@ -612,15 +678,19 @@ func TestHandler_Update(t *testing.T) {
 			},
 			want: want{
 				usecase: struct {
-					book *book.DB
+					book *book.Schema
 					err  error
 				}{
-					book: &book.DB{},
+					book: &book.Schema{},
 					err:  nil,
 				},
 				status: http.StatusBadRequest,
 				book:   &book.Res{},
-				err:    `{"message":["UpdateRequest.PublishedDate is required","UpdateRequest.ImageURL is url","UpdateRequest.Description is required"]}`,
+				errs: Errs{Message: []string{
+					"UpdateRequest.PublishedDate is required",
+					"UpdateRequest.ImageURL is url",
+					"UpdateRequest.Description is required",
+				}},
 			},
 		},
 		{
@@ -638,15 +708,15 @@ func TestHandler_Update(t *testing.T) {
 			},
 			want: want{
 				usecase: struct {
-					book *book.DB
+					book *book.Schema
 					err  error
 				}{
-					&book.DB{},
+					&book.Schema{},
 					errors.New("some error"),
 				},
 				status: http.StatusInternalServerError,
 				book:   &book.Res{},
-				err:    `{"message":"some error"}`,
+				err:    errors.New("some error"),
 			},
 		},
 	}
@@ -672,7 +742,7 @@ func TestHandler_Update(t *testing.T) {
 			rr = rr.WithContext(context.WithValue(rr.Context(), chi.RouteCtxKey, rctx))
 
 			uc := &usecase.BookMock{
-				UpdateFunc: func(ctx context.Context, bookParam *book.UpdateRequest) (*book.DB, error) {
+				UpdateFunc: func(ctx context.Context, bookParam *book.UpdateRequest) (*book.Schema, error) {
 					return tt.want.usecase.book, tt.want.usecase.err
 				},
 			}
@@ -683,23 +753,47 @@ func TestHandler_Update(t *testing.T) {
 
 			assert.Equal(t, tt.want.status, ww.Code)
 
-			if ww.Code != http.StatusOK {
-				gotResponse, err := io.ReadAll(ww.Body)
-				assert.Nil(t, err)
-				assert.Equal(t, tt.want.err, string(gotResponse))
+			if ww.Code >= 200 && ww.Code < 300 {
+				var got book.Res
+				if err := json.NewDecoder(ww.Body).Decode(&got); err != nil {
+					t.Fatal(err)
+				}
+
+				assert.Equal(t, tt.want.book.ID, got.ID)
+				assert.Equal(t, tt.want.book.Title, got.Title)
+				assert.Equal(t, tt.want.book.PublishedDate, got.PublishedDate)
+				assert.Equal(t, tt.want.book.ImageURL, got.ImageURL)
+				assert.Equal(t, tt.want.book.Description, got.Description)
 				return
+
+			} else {
+				b, err := io.ReadAll(ww.Body)
+				assert.Nil(t, err)
+
+				if len(tt.want.errs.Message) > 0 {
+					errStruct := Errs{}
+
+					err = json.Unmarshal(b, &errStruct)
+					assert.Nil(t, err)
+
+					for i := range errStruct.Message {
+						assert.Equal(t, tt.want.errs.Message[i], errStruct.Message[i])
+					}
+
+				} else {
+					errStruct := struct {
+						Message string `json:"message"`
+					}{
+						Message: string(b),
+					}
+
+					err = json.Unmarshal(b, &errStruct)
+					assert.Nil(t, err)
+					assert.Equal(t, tt.want.err.Error(), errStruct.Message)
+				}
+
 			}
 
-			var got book.Res
-			if err := json.NewDecoder(ww.Body).Decode(&got); err != nil {
-				t.Fatal(err)
-			}
-
-			assert.Equal(t, tt.want.book.ID, got.ID)
-			assert.Equal(t, tt.want.book.Title, got.Title)
-			assert.Equal(t, tt.want.book.PublishedDate, got.PublishedDate)
-			assert.Equal(t, tt.want.book.ImageURL, got.ImageURL)
-			assert.Equal(t, tt.want.book.Description, got.Description)
 		})
 	}
 }
@@ -759,7 +853,7 @@ func TestHandler_Delete(t *testing.T) {
 			ww := httptest.NewRecorder()
 
 			rctx := chi.NewRouteContext()
-			rctx.URLParams.Add(tt.args.param, strconv.Itoa(int(tt.args.bookID)))
+			rctx.URLParams.Add(tt.args.param, strconv.Itoa(tt.args.bookID))
 
 			rr = rr.WithContext(context.WithValue(rr.Context(), chi.RouteCtxKey, rctx))
 

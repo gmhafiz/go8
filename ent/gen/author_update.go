@@ -204,51 +204,25 @@ func (au *AuthorUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 	}
 	if value, ok := au.mutation.FirstName(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: author.FieldFirstName,
-		})
+		_spec.SetField(author.FieldFirstName, field.TypeString, value)
 	}
 	if value, ok := au.mutation.MiddleName(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: author.FieldMiddleName,
-		})
+		_spec.SetField(author.FieldMiddleName, field.TypeString, value)
 	}
 	if au.mutation.MiddleNameCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: author.FieldMiddleName,
-		})
+		_spec.ClearField(author.FieldMiddleName, field.TypeString)
 	}
 	if value, ok := au.mutation.LastName(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: author.FieldLastName,
-		})
+		_spec.SetField(author.FieldLastName, field.TypeString, value)
 	}
 	if value, ok := au.mutation.UpdatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: author.FieldUpdatedAt,
-		})
+		_spec.SetField(author.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if value, ok := au.mutation.DeletedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: author.FieldDeletedAt,
-		})
+		_spec.SetField(author.FieldDeletedAt, field.TypeTime, value)
 	}
 	if au.mutation.DeletedAtCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Column: author.FieldDeletedAt,
-		})
+		_spec.ClearField(author.FieldDeletedAt, field.TypeTime)
 	}
 	if au.mutation.BooksCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -528,51 +502,25 @@ func (auo *AuthorUpdateOne) sqlSave(ctx context.Context) (_node *Author, err err
 		}
 	}
 	if value, ok := auo.mutation.FirstName(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: author.FieldFirstName,
-		})
+		_spec.SetField(author.FieldFirstName, field.TypeString, value)
 	}
 	if value, ok := auo.mutation.MiddleName(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: author.FieldMiddleName,
-		})
+		_spec.SetField(author.FieldMiddleName, field.TypeString, value)
 	}
 	if auo.mutation.MiddleNameCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: author.FieldMiddleName,
-		})
+		_spec.ClearField(author.FieldMiddleName, field.TypeString)
 	}
 	if value, ok := auo.mutation.LastName(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: author.FieldLastName,
-		})
+		_spec.SetField(author.FieldLastName, field.TypeString, value)
 	}
 	if value, ok := auo.mutation.UpdatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: author.FieldUpdatedAt,
-		})
+		_spec.SetField(author.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if value, ok := auo.mutation.DeletedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: author.FieldDeletedAt,
-		})
+		_spec.SetField(author.FieldDeletedAt, field.TypeTime, value)
 	}
 	if auo.mutation.DeletedAtCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Column: author.FieldDeletedAt,
-		})
+		_spec.ClearField(author.FieldDeletedAt, field.TypeTime)
 	}
 	if auo.mutation.BooksCleared() {
 		edge := &sqlgraph.EdgeSpec{

@@ -34,7 +34,7 @@ func IDNEQ(id uint) predicate.Book {
 // IDIn applies the In predicate on the ID field.
 func IDIn(ids ...uint) predicate.Book {
 	return predicate.Book(func(s *sql.Selector) {
-		v := make([]interface{}, len(ids))
+		v := make([]any, len(ids))
 		for i := range v {
 			v[i] = ids[i]
 		}
@@ -45,7 +45,7 @@ func IDIn(ids ...uint) predicate.Book {
 // IDNotIn applies the NotIn predicate on the ID field.
 func IDNotIn(ids ...uint) predicate.Book {
 	return predicate.Book(func(s *sql.Selector) {
-		v := make([]interface{}, len(ids))
+		v := make([]any, len(ids))
 		for i := range v {
 			v[i] = ids[i]
 		}
@@ -146,7 +146,7 @@ func TitleNEQ(v string) predicate.Book {
 
 // TitleIn applies the In predicate on the "title" field.
 func TitleIn(vs ...string) predicate.Book {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -157,7 +157,7 @@ func TitleIn(vs ...string) predicate.Book {
 
 // TitleNotIn applies the NotIn predicate on the "title" field.
 func TitleNotIn(vs ...string) predicate.Book {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -245,7 +245,7 @@ func PublishedDateNEQ(v time.Time) predicate.Book {
 
 // PublishedDateIn applies the In predicate on the "published_date" field.
 func PublishedDateIn(vs ...time.Time) predicate.Book {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -256,7 +256,7 @@ func PublishedDateIn(vs ...time.Time) predicate.Book {
 
 // PublishedDateNotIn applies the NotIn predicate on the "published_date" field.
 func PublishedDateNotIn(vs ...time.Time) predicate.Book {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -309,7 +309,7 @@ func ImageURLNEQ(v string) predicate.Book {
 
 // ImageURLIn applies the In predicate on the "image_url" field.
 func ImageURLIn(vs ...string) predicate.Book {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -320,7 +320,7 @@ func ImageURLIn(vs ...string) predicate.Book {
 
 // ImageURLNotIn applies the NotIn predicate on the "image_url" field.
 func ImageURLNotIn(vs ...string) predicate.Book {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -422,7 +422,7 @@ func DescriptionNEQ(v string) predicate.Book {
 
 // DescriptionIn applies the In predicate on the "description" field.
 func DescriptionIn(vs ...string) predicate.Book {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -433,7 +433,7 @@ func DescriptionIn(vs ...string) predicate.Book {
 
 // DescriptionNotIn applies the NotIn predicate on the "description" field.
 func DescriptionNotIn(vs ...string) predicate.Book {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -521,7 +521,7 @@ func CreatedAtNEQ(v time.Time) predicate.Book {
 
 // CreatedAtIn applies the In predicate on the "created_at" field.
 func CreatedAtIn(vs ...time.Time) predicate.Book {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -532,7 +532,7 @@ func CreatedAtIn(vs ...time.Time) predicate.Book {
 
 // CreatedAtNotIn applies the NotIn predicate on the "created_at" field.
 func CreatedAtNotIn(vs ...time.Time) predicate.Book {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -585,7 +585,7 @@ func UpdatedAtNEQ(v time.Time) predicate.Book {
 
 // UpdatedAtIn applies the In predicate on the "updated_at" field.
 func UpdatedAtIn(vs ...time.Time) predicate.Book {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -596,7 +596,7 @@ func UpdatedAtIn(vs ...time.Time) predicate.Book {
 
 // UpdatedAtNotIn applies the NotIn predicate on the "updated_at" field.
 func UpdatedAtNotIn(vs ...time.Time) predicate.Book {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -649,7 +649,7 @@ func DeletedAtNEQ(v time.Time) predicate.Book {
 
 // DeletedAtIn applies the In predicate on the "deleted_at" field.
 func DeletedAtIn(vs ...time.Time) predicate.Book {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
@@ -660,7 +660,7 @@ func DeletedAtIn(vs ...time.Time) predicate.Book {
 
 // DeletedAtNotIn applies the NotIn predicate on the "deleted_at" field.
 func DeletedAtNotIn(vs ...time.Time) predicate.Book {
-	v := make([]interface{}, len(vs))
+	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}

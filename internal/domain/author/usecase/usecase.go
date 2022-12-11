@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"github.com/gmhafiz/go8/config"
-	"github.com/gmhafiz/go8/ent/gen"
 	"github.com/gmhafiz/go8/internal/domain/author"
 	"github.com/gmhafiz/go8/internal/domain/author/repository"
 )
@@ -22,10 +21,10 @@ type AuthorUseCase struct {
 
 //go:generate mirip -rm -out usecase_mock.go . Author
 type Author interface {
-	Create(ctx context.Context, a *author.CreateRequest) (*gen.Author, error)
-	List(ctx context.Context, f *author.Filter) ([]*gen.Author, int, error)
-	Read(ctx context.Context, authorID uint) (*gen.Author, error)
-	Update(ctx context.Context, author *author.Update) (*gen.Author, error)
+	Create(ctx context.Context, a *author.CreateRequest) (*author.Schema, error)
+	List(ctx context.Context, f *author.Filter) ([]*author.Schema, int, error)
+	Read(ctx context.Context, authorID uint) (*author.Schema, error)
+	Update(ctx context.Context, author *author.UpdateRequest) (*author.Schema, error)
 	Delete(ctx context.Context, authorID uint) error
 }
 
@@ -39,11 +38,11 @@ func New(c config.Cache, repo repository.Author, searcher repository.Searcher, c
 	}
 }
 
-func (u *AuthorUseCase) Create(ctx context.Context, r *author.CreateRequest) (*gen.Author, error) {
+func (u *AuthorUseCase) Create(ctx context.Context, r *author.CreateRequest) (*author.Schema, error) {
 	return u.repo.Create(ctx, r)
 }
 
-func (u *AuthorUseCase) List(ctx context.Context, f *author.Filter) ([]*gen.Author, int, error) {
+func (u *AuthorUseCase) List(ctx context.Context, f *author.Filter) ([]*author.Schema, int, error) {
 	if f.Base.Search {
 		return u.searchRepo.Search(ctx, f)
 	}
@@ -58,14 +57,14 @@ func (u *AuthorUseCase) List(ctx context.Context, f *author.Filter) ([]*gen.Auth
 	return u.repo.List(ctx, f)
 }
 
-func (u *AuthorUseCase) Read(ctx context.Context, authorID uint) (*gen.Author, error) {
+func (u *AuthorUseCase) Read(ctx context.Context, authorID uint) (*author.Schema, error) {
 	if authorID == 0 {
 		return nil, errors.New("ID cannot be 0")
 	}
 	return u.repo.Read(ctx, authorID)
 }
 
-func (u *AuthorUseCase) Update(ctx context.Context, author *author.Update) (*gen.Author, error) {
+func (u *AuthorUseCase) Update(ctx context.Context, author *author.UpdateRequest) (*author.Schema, error) {
 	if u.cfg.Enable {
 		// Call cache layer instead to invalidate cache
 		return u.cacheRedis.Update(ctx, author)

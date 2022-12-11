@@ -12,7 +12,7 @@ type Res struct {
 	Description   string    `json:"description" swaggertype:"string"`
 }
 
-func Resource(book *DB) *Res {
+func Resource(book *Schema) *Res {
 	if book == nil {
 		return &Res{}
 	}
@@ -27,7 +27,7 @@ func Resource(book *DB) *Res {
 	return resource
 }
 
-func Resources(books []*DB) ([]*Res, error) {
+func Resources(books []*Schema) ([]*Res, error) {
 	if len(books) == 0 {
 		return make([]*Res, 0), nil
 	}

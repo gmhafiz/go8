@@ -41,7 +41,7 @@ This kit is composed of standard Go library together with some well-known librar
   - [x] CORS
   - [x] Scans and auto-generate [Swagger](https://github.com/swaggo/swag) docs using a declarative comments format 
   - [x] Custom model JSON output
-  - [x] Filters (input port), Resource (output port) for pagination and custom response respectively.
+  - [x] Filters (input DTO), Resource (output DTO) for pagination parsing and custom response respectively.
   - [x] Cache layer
   - [x] Uses [Task](https://taskfile.dev) to simplify various tasks like mocking, linting, test coverage, hot reload etc
   - [x] Unit testing of repository, use case, and handler using mocks and [dockertest](https://github.com/ory/dockertest)
@@ -445,7 +445,7 @@ You can build a docker image with the app with its config files. Docker needs to
 
      task docker:build
 
-This task also makes a copy of `.env`. Since Docker doesn't copy hidden file, we make a copy of it on our `src` stage before transferring it to our final `scratch` stage. It also inserts formats git tag and git hash as the API version which runs at compile time. [upx](https://upx.github.io/) is used to make the resulting binary smaller.
+This task also makes a copy of `.env`. Since Docker doesn't copy hidden file, we make a copy of it on our `src` stage before transferring it to our final `scratch` stage. It also inserts formats git tag and git hash as the API version which runs at compile time. -[upx](https://upx.github.io/) is used to make the resulting binary smaller.-gg
 
 Note that this is a multistage Dockerfile. Since we statically compile this API, we can use `scratch` image (it is empty! - no file/folder exists).
 
@@ -891,39 +891,44 @@ ar under `utilty` package because it is [unclear from the name](https://go.dev/d
 
 # Testing
 
+A testable code is a sign that you have a good code. However, it can be hard to
+write not only of a function, but also how different functions work together. 
+Going on a tangent, following [SOLID principle](https://en.wikipedia.org/wiki/SOLID)  is a good way to design our code and make it testable. But this repository isn't nearly complex enough to show good examples of each principle. In any case, we shall start with unit tests.
+
 ## Unit Testing
 
 Unit testing can be run with
 
-    task test
+```sh
+task test
+```
     
 Which runs `go test -v ./...`
 
-In Go, unit test file is handled by appending `_test` to a file's name. For example, to test `/internal/domain/book/handler/http/handler.go`, we add unit test file by creating `/internal/domain/book/handler/http/handler_test.go`
+A quick note, in Go, unit test file is handled by appending `_test` to a file's name. For example, to test `/internal/domain/book/handler/http/handler.go`, we add unit test file by creating `/internal/domain/book/handler/http/handler_test.go`
 
-
-To perform a unit test we take advantage of go's interface. Our interfaces are defined in where they are used:
-
-      internal/domain/author/handler/handler.go
-      internal/domain/author/usecase/usecase.go
-      internal/domain/author/repository/database.go
-
-The implementation of these interfaces are right were they were declared. So you would find them in the same file.
+To perform a unit test we take advantage of go's interface. The layers between
+handler, use case and database are loosely-coupled. This is achieved by accepting
+an interface and return a struct. This way, you can swap that struct implementation
+with something else, say, a mock. So when you run the unit test, it will run
+that mock implementation instead of your concrete implementation. This is all
+thanks to Go's interface which is implicit.
 
 This repository shows table-driven unit testing strategy  in all three layers.
 Both handler and usecase layers swaps the implementation of underneath layer 
-with mocks while in repository layer, we use real database in docker to test
+with mocks while in repository layer, we use _real_ database in docker to test
 against, using `dockertest` library.
 
 ### Handler
 
-We explore on how to perform unit testing on creating an Author. There are several things that need to happen namely:
+We explore on how to perform unit testing on creating an Author. There are several things that need to happen, namely:
 
-1. Bind `POST` request to a local struct.
-2. Validate.
+1. Create a request.
+2. Validate request.
 3. Call business logic layer underneath it and handle various error that may come up.
     - We are not going to actually call our business logic layer. We use mocks instead.
 4. Perform data transformation for user consumption.
+5. Compare errors and values.
 
 In general, all unit tests will have `args` and `want` struct. `args` struct is
 what we need to supply to the unit test while `want` struct is where we define
@@ -946,31 +951,38 @@ type args struct {
 }
 ```
 
-In `want` struct, we expect the usecase to return two things, the author and an 
-error.
+In `want` struct, we expect the usecase to return three things, the author an 
+error, and http status code. We add an HTTP status response code because our 
+handler can return different code depending on the result.
+
+What is strange here is we included a `usecase` struct. This is the struct that
+contains values that our mock will return.
 
 ```go
 type want struct {
-    *gen.Author
+	usecase struct {
+        *author.Schema
+        error
+    }
+    response *author.GetResponse
+    status int
     error
 }
 ```
 
-The final struct embeds both structs, and we give a name to it.
+The final struct embeds both structs, and we give a name to it. Naming the test
+makes it easier to run individual tests.
 
 ```go
 type test struct {
     name string
     args
     want
-    status int
 }
 ```
-We also add an HTTP status response code because our handler can return different
-code depending on the result.
 
 Now that we have all necessary structs, we can begin with our table-driven tests.
-Itt is just a matter of filling `test` struct with our values.
+It is just a matter of filling `test` struct with our values.
 
 ```go
 tests := []test{
@@ -980,27 +992,48 @@ tests := []test{
             CreateRequest: &author.CreateRequest{
                 FirstName:  "First",			
                 MiddleName: "Middle",			
-                LastName:   "Last",			
+                LastName:   "Last",
+	            Books:      nil,
             }   		
         },
-        want: want {
-            Author: &gen.Author{
-                ID:         1,
-                FirstName:  "First",
-                MiddleName: "Middle",
-                LastName:   "Last",
-            },
-            error: nil,
-        },
-        status: http.StatusCreated,
-    }
+        want: want{
+				usecase: struct {
+					*author.Schema
+					error
+				}{
+					&author.Schema{
+						ID:         1,
+						FirstName:  "First",
+						MiddleName: "Middle",
+						LastName:   "Last",
+						CreatedAt:  time.Now(),
+						UpdatedAt:  time.Now(),
+						DeletedAt:  nil,
+						Books:      make([]*book.Schema, 0),
+					},
+					nil,
+				},
+				response: &author.GetResponse{
+					ID:         1,
+					FirstName:  "First",
+					MiddleName: "Middle",
+					LastName:   "Last",
+					Books:      make([]*book.Schema, 0),
+				},
+				err:    nil,
+				status: http.StatusCreated,
+			},
 }
 ```
 
-To make it simple, we only add three fields in `CreateRequest` struct. We expect
-the same values come out of use case layer, with an ID attached to it. We also
-expect no error to happen. Finally, we expect a `201` HTTP status is returned 
-by this handler.
+As you can see, the _author_ record gets replicated three times. But there is a
+subtle difference between the input and output. In the `args` struct, we only
+supply three things, the names, but left the books as empty. In the `response`
+struct, it has the names, but also a zero-length array of books! This is an
+intended behaviour - I purposely wanted to return an array no matter what.
+
+So within this `tests` slice, we can add as many unit tests as we want. We could
+try giving invalid input, input that fails validation, etc.  
 
 To run the tests, we loop over this slice of tests:
 
@@ -1022,7 +1055,7 @@ ww := httptest.NewRecorder()
 
 The request points to the URL of the endpoint, and we make a `POST` request to it.
 Since we are sending a JSON payload, we send it in the third argument. It accepts
-an `io.Reader` so we need to encode our JSON payload into `buf`:
+an `io.Reader` so we need to encode our JSON payload into `bytes.Buffer`:
 
 ```go
 var buf bytes.Buffer
@@ -1053,9 +1086,9 @@ val := validator.New()
 
 The final dependency requires a bit of work. The handler depends on the usecase
 interface, and it in turn calls the appropriate concrete implementation. For our
-unit test, we can swap out the implementation with a mock. And this mock returns
-value from our `want` struct. Now our unit test can work in isolation, and do not 
-depend on any underneath layer!
+unit test, we swap out the implementation with a mock. And this mock returns
+value from our `want.usecase` struct. Now our unit test can work in isolation, 
+and do not depend on any layer underneath it!
 
 Create a new file called `usecase_mock.go`. Declare a new mock struct and within it,
 contains a field that matches our usecase signature by looking at the usecase 
@@ -1064,14 +1097,14 @@ interface.
 `usecase.go`
 ```go
 type UseCase interface {
-    Create(ctx context.Context, a *author.CreateRequest) (*gen.Author, error)
+    Create(ctx context.Context, a *author.CreateRequest) (*author.Schema, error)
 }
 ```
 
 `usecase_mock.go`
 ```go
 type AuthorUseCaseMock struct {
-    CreateFunc func (ctx context.Context, a *author.CreateRequest) (*gen.Author, error)
+    CreateFunc func(ctx context.Context, a *author.CreateRequest) (*author.Schema, error)
 }
 ```
 Notice that we append the `Create()` method with `Func` field. Now that we have
@@ -1079,25 +1112,18 @@ the struct defined, we add a concrete implementation from it.
 
 `usecase_mock.go`
 ```go
-type AuthorUseCaseMock struct {
-    CreateFunc func (ctx context.Context, a *author.CreateRequest) (*gen.Author, error)
-}
-
-func (a *AuthorUseCaseMock) Create(ctx context.Context, req *author.CreateRequest) (*gen.Author, error) {
+func (m *AuthorMock) Create(ctx context.Context, a *author.CreateRequest) (*author.Schema, error) {
 	return a.CreateFunc(ctx, req)
 }
 ```
 
-Now that we have a usecase mock, we can now declare the missing `uc` variable.
-Using `AuthorUseCaseMock` struct from `mock` package, we initialize `CreateFunc`
-field from it. Then, it is just a matter of returning the values to what we have
-defined in our `want` struct.
+Now that we have a usecase mock, we can now give the `uc` variable for `RegisterHTTPEndPoints()` function. Using `AuthorUseCaseMock` struct from `mock` package, we initialize `CreateFunc` field from it. Then, it is just a matter of returning the values to what we have defined in our `want` struct.
 
 `handler_test.go`
 ```go
 uc := &mock.AuthorUseCaseMock{
-    CreateFunc: func(ctx context.Context, a *author.CreateRequest) (*gen.Author, error) {
-        return test.want.Author, test.want.error
+    CreateFunc: func(ctx context.Context, a *author.CreateRequest) (*author.Schema, error) {
+        return test.want.usecase.Schema, test.want.usecase.error
     },
 }
 ```
@@ -1112,10 +1138,10 @@ h.Create(ww, rr)
 ```
 
 Response is recorded into `ww` variable. To receive the response, we decode from
-`ww.Body` into `gen.Author` struct:
+`ww.Body` into `author.Schema` struct:
 
 ```go
-var got gen.Author
+var got author.GetResponse
 if err = json.NewDecoder(ww.Body).Decode(&got); err != nil {
     t.Fatal(err)
 }
@@ -1126,7 +1152,7 @@ what we expect.
 
 ```go
 assert.Equal(t, ww.Code, test.status)
-assert.Equal(t, &got, test.want.Author)
+assert.Equal(t, &got, test.want.response)
 ```
 
 While `go test ./...` runs all tests, we can choose to run only this specific test. We `cd` into the directory and use `-run` to specify the <function name/test name>. `-run` can also accept regex
@@ -1148,20 +1174,20 @@ interface.
 ### Use Case
 
 The idea is the same as unit testing a handler. We have a set of arguments, what
-is expected from it, and a slice of `test` struct that we iterate.
+is expected from it, and a slice of `test` struct that we iterate to test against.
 
 This time, we do not have to worry about write and recorder. We only need to 
 instantiate usecase along with its dependencies. To make this simple, we will
 only mock database(repository struct).
 
 The `Create()` method expects a `context` and `*author.CreateRequest` and returns
-`*gen.Author` and an `error`.
+`*author.Schema` and an `error`.
 ```go
 type args struct {
     *author.CreateRequest
 }
 type want struct {
-    *gen.Author
+    *author.Schema
     error
 }
 ```
@@ -1191,46 +1217,44 @@ tests := []test{
             },
         },
         want: want{
-            Author: &gen.Author{
+            Author: &author.Schema{
                 ID:         1,
                 FirstName:  "First",
                 MiddleName: "Middle",
                 LastName:   "Last",
                 CreatedAt:  time.Time{},
                 UpdatedAt:  time.Time{},
-                DeletedAt:  nil,
-                Edges: gen.AuthorEdges{
-                    Books: nil,
-                },
+                DeletedAt: nil,
+                Books:     nil,
             },
-            error: nil,
+            err: nil,
         },
     },
-    }
+}
 ```
 
 To instantiate a usecase, we call the `New()` function.
 
 ```go
-uc := New(repoAuthor, nil, nil, nil)
+uc := New(nil, repoAuthor, nil, nil, nil, nil)
 ```
 
-We only care about CRUD at this stage, we need to mock out the repository layer.
-We start by creating a mock file and create a struct containing methods that 
+We only care about CRUD at this stage, so we only need to mock out the repository
+layer. We start by creating a mock file and create a struct containing methods that 
 matches the signature defined in repository interface.
 
 `postgres.go`
 ```go
 type Repository interface {
-    Create(ctx context.Context, r *author.CreateRequest) (*gen.Author, error)
+    Create(ctx context.Context, a *author.CreateRequest) (*author.Schema, error)
 }
 ```
 `postgres_mock.go`
 ```go
 package database
 
-type RepositoryMock struct {
-    CreateFunc func(ctx context.Context, r *author.CreateRequest) (*gen.Author, error)
+type AuthorMock struct {
+	CreateFunc func(ctx context.Context, a *author.CreateRequest) (*author.Schema, error)
 }
 ```
 
@@ -1239,12 +1263,12 @@ Then we implement `CreateFunc` method.
 ```go
 package database
 
-type RepositoryMock struct {
-    CreateFunc func(ctx context.Context, r *author.CreateRequest) (*gen.Author, error)
+type AuthorMock struct {
+    CreateFunc func(ctx context.Context, a *author.CreateRequest) (*author.Schema, error)
 }
 
-func (m *RepositoryMock) Create(ctx context.Context, r *author.CreateRequest) (*gen.Author, error) {
-	return m.CreateFunc(ctx, r)
+func (m *AuthorMock) Create(ctx context.Context, a *author.CreateRequest) (*author.Schema, error) {
+	return m.CreateFunc(ctx, a)
 }
 ```
 
@@ -1265,17 +1289,17 @@ for _, test := range tests {
 }
 ```
 
-Inside, we declare `&database.RepositoryMock` for repository mock. It returns
-the author and error that we want as declare3d in the table-test.
+Inside, we declare `&repository.AuthorMock` for repository mock. It returns
+the author and error that we want as declared in the table-test.
 
 ```go
-repoAuthor := &database.RepositoryMock{
-    CreateFunc: func(ctx context.Context, r *author.CreateRequest) (*gen.Author, error) {
-        return test.want.Author, test.want.error
+repoAuthor := &repository.AuthorMock{
+    CreateFunc: func(ctx context.Context, r *author.CreateRequest) (*author.Schema, error) {
+        return test.want.Author, test.want.err
     },
 }
 
-uc := New(repoAuthor, nil, nil, nil)
+uc := New(nil, repoAuthor, nil, nil, nil)
 ```
 
 With the usecase declared, we can call its `Create()` method.
@@ -1311,17 +1335,25 @@ more complex to set up because now we need to do at least two things:
 2. Perform migration to create the tables
 3. Seed, if necessary
 
-To set up, we use `TestMain`. It will run before all unit tests in this package. 
-The code is basically a copy-paste from https://github.com/ory/dockertest. We 
-can customize the image (`postgres`) and version using tag (`14`). The username,
-password and database name is not important and they can be anything. These 
+A question arise wondering - if we are testing against a real database, even if
+it is a temporary one, is it really a unit test? Should it not be called an 
+integration test? Honestly it does not matter what it is called now. The fact
+that we are still in one layer, the repository layer, not touching the usecase,
+or handler, I'd consider that we are still doing unit tests. Moreover, I find
+that doing mocks for database is flaky and doesn't capture many edge cases, so
+potentially rendering them useless.
+
+Moving on, to set up, we use `TestMain`. It will run before all unit tests in this package. The code is basically a copy-paste from https://github.com/ory/dockertest. We 
+can customize the image (`postgres`) and version using tag (`15`). The username,
+password and database name is not important, and they can be anything. These 
 databases will be automatically shut down. In spite of spinning a database for 
 these tests, running these unit tests are still quick. For example, running all
 15 CRUD tests in this `database` package takes only **2** seconds.
 
 ```go
 func TestMain(m *testing.M) {
-	
+	// 1. the place where we create our database container that starts really fast
+	// 2. Run migration
 }
 
 ```
@@ -1347,7 +1379,7 @@ type args struct {
 }
 
 type want struct {
-    author *gen.Author
+    author *author.Schema
     err    error
 }
 
@@ -1358,9 +1390,12 @@ type test struct {
 }
 ```
 
-In the `test` slice, we supply the values
+In the `test` slice, we supply the values. In this particular example, a simple 
+one. You may browse the codebase for more test scenarios.
 
 ```go
+startTime := time.Now()
+
 tests := []test{
     {
         name: "normal",
@@ -1373,14 +1408,14 @@ tests := []test{
             },
         },
         want: want{
-            author: &gen.Author{
+            author: &author.Schema{
                     ID:         1,
                     FirstName:  "First",
                     MiddleName: "Middle",
                     LastName:   "Last",
-                    CreatedAt:  time.Time{},
-                    UpdatedAt:  time.Time{},
-                    DeletedAt:  &time.Time{},
+                    CreatedAt:  time.Now(),
+                    UpdatedAt:  time.Now(),
+                    DeletedAt:  nil,
                 },
             err: nil,
         },
@@ -1393,7 +1428,7 @@ need to instantiate a repository, and this repository requires a database client
 
 ```go
 var (
-    DockerDB *dockerDB
+    dockerDB *db
 )
 
 type dockerDB struct {
@@ -1412,8 +1447,7 @@ func dbClient() *gen.Client {
 
 client := dbClient()
 ```
-This database client is created from `sqlx`, and since we are using `ent` ORM,
-we create a client from it. Then we store the `client` in a variable local to `database` package. This way, the database client is accessible to all other unit tests.
+This database client is created from `sqlx`, and since we are using `ent` ORM, we create a client from it too. Then we store the `client` in a variable local to `database` package. This way, the database client is accessible to all other unit tests.
 
 With a database client, we can now create a repository
 
@@ -1432,7 +1466,7 @@ for _, test := range tests {
     })
 }
 ```
-It returns two values, `created` and `err`. So we assert them. Since we used real database, it returns values that we cannot know in advance like `created_at` field. For the moment, we only assert values we know:
+It returns two values, `created` and `err`. So we assert them. Since we used real database, it returns values that we cannot know in advance like `created_at` field. If you scroll up a bit, you will notice that we declared a `startTime`. Using this trick I learned in the [#gopher](https://gophers.slack.com) Slack channel, you simply assert that both `created_at`, and `updated_at` timestamp values must be between that `startTime` value and the same as the generated timestamps.
 
 ```go
 assert.Equal(t, err, test.want.err)
@@ -1440,6 +1474,10 @@ assert.Equal(t, created.ID, test.want.author.ID)
 assert.Equal(t, created.FirstName, test.want.author.FirstName)
 assert.Equal(t, created.MiddleName, test.want.author.MiddleName)
 assert.Equal(t, created.LastName, test.want.author.LastName)
+
+assert.True(t, startTime.Before(created.CreatedAt) || startTime.Equal(created.CreatedAt))
+assert.True(t, startTime.Before(created.UpdatedAt) || startTime.Equal(created.UpdatedAt))
+assert.Equal(t, test.want.author.DeletedAt, created.DeletedAt)
 ```
 
 To run

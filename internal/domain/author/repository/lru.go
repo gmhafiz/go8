@@ -6,7 +6,6 @@ import (
 
 	lru "github.com/hashicorp/golang-lru"
 
-	"github.com/gmhafiz/go8/ent/gen"
 	"github.com/gmhafiz/go8/internal/domain/author"
 	"github.com/gmhafiz/go8/internal/middleware"
 )
@@ -17,8 +16,8 @@ type AuthorLRU struct {
 }
 
 type AuthorLRUService interface {
-	Read(ctx context.Context, id uint) (*gen.Author, error)
-	Update(ctx context.Context, toAuthor *author.Update) (*gen.Author, error)
+	Read(ctx context.Context, id uint) (*author.Schema, error)
+	Update(ctx context.Context, toAuthor *author.UpdateRequest) (*author.Schema, error)
 	Delete(ctx context.Context, id uint) error
 }
 
@@ -34,7 +33,7 @@ func NewLRUCache(service Author) *AuthorLRU {
 	}
 }
 
-func (c *AuthorLRU) Read(ctx context.Context, id uint) (*gen.Author, error) {
+func (c *AuthorLRU) Read(ctx context.Context, id uint) (*author.Schema, error) {
 	// (1) Picks up the key from context which is added in the handler layer.
 	url, ok := ctx.Value(middleware.CacheURL).(string)
 	if !ok {
@@ -43,7 +42,7 @@ func (c *AuthorLRU) Read(ctx context.Context, id uint) (*gen.Author, error) {
 
 	if val, ok := c.lru.Get(url); ok {
 		// (3) Simply cast the returned value.
-		return val.(*gen.Author), nil
+		return val.(*author.Schema), nil
 	}
 
 	// (2) If key doesn't exist or pushed off the LRU queue, we call the
@@ -58,7 +57,7 @@ func (c *AuthorLRU) Read(ctx context.Context, id uint) (*gen.Author, error) {
 	return res, nil
 }
 
-func (c *AuthorLRU) Update(ctx context.Context, toAuthor *author.Update) (*gen.Author, error) {
+func (c *AuthorLRU) Update(ctx context.Context, toAuthor *author.UpdateRequest) (*author.Schema, error) {
 	c.invalidate(ctx)
 
 	return c.service.Update(ctx, toAuthor)

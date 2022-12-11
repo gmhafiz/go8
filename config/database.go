@@ -9,7 +9,7 @@ import (
 type Database struct {
 	Driver                 string
 	Host                   string
-	Port                   string
+	Port                   uint16
 	Name                   string
 	User                   string
 	Pass                   string

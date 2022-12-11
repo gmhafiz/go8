@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -9,6 +10,7 @@ import (
 	entAuthor "github.com/gmhafiz/go8/ent/gen/author"
 	"github.com/gmhafiz/go8/ent/gen/predicate"
 	"github.com/gmhafiz/go8/internal/domain/author"
+	"github.com/gmhafiz/go8/internal/domain/book"
 	parseTime "github.com/gmhafiz/go8/internal/utility/time"
 )
 
@@ -18,15 +20,15 @@ type repository struct {
 
 //go:generate mirip -rm -out postgres_mock.go . Author Searcher
 type Author interface {
-	Create(ctx context.Context, r *author.CreateRequest) (*gen.Author, error)
-	List(ctx context.Context, f *author.Filter) ([]*gen.Author, int, error)
-	Read(ctx context.Context, id uint) (*gen.Author, error)
-	Update(ctx context.Context, toAuthor *author.Update) (*gen.Author, error)
+	Create(ctx context.Context, a *author.CreateRequest) (*author.Schema, error)
+	List(ctx context.Context, f *author.Filter) ([]*author.Schema, int, error)
+	Read(ctx context.Context, id uint) (*author.Schema, error)
+	Update(ctx context.Context, toAuthor *author.UpdateRequest) (*author.Schema, error)
 	Delete(ctx context.Context, authorID uint) error
 }
 
 type Searcher interface {
-	Search(ctx context.Context, f *author.Filter) ([]*gen.Author, int, error)
+	Search(ctx context.Context, f *author.Filter) ([]*author.Schema, int, error)
 }
 
 func New(ent *gen.Client) *repository {
@@ -35,12 +37,12 @@ func New(ent *gen.Client) *repository {
 	}
 }
 
-func (r *repository) Create(ctx context.Context, author *author.CreateRequest) (*gen.Author, error) {
-	if author == nil {
-		return nil, fmt.Errorf("request cannot be nil")
+func (r *repository) Create(ctx context.Context, request *author.CreateRequest) (*author.Schema, error) {
+	if request == nil {
+		return nil, errors.New("request cannot be nil")
 	}
-	bulk := make([]*gen.BookCreate, len(author.Books))
-	for i, b := range author.Books {
+	bulk := make([]*gen.BookCreate, len(request.Books))
+	for i, b := range request.Books {
 		bulk[i] = r.ent.Book.Create().
 			SetTitle(b.Title).
 			SetDescription(b.Description).
@@ -52,21 +54,45 @@ func (r *repository) Create(ctx context.Context, author *author.CreateRequest) (
 	}
 
 	created, err := r.ent.Author.Create().
-		SetFirstName(author.FirstName).
-		SetNillableMiddleName(&author.MiddleName).
-		SetLastName(author.LastName).
+		SetFirstName(request.FirstName).
+		SetNillableMiddleName(&request.MiddleName).
+		SetLastName(request.LastName).
 		AddBooks(books...).
 		Save(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("author.repository.Create: %w", err)
 	}
 
-	created.Edges.Books = books
+	var b []*book.Schema
+	for _, i := range books {
 
-	return created, nil
+		b = append(b, &book.Schema{
+			ID:            int(i.ID),
+			Title:         i.Title,
+			PublishedDate: i.PublishedDate,
+			ImageURL:      i.ImageURL,
+			Description:   i.Description,
+			CreatedAt:     i.CreatedAt,
+			UpdatedAt:     i.UpdatedAt,
+			//DeletedAt:     sql.NullTime{Time: *i.DeletedAt, Valid: true},
+		})
+	}
+
+	resp := &author.Schema{
+		ID:         created.ID,
+		FirstName:  created.FirstName,
+		MiddleName: created.MiddleName,
+		LastName:   created.LastName,
+		CreatedAt:  created.CreatedAt,
+		UpdatedAt:  created.UpdatedAt,
+		DeletedAt:  created.DeletedAt,
+		Books:      b,
+	}
+
+	return resp, nil
 }
 
-func (r *repository) List(ctx context.Context, f *author.Filter) ([]*gen.Author, int, error) {
+func (r *repository) List(ctx context.Context, f *author.Filter) ([]*author.Schema, int, error) {
 	// filter by first and last names, if exists
 	var predicateUser []predicate.Author
 	if f.FirstName != "" {
@@ -108,10 +134,44 @@ func (r *repository) List(ctx context.Context, f *author.Filter) ([]*gen.Author,
 		return nil, 0, err
 	}
 
-	return authors, total, err
+	resp := make([]*author.Schema, 0)
+
+	for _, a := range authors {
+
+		books := make([]*book.Schema, 0)
+		for _, b := range a.Edges.Books {
+			books = append(books, &book.Schema{
+				ID:            int(b.ID),
+				Title:         b.Title,
+				PublishedDate: b.PublishedDate,
+				ImageURL:      b.ImageURL,
+				Description:   b.Description,
+				CreatedAt:     b.CreatedAt,
+				UpdatedAt:     b.UpdatedAt,
+				//DeletedAt:     sql.NullTime{Time: *b.DeletedAt, Valid: true},
+			})
+		}
+
+		resp = append(resp, &author.Schema{
+			ID:         a.ID,
+			FirstName:  a.FirstName,
+			MiddleName: a.MiddleName,
+			LastName:   a.LastName,
+			CreatedAt:  a.CreatedAt,
+			UpdatedAt:  a.UpdatedAt,
+			DeletedAt:  a.DeletedAt,
+			//DeletedAt: sql.NullTime{
+			//	Time:  *a.DeletedAt,
+			//	Valid: true,
+			//},
+			Books: books,
+		})
+	}
+
+	return resp, total, err
 }
 
-func (r *repository) Read(ctx context.Context, id uint) (*gen.Author, error) {
+func (r *repository) Read(ctx context.Context, id uint) (*author.Schema, error) {
 	found, err := r.ent.Author.Query().
 		WithBooks().
 		Where(entAuthor.ID(id)).
@@ -121,20 +181,68 @@ func (r *repository) Read(ctx context.Context, id uint) (*gen.Author, error) {
 		return nil, fmt.Errorf("error retrieving book: %w", err)
 	}
 
-	return found, err
+	books := make([]*book.Schema, 0)
+
+	for _, b := range found.Edges.Books {
+		books = append(books, &book.Schema{
+			ID:            int(b.ID),
+			Title:         b.Title,
+			PublishedDate: b.PublishedDate,
+			ImageURL:      b.ImageURL,
+			Description:   b.Description,
+			CreatedAt:     b.CreatedAt,
+			UpdatedAt:     b.UpdatedAt,
+			//DeletedAt:     sql.NullTime{Time: *b.DeletedAt, Valid: true},
+		})
+	}
+
+	return &author.Schema{
+		ID:         found.ID,
+		FirstName:  found.FirstName,
+		MiddleName: found.MiddleName,
+		LastName:   found.LastName,
+		CreatedAt:  found.CreatedAt,
+		UpdatedAt:  found.UpdatedAt,
+		DeletedAt:  found.DeletedAt,
+		//DeletedAt:  sql.NullTime{Time: *found.DeletedAt, Valid: true},
+		Books: books,
+	}, err
 }
 
-func (r *repository) Update(ctx context.Context, author *author.Update) (*gen.Author, error) {
-	updated, err := r.ent.Author.UpdateOneID(uint(author.ID)).
-		SetFirstName(author.FirstName).
-		SetMiddleName(author.MiddleName).
-		SetLastName(author.LastName).
+func (r *repository) Update(ctx context.Context, a *author.UpdateRequest) (*author.Schema, error) {
+	updated, err := r.ent.Author.UpdateOneID(uint(a.ID)).
+		SetFirstName(a.FirstName).
+		SetMiddleName(a.MiddleName).
+		SetLastName(a.LastName).
 		Save(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return updated, nil
+	books := make([]*book.Schema, 0)
+	for _, b := range updated.Edges.Books {
+		books = append(books, &book.Schema{
+			ID:            int(b.ID),
+			Title:         b.Title,
+			PublishedDate: b.PublishedDate,
+			ImageURL:      b.ImageURL,
+			Description:   b.Description,
+			CreatedAt:     b.CreatedAt,
+			UpdatedAt:     b.UpdatedAt,
+			//DeletedAt:     sql.NullTime{Time: *b.DeletedAt, Valid: true},
+		})
+	}
+
+	return &author.Schema{
+		ID:         updated.ID,
+		FirstName:  updated.FirstName,
+		MiddleName: updated.MiddleName,
+		LastName:   updated.LastName,
+		CreatedAt:  updated.CreatedAt,
+		UpdatedAt:  updated.UpdatedAt,
+		DeletedAt:  updated.DeletedAt,
+		Books:      books,
+	}, nil
 }
 
 func (r *repository) Delete(ctx context.Context, authorID uint) error {

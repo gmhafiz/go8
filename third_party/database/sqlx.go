@@ -13,32 +13,30 @@ import (
 	"github.com/gmhafiz/go8/internal/utility/database"
 )
 
-func NewSqlx(cfg *config.Config) *sqlx.DB {
+func NewSqlx(cfg config.Database) *sqlx.DB {
 	var dsn string
-	switch cfg.Database.Driver {
+	switch cfg.Driver {
 	case "postgres", "pgx":
-		dsn = fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-			cfg.Database.Host, cfg.Database.Port, cfg.Database.User, cfg.Database.Pass, cfg.Database.Name)
+		dsn = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+			cfg.Host, cfg.Port, cfg.User, cfg.Pass, cfg.Name)
 	case "mysql":
-		dsn = fmt.Sprintf("%s:%s@(%s:%s)/%s?parseTime=true",
-			cfg.Database.User,
-			cfg.Database.Pass,
-			cfg.Database.Host,
-			cfg.Database.Port,
-			cfg.Database.Name,
+		dsn = fmt.Sprintf("%s:%s@(%s:%d)/%s?parseTime=true",
+			cfg.User,
+			cfg.Pass,
+			cfg.Host,
+			cfg.Port,
+			cfg.Name,
 		)
 	default:
 		log.Fatal("Must choose a database driver")
 	}
 
-	db, err := sqlx.Open(cfg.Database.Driver, dsn)
+	db, err := sqlx.Open(cfg.Driver, dsn)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	database.Alive(db.DB)
-
-	db.DB.SetMaxOpenConns(cfg.Database.MaxConnectionPool)
 
 	return db
 }

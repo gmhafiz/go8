@@ -186,7 +186,7 @@ func (c *AuthorClient) DeleteOne(a *Author) *AuthorDeleteOne {
 	return c.DeleteOneID(a.ID)
 }
 
-// DeleteOne returns a builder for deleting the given entity by its id.
+// DeleteOneID returns a builder for deleting the given entity by its id.
 func (c *AuthorClient) DeleteOneID(id uint) *AuthorDeleteOne {
 	builder := c.Delete().Where(author.ID(id))
 	builder.mutation.id = &id
@@ -218,7 +218,7 @@ func (c *AuthorClient) GetX(ctx context.Context, id uint) *Author {
 // QueryBooks queries the books edge of a Author.
 func (c *AuthorClient) QueryBooks(a *Author) *BookQuery {
 	query := &BookQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := a.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(author.Table, author.FieldID, id),
@@ -292,7 +292,7 @@ func (c *BookClient) DeleteOne(b *Book) *BookDeleteOne {
 	return c.DeleteOneID(b.ID)
 }
 
-// DeleteOne returns a builder for deleting the given entity by its id.
+// DeleteOneID returns a builder for deleting the given entity by its id.
 func (c *BookClient) DeleteOneID(id uint) *BookDeleteOne {
 	builder := c.Delete().Where(book.ID(id))
 	builder.mutation.id = &id
@@ -324,7 +324,7 @@ func (c *BookClient) GetX(ctx context.Context, id uint) *Book {
 // QueryAuthors queries the authors edge of a Book.
 func (c *BookClient) QueryAuthors(b *Book) *AuthorQuery {
 	query := &AuthorQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := b.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(book.Table, book.FieldID, id),

@@ -3,13 +3,13 @@ package usecase
 import (
 	"context"
 	"errors"
+	"github.com/gmhafiz/go8/internal/domain/book"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/gmhafiz/go8/config"
-	"github.com/gmhafiz/go8/ent/gen"
 	"github.com/gmhafiz/go8/internal/domain/author"
 	"github.com/gmhafiz/go8/internal/domain/author/repository"
 	"github.com/gmhafiz/go8/internal/utility/filter"
@@ -29,8 +29,8 @@ func TestAuthorUseCase_Create(t *testing.T) {
 	}
 
 	type want struct {
-		*gen.Author
-		error
+		Author *author.Schema
+		err    error
 	}
 
 	type test struct {
@@ -51,7 +51,7 @@ func TestAuthorUseCase_Create(t *testing.T) {
 				},
 			},
 			want: want{
-				Author: &gen.Author{
+				Author: &author.Schema{
 					ID:         1,
 					FirstName:  "First",
 					MiddleName: "Middle",
@@ -59,11 +59,9 @@ func TestAuthorUseCase_Create(t *testing.T) {
 					CreatedAt:  time.Time{},
 					UpdatedAt:  time.Time{},
 					DeletedAt:  nil,
-					Edges: gen.AuthorEdges{
-						Books: nil,
-					},
+					Books:      nil,
 				},
-				error: nil,
+				err: nil,
 			},
 		},
 	}
@@ -72,15 +70,15 @@ func TestAuthorUseCase_Create(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 
 			repoAuthor := &repository.AuthorMock{
-				CreateFunc: func(ctx context.Context, r *author.CreateRequest) (*gen.Author, error) {
-					return test.want.Author, test.want.error
+				CreateFunc: func(ctx context.Context, r *author.CreateRequest) (*author.Schema, error) {
+					return test.want.Author, test.want.err
 				},
 			}
 
 			uc := New(c, repoAuthor, nil, nil, nil)
 
 			got, err := uc.Create(context.Background(), test.args.CreateRequest)
-			assert.Equal(t, test.want.error, err)
+			assert.Equal(t, test.want.err, err)
 			assert.Equal(t, test.want.Author, got)
 		})
 	}
@@ -92,7 +90,7 @@ func TestAuthorUseCase_List(t *testing.T) {
 		filter *author.Filter
 	}
 	type want struct {
-		authors []*gen.Author
+		authors []*author.Schema
 		total   int
 		error
 	}
@@ -102,7 +100,7 @@ func TestAuthorUseCase_List(t *testing.T) {
 		want
 	}
 
-	twoAuthors := []*gen.Author{
+	twoAuthors := []*author.Schema{
 		{
 			ID:         1,
 			FirstName:  "1 First",
@@ -110,10 +108,9 @@ func TestAuthorUseCase_List(t *testing.T) {
 			LastName:   "2 Last",
 			CreatedAt:  time.Time{},
 			UpdatedAt:  time.Time{},
-			DeletedAt:  &time.Time{},
-			Edges: gen.AuthorEdges{
-				Books: nil,
-			},
+			//DeletedAt:  sql.NullTime{},
+			DeletedAt: nil,
+			Books:     []*book.Schema{},
 		},
 		{
 			ID:         2,
@@ -122,14 +119,13 @@ func TestAuthorUseCase_List(t *testing.T) {
 			LastName:   "2 Last",
 			CreatedAt:  time.Time{},
 			UpdatedAt:  time.Time{},
-			DeletedAt:  &time.Time{},
-			Edges: gen.AuthorEdges{
-				Books: nil,
-			},
+			//DeletedAt:  sql.NullTime{},
+			DeletedAt: nil,
+			Books:     nil,
 		},
 	}
 
-	searched := []*gen.Author{
+	searched := []*author.Schema{
 		{
 			ID:         2,
 			FirstName:  "2 First",
@@ -137,10 +133,9 @@ func TestAuthorUseCase_List(t *testing.T) {
 			LastName:   "2 Last",
 			CreatedAt:  time.Time{},
 			UpdatedAt:  time.Time{},
-			DeletedAt:  &time.Time{},
-			Edges: gen.AuthorEdges{
-				Books: nil,
-			},
+			//DeletedAt:  sql.NullTime{},
+			DeletedAt: nil,
+			Books:     nil,
 		},
 	}
 
@@ -199,19 +194,19 @@ func TestAuthorUseCase_List(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 
 			repoAuthor := &repository.AuthorMock{
-				ListFunc: func(ctx context.Context, f *author.Filter) ([]*gen.Author, int, error) {
+				ListFunc: func(ctx context.Context, f *author.Filter) ([]*author.Schema, int, error) {
 					return test.want.authors, test.want.total, test.want.error
 				},
 			}
 
 			cacheMock := &repository.AuthorRedisServiceMock{
-				ListFunc: func(ctx context.Context, f *author.Filter) ([]*gen.Author, int, error) {
+				ListFunc: func(ctx context.Context, f *author.Filter) ([]*author.Schema, int, error) {
 					return test.want.authors, test.want.total, test.want.error
 				},
 			}
 
 			searchMock := &repository.SearcherMock{
-				SearchFunc: func(ctx context.Context, f *author.Filter) ([]*gen.Author, int, error) {
+				SearchFunc: func(ctx context.Context, f *author.Filter) ([]*author.Schema, int, error) {
 					return test.want.authors, test.want.total, test.want.error
 				},
 			}
@@ -232,8 +227,8 @@ func TestAuthorUseCase_Read(t *testing.T) {
 	}
 
 	type want struct {
-		*gen.Author
-		error
+		Author *author.Schema
+		err    error
 	}
 
 	type test struct {
@@ -249,19 +244,18 @@ func TestAuthorUseCase_Read(t *testing.T) {
 				ID: 1,
 			},
 			want: want{
-				Author: &gen.Author{
+				Author: &author.Schema{
 					ID:         1,
 					FirstName:  "First",
 					MiddleName: "Middle",
 					LastName:   "Last",
 					CreatedAt:  time.Time{},
 					UpdatedAt:  time.Time{},
-					DeletedAt:  nil,
-					Edges: gen.AuthorEdges{
-						Books: nil,
-					},
+					//DeletedAt:  sql.NullTime{},
+					DeletedAt: nil,
+					Books:     nil,
 				},
-				error: nil,
+				err: nil,
 			},
 		},
 		{
@@ -271,7 +265,7 @@ func TestAuthorUseCase_Read(t *testing.T) {
 			},
 			want: want{
 				Author: nil,
-				error:  errors.New("ID cannot be 0"),
+				err:    errors.New("ID cannot be 0"),
 			},
 		},
 	}
@@ -280,15 +274,15 @@ func TestAuthorUseCase_Read(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 
 			repoAuthor := &repository.AuthorMock{
-				ReadFunc: func(ctx context.Context, id uint) (*gen.Author, error) {
-					return test.want.Author, test.want.error
+				ReadFunc: func(ctx context.Context, id uint) (*author.Schema, error) {
+					return test.want.Author, test.want.err
 				},
 			}
 
 			uc := New(c, repoAuthor, nil, nil, nil)
 
 			got, err := uc.Read(context.Background(), test.args.ID)
-			assert.Equal(t, test.want.error, err)
+			assert.Equal(t, test.want.err, err)
 
 			assert.Equal(t, test.want.Author, got)
 		})
@@ -298,11 +292,11 @@ func TestAuthorUseCase_Read(t *testing.T) {
 func TestAuthorUseCase_Update(t *testing.T) {
 	type args struct {
 		context.Context
-		*author.Update
+		*author.UpdateRequest
 	}
 	type want struct {
 		repo struct {
-			*gen.Author
+			*author.Schema
 			error
 		}
 		error
@@ -321,7 +315,7 @@ func TestAuthorUseCase_Update(t *testing.T) {
 			name: "simple",
 			args: args{
 				Context: context.Background(),
-				Update: &author.Update{
+				UpdateRequest: &author.UpdateRequest{
 					ID:         1,
 					FirstName:  "Updated First",
 					MiddleName: "Updated Middle",
@@ -330,20 +324,19 @@ func TestAuthorUseCase_Update(t *testing.T) {
 			},
 			want: want{
 				repo: struct {
-					*gen.Author
+					*author.Schema
 					error
 				}{
-					&gen.Author{
+					&author.Schema{
 						ID:         1,
 						FirstName:  "Updated First",
 						MiddleName: "Updated Middle",
 						LastName:   "Updated Last",
 						CreatedAt:  createdTime,
 						UpdatedAt:  time.Now(),
-						DeletedAt:  nil,
-						Edges: gen.AuthorEdges{
-							Books: nil,
-						},
+						//DeletedAt:  sql.NullTime{},
+						DeletedAt: nil,
+						Books:     []*book.Schema{},
 					},
 					nil,
 				},
@@ -355,20 +348,20 @@ func TestAuthorUseCase_Update(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			repoAuthor := &AuthorMock{
-				UpdateFunc: func(ctx context.Context, authorMiripParam *author.Update) (*gen.Author, error) {
-					return test.want.repo.Author, test.want.repo.error
+				UpdateFunc: func(ctx context.Context, authorMiripParam *author.UpdateRequest) (*author.Schema, error) {
+					return test.want.repo.Schema, test.want.repo.error
 				},
 			}
 
 			cacheMock := &repository.AuthorRedisServiceMock{
-				UpdateFunc: func(ctx context.Context, toAuthor *author.Update) (*gen.Author, error) {
-					return test.want.repo.Author, test.want.repo.error
+				UpdateFunc: func(ctx context.Context, toAuthor *author.UpdateRequest) (*author.Schema, error) {
+					return test.want.repo.Schema, test.want.repo.error
 				},
 			}
 
 			uc := New(c, repoAuthor, nil, nil, cacheMock)
 
-			update, err := uc.Update(test.args.Context, test.args.Update)
+			update, err := uc.Update(test.args.Context, test.args.UpdateRequest)
 			assert.Equal(t, test.want.error, err)
 
 			assert.Equal(t, test.want.repo.ID, update.ID)

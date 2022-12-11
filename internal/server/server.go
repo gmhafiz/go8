@@ -65,7 +65,6 @@ type Options func(opts *Server) error
 
 func defaultServer() *Server {
 	return &Server{
-		cfg:    config.New(),
 		router: chi.NewRouter(),
 	}
 }
@@ -105,13 +104,14 @@ func (s *Server) newDatabase() {
 	if s.cfg.Database.Driver == "" {
 		log.Fatal("please fill in database credentials in .env file or set in environment variable")
 	}
-	s.db = db.NewSqlx(s.cfg)
+	s.db = db.NewSqlx(s.cfg.Database)
 	s.db.SetMaxOpenConns(s.cfg.Database.MaxConnectionPool)
 	s.db.SetMaxIdleConns(s.cfg.Database.MaxIdleConnections)
 	s.db.SetConnMaxLifetime(s.cfg.Database.ConnectionsMaxLifeTime)
 
-	dsn := fmt.Sprintf("postgres://%s/%s?sslmode=%s&user=%s&password=%s",
+	dsn := fmt.Sprintf("postgres://%s:%d/%s?sslmode=%s&user=%s&password=%s",
 		s.cfg.Database.Host,
+		s.cfg.Database.Port,
 		s.cfg.Database.Name,
 		s.cfg.Database.SslMode,
 		s.cfg.Database.User,
@@ -183,8 +183,9 @@ func (s *Server) Migrate() {
 
 func (s *Server) Run() {
 	s.httpServer = &http.Server{
-		Addr:    s.cfg.Api.Host + ":" + s.cfg.Api.Port,
-		Handler: s.router,
+		Addr:              s.cfg.Api.Host + ":" + s.cfg.Api.Port,
+		Handler:           s.router,
+		ReadHeaderTimeout: s.cfg.Api.ReadHeaderTimeout,
 	}
 
 	fmt.Println(`            .,*/(#####(/*,.                               .,*((###(/*.

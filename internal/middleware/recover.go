@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"net/http/httputil"
 	"runtime/debug"
 
 	chiMiddleware "github.com/go-chi/chi/middleware"
@@ -14,6 +15,7 @@ func Recovery(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if rvr := recover(); rvr != nil && rvr != http.ErrAbortHandler {
+				defer r.Body.Close()
 
 				logEntry := chiMiddleware.GetLogEntry(r)
 				if logEntry != nil {
@@ -22,11 +24,18 @@ func Recovery(next http.Handler) http.Handler {
 					debug.PrintStack()
 				}
 
-				log.Println("PANIC")
-				// notify to sentry/email/slack
+				log.Printf("PANIC: %v", rvr)
+				// send to centralised logging system
 				log.Printf("request: %s %s\n", r.Method, r.URL.RequestURI())
-				body := r.GetBody
-				b, _ := json.Marshal(body)
+
+				//body := r.GetBody
+
+				dump, err := httputil.DumpRequest(r, true)
+				if err != nil {
+					log.Println(err)
+				}
+
+				b, _ := json.Marshal(dump)
 				log.Printf("host: %s\n", r.Host)
 				log.Printf("request body: %s\n", b)
 

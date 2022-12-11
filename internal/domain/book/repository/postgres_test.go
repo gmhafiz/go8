@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/gmhafiz/go8/internal/utility/message"
 	"log"
 	"math"
 	"os"
@@ -28,6 +29,10 @@ import (
 
 var (
 	dockerDB *db
+)
+
+var (
+	startTime = time.Now()
 )
 
 type db struct {
@@ -72,7 +77,7 @@ func TestMain(m *testing.M) {
 	// pulls an image, creates a container based on it and runs it
 	resource, err := pool.RunWithOptions(&dockertest.RunOptions{
 		Repository: "postgres",
-		Tag:        "14",
+		Tag:        "15",
 		Env: []string{
 			"POSTGRES_PASSWORD=secret",
 			"POSTGRES_USER=user_name",
@@ -210,7 +215,7 @@ func TestRepository_List(t *testing.T) {
 		f   *book.Filter
 	}
 	type want struct {
-		books []*book.DB
+		books []*book.Schema
 		err   error
 	}
 
@@ -219,6 +224,8 @@ func TestRepository_List(t *testing.T) {
 		args
 		want
 	}
+
+	//startTime := time.Now()
 
 	timeParsed, err := time.Parse(time.RFC3339, "2020-01-01T15:04:05Z")
 	assert.Nil(t, err)
@@ -243,13 +250,16 @@ func TestRepository_List(t *testing.T) {
 				},
 			},
 			want: want{
-				books: []*book.DB{
+				books: []*book.Schema{
 					{
 						ID:            2,
 						Title:         "2",
 						PublishedDate: timeParsed,
 						ImageURL:      "https://example.com/image.png",
 						Description:   "description",
+						CreatedAt:     time.Now(),
+						UpdatedAt:     time.Now(),
+						DeletedAt:     sql.NullTime{},
 					},
 				},
 				err: nil,
@@ -274,7 +284,7 @@ func TestRepository_List(t *testing.T) {
 				},
 			},
 			want: want{
-				books: []*book.DB{
+				books: []*book.Schema{
 					{
 						ID:            2,
 						Title:         "2",
@@ -312,7 +322,7 @@ func TestRepository_List(t *testing.T) {
 				},
 			},
 			want: want{
-				books: []*book.DB{
+				books: []*book.Schema{
 					{
 						ID:            2,
 						Title:         "2",
@@ -353,6 +363,7 @@ func TestRepository_List(t *testing.T) {
 			assert.Equal(t, test.want.err, err)
 
 			if err != nil {
+				assert.Nil(t, test.want.books)
 				return
 			}
 
@@ -362,6 +373,9 @@ func TestRepository_List(t *testing.T) {
 				assert.Equal(t, test.want.books[i].PublishedDate.UTC(), val.PublishedDate.UTC())
 				assert.Equal(t, test.want.books[i].ImageURL, val.ImageURL)
 				assert.Equal(t, test.want.books[i].Description, val.Description)
+				assert.True(t, startTime.Before(got[i].CreatedAt) || startTime.Equal(got[i].CreatedAt))
+				assert.True(t, startTime.Before(got[i].UpdatedAt) || startTime.Equal(got[i].UpdatedAt))
+				assert.Equal(t, test.want.books[i].DeletedAt, got[i].DeletedAt)
 			}
 		})
 	}
@@ -373,7 +387,7 @@ func TestRepository_Read(t *testing.T) {
 		int
 	}
 	type want struct {
-		book *book.DB
+		book *book.Schema
 		err  error
 	}
 	type test struct {
@@ -382,7 +396,7 @@ func TestRepository_Read(t *testing.T) {
 		want
 	}
 
-	startTime := time.Now()
+	//startTime := time.Now()
 
 	timeParsed, err := time.Parse(time.RFC3339, "2020-02-17T00:00:00Z")
 	assert.Nil(t, err)
@@ -394,17 +408,6 @@ func TestRepository_Read(t *testing.T) {
 		Description:   "description",
 	}
 
-	oneBook := &book.DB{
-		ID:            3,
-		Title:         "title",
-		PublishedDate: timeParsed,
-		ImageURL:      "https://example.com/image.png",
-		Description:   "description",
-		CreatedAt:     time.Now(),
-		UpdatedAt:     sql.NullTime{},
-		DeletedAt:     sql.NullTime{},
-	}
-
 	tests := []test{
 		{
 			name: "simple",
@@ -413,8 +416,17 @@ func TestRepository_Read(t *testing.T) {
 				int:     3,
 			},
 			want: want{
-				book: oneBook,
-				err:  nil,
+				book: &book.Schema{
+					ID:            3,
+					Title:         "title",
+					PublishedDate: timeParsed,
+					ImageURL:      "https://example.com/image.png",
+					Description:   "description",
+					CreatedAt:     time.Now(),
+					UpdatedAt:     time.Now(),
+					DeletedAt:     sql.NullTime{},
+				},
+				err: nil,
 			},
 		},
 		{
@@ -424,8 +436,8 @@ func TestRepository_Read(t *testing.T) {
 				int:     -0,
 			},
 			want: want{
-				book: &book.DB{},
-				err:  sql.ErrNoRows,
+				book: nil,
+				err:  message.ErrBadRequest,
 			},
 		},
 	}
@@ -441,6 +453,7 @@ func TestRepository_Read(t *testing.T) {
 			got, err := repo.Read(test.args.Context, test.args.int)
 			assert.Equal(t, test.want.err, err)
 			if err != nil {
+				assert.Nil(t, test.want.book)
 				return
 			}
 
@@ -450,8 +463,9 @@ func TestRepository_Read(t *testing.T) {
 			assert.Equal(t, test.want.book.ImageURL, got.ImageURL)
 			assert.Equal(t, test.want.book.Description, got.Description)
 			assert.True(t, startTime.Before(got.CreatedAt) || startTime.Equal(got.CreatedAt))
-			assert.False(t, got.UpdatedAt.Valid)
-			assert.False(t, got.DeletedAt.Valid)
+			assert.True(t, startTime.Before(got.UpdatedAt) || startTime.Equal(got.UpdatedAt))
+			assert.Equal(t, test.want.book.DeletedAt, got.DeletedAt)
+
 		})
 	}
 }
@@ -463,7 +477,7 @@ func TestRepository_Update(t *testing.T) {
 	}
 	type want struct {
 		err  error
-		book *book.DB
+		book *book.Schema
 	}
 	type test struct {
 		name string
@@ -489,18 +503,15 @@ func TestRepository_Update(t *testing.T) {
 			},
 			want: want{
 				err: nil,
-				book: &book.DB{
+				book: &book.Schema{
 					ID:            3,
 					Title:         "updated title",
 					PublishedDate: timeParsed,
 					ImageURL:      "https://example.com/image.png",
 					Description:   "description",
 					CreatedAt:     time.Time{}, // will be before time.Now()
-					UpdatedAt: sql.NullTime{
-						Time:  time.Now(),
-						Valid: true,
-					},
-					DeletedAt: sql.NullTime{},
+					UpdatedAt:     time.Now(),
+					DeletedAt:     sql.NullTime{},
 				},
 			},
 		},
@@ -517,7 +528,7 @@ func TestRepository_Update(t *testing.T) {
 				},
 			},
 			want: want{
-				book: &book.DB{},
+				book: &book.Schema{},
 				err:  sql.ErrNoRows,
 			},
 		},
@@ -543,11 +554,11 @@ func TestRepository_Update(t *testing.T) {
 			assert.Equal(t, test.want.book.PublishedDate.UTC(), got.PublishedDate.UTC())
 			assert.Equal(t, test.want.book.Description, got.Description)
 			assert.Equal(t, test.want.book.ImageURL, got.ImageURL)
+			assert.True(t, startTime.Before(got.CreatedAt) || startTime.Equal(got.CreatedAt))
+			assert.True(t, startTime.Before(got.UpdatedAt) || startTime.Equal(got.UpdatedAt))
+			assert.Equal(t, test.want.book.DeletedAt, got.DeletedAt)
 
-			now := time.Now()
-			assert.True(t, got.CreatedAt.Before(now) || got.CreatedAt.Equal(now))
-			assert.True(t, got.UpdatedAt.Time.Before(now) || got.UpdatedAt.Time.Equal(now))
-			assert.False(t, got.DeletedAt.Valid)
+			//assert.True(t, test.want.book.DeletedAt.Before(*got.DeletedAt))
 		})
 	}
 }
@@ -612,7 +623,7 @@ func TestRepository_Search(t *testing.T) {
 		f *book.Filter
 	}
 	type want struct {
-		books []*book.DB
+		books []*book.Schema
 		err   error
 	}
 	type test struct {
@@ -644,7 +655,7 @@ func TestRepository_Search(t *testing.T) {
 				},
 			},
 			want: want{
-				books: []*book.DB{
+				books: []*book.Schema{
 					{
 						ID:            2,
 						Title:         "2",
@@ -687,6 +698,9 @@ func TestRepository_Search(t *testing.T) {
 				assert.Equal(t, test.want.books[i].PublishedDate.UTC(), val.PublishedDate.UTC())
 				assert.Equal(t, test.want.books[i].ImageURL, val.ImageURL)
 				assert.Equal(t, test.want.books[i].Description, val.Description)
+				assert.True(t, startTime.Before(got[i].CreatedAt) || startTime.Equal(got[i].CreatedAt))
+				assert.True(t, startTime.Before(got[i].UpdatedAt) || startTime.Equal(got[i].UpdatedAt))
+				assert.Equal(t, test.want.books[i].DeletedAt, got[i].DeletedAt)
 			}
 
 		})

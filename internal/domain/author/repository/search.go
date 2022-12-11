@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"fmt"
-
 	"github.com/gmhafiz/go8/ent/gen"
 	entAuthor "github.com/gmhafiz/go8/ent/gen/author"
 	"github.com/gmhafiz/go8/ent/gen/predicate"
@@ -16,7 +15,7 @@ func NewSearch(db *gen.Client) *repository {
 
 // Search using the same store. May use other store e.g. elasticsearch/bleve as
 // the search repository.
-func (r *repository) Search(ctx context.Context, f *author.Filter) ([]*gen.Author, int, error) {
+func (r *repository) Search(ctx context.Context, f *author.Filter) ([]*author.Schema, int, error) {
 	var predicateUser []predicate.Author
 	if f.FirstName != "" {
 		predicateUser = append(predicateUser, entAuthor.FirstNameContainsFold(f.FirstName))
@@ -74,5 +73,24 @@ func (r *repository) Search(ctx context.Context, f *author.Filter) ([]*gen.Autho
 		return nil, 0, fmt.Errorf("error retrieving Author list: %w", err)
 	}
 
-	return authors, total, nil
+	var resp []*author.Schema
+
+	for _, a := range authors {
+		resp = append(resp, &author.Schema{
+			ID:         a.ID,
+			FirstName:  a.FirstName,
+			MiddleName: a.MiddleName,
+			LastName:   a.LastName,
+			CreatedAt:  a.CreatedAt,
+			UpdatedAt:  a.UpdatedAt,
+			DeletedAt:  a.DeletedAt,
+			//DeletedAt: sql.NullTime{
+			//	Time:  *a.DeletedAt,
+			//	Valid: true,
+			//},
+			Books: nil,
+		})
+	}
+
+	return resp, total, nil
 }

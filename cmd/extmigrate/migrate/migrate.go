@@ -41,7 +41,7 @@ func up(cfg *config.Config, changeDirTo string) {
 		log.Fatal(err)
 	}
 
-	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		cfg.Database.Host, cfg.Database.Port, cfg.Database.User, cfg.Database.Pass, cfg.Database.Name)
 	db, err = sql.Open(cfg.Database.Driver, dsn)
 	if err != nil {

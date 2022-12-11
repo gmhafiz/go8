@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS books
     image_url varchar(255),
     description text not null,
     created_at timestamp with time zone default current_timestamp,
-    updated_at timestamp with time zone,
+    updated_at timestamp with time zone default current_timestamp,
     deleted_at timestamp with time zone,
     primary key (id)
 );

@@ -245,51 +245,27 @@ func (ac *AuthorCreate) createSpec() (*Author, *sqlgraph.CreateSpec) {
 		_spec.ID.Value = id
 	}
 	if value, ok := ac.mutation.FirstName(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: author.FieldFirstName,
-		})
+		_spec.SetField(author.FieldFirstName, field.TypeString, value)
 		_node.FirstName = value
 	}
 	if value, ok := ac.mutation.MiddleName(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: author.FieldMiddleName,
-		})
+		_spec.SetField(author.FieldMiddleName, field.TypeString, value)
 		_node.MiddleName = value
 	}
 	if value, ok := ac.mutation.LastName(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: author.FieldLastName,
-		})
+		_spec.SetField(author.FieldLastName, field.TypeString, value)
 		_node.LastName = value
 	}
 	if value, ok := ac.mutation.CreatedAt(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: author.FieldCreatedAt,
-		})
+		_spec.SetField(author.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
 	if value, ok := ac.mutation.UpdatedAt(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: author.FieldUpdatedAt,
-		})
+		_spec.SetField(author.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
 	if value, ok := ac.mutation.DeletedAt(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: author.FieldDeletedAt,
-		})
+		_spec.SetField(author.FieldDeletedAt, field.TypeTime, value)
 		_node.DeletedAt = &value
 	}
 	if nodes := ac.mutation.BooksIDs(); len(nodes) > 0 {

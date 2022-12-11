@@ -8,7 +8,6 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/vmihailenco/msgpack"
 
-	"github.com/gmhafiz/go8/ent/gen"
 	"github.com/gmhafiz/go8/internal/domain/author"
 	"github.com/gmhafiz/go8/internal/middleware"
 )
@@ -20,8 +19,8 @@ type Cache struct {
 
 //go:generate mirip -rm -out redis_mock.go . AuthorRedisService
 type AuthorRedisService interface {
-	List(ctx context.Context, f *author.Filter) ([]*gen.Author, int, error)
-	Update(ctx context.Context, toAuthor *author.Update) (*gen.Author, error)
+	List(ctx context.Context, f *author.Filter) ([]*author.Schema, int, error)
+	Update(ctx context.Context, toAuthor *author.UpdateRequest) (*author.Schema, error)
 	Delete(ctx context.Context, id uint) error
 }
 
@@ -32,11 +31,11 @@ func NewRedisCache(service Author, cache *redis.Client) *Cache {
 	}
 }
 
-func (c *Cache) List(ctx context.Context, f *author.Filter) ([]*gen.Author, int, error) {
+func (c *Cache) List(ctx context.Context, f *author.Filter) ([]*author.Schema, int, error) {
 	// We want to store both list and the count together in one cache key.
 	type result struct {
-		List []*gen.Author `json:"list"`
-		Num  int           `json:"num"`
+		List []*author.Schema `json:"list"`
+		Num  int              `json:"num"`
 	}
 
 	url, ok := ctx.Value(middleware.CacheURL).(string)
@@ -76,7 +75,7 @@ func (c *Cache) List(ctx context.Context, f *author.Filter) ([]*gen.Author, int,
 	return res.List, res.Num, nil
 }
 
-func (c *Cache) Update(ctx context.Context, toAuthor *author.Update) (*gen.Author, error) {
+func (c *Cache) Update(ctx context.Context, toAuthor *author.UpdateRequest) (*author.Schema, error) {
 	c.invalidate(ctx)
 
 	return c.service.Update(ctx, toAuthor)

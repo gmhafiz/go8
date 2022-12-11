@@ -332,6 +332,11 @@ func (bq *BookQuery) Select(fields ...string) *BookSelect {
 	return selbuild
 }
 
+// Aggregate returns a BookSelect configured with the given aggregations.
+func (bq *BookQuery) Aggregate(fns ...AggregateFunc) *BookSelect {
+	return bq.Select().Aggregate(fns...)
+}
+
 func (bq *BookQuery) prepareQuery(ctx context.Context) error {
 	for _, f := range bq.fields {
 		if !book.ValidColumn(f) {
@@ -356,10 +361,10 @@ func (bq *BookQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Book, e
 			bq.withAuthors != nil,
 		}
 	)
-	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
+	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Book).scanValues(nil, columns)
 	}
-	_spec.Assign = func(columns []string, values []interface{}) error {
+	_spec.Assign = func(columns []string, values []any) error {
 		node := &Book{config: bq.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
@@ -410,18 +415,18 @@ func (bq *BookQuery) loadAuthors(ctx context.Context, query *AuthorQuery, nodes 
 	neighbors, err := query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
 		assign := spec.Assign
 		values := spec.ScanValues
-		spec.ScanValues = func(columns []string) ([]interface{}, error) {
+		spec.ScanValues = func(columns []string) ([]any, error) {
 			values, err := values(columns[1:])
 			if err != nil {
 				return nil, err
 			}
-			return append([]interface{}{new(sql.NullInt64)}, values...), nil
+			return append([]any{new(sql.NullInt64)}, values...), nil
 		}
-		spec.Assign = func(columns []string, values []interface{}) error {
+		spec.Assign = func(columns []string, values []any) error {
 			outValue := uint(values[0].(*sql.NullInt64).Int64)
 			inValue := uint(values[1].(*sql.NullInt64).Int64)
 			if nids[inValue] == nil {
-				nids[inValue] = map[*Book]struct{}{byID[outValue]: struct{}{}}
+				nids[inValue] = map[*Book]struct{}{byID[outValue]: {}}
 				return assign(columns[1:], values[1:])
 			}
 			nids[inValue][byID[outValue]] = struct{}{}
@@ -453,11 +458,14 @@ func (bq *BookQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (bq *BookQuery) sqlExist(ctx context.Context) (bool, error) {
-	n, err := bq.sqlCount(ctx)
-	if err != nil {
+	switch _, err := bq.FirstID(ctx); {
+	case IsNotFound(err):
+		return false, nil
+	case err != nil:
 		return false, fmt.Errorf("gen: check existence: %w", err)
+	default:
+		return true, nil
 	}
-	return n > 0, nil
 }
 
 func (bq *BookQuery) querySpec() *sqlgraph.QuerySpec {
@@ -558,7 +566,7 @@ func (bgb *BookGroupBy) Aggregate(fns ...AggregateFunc) *BookGroupBy {
 }
 
 // Scan applies the group-by query and scans the result into the given value.
-func (bgb *BookGroupBy) Scan(ctx context.Context, v interface{}) error {
+func (bgb *BookGroupBy) Scan(ctx context.Context, v any) error {
 	query, err := bgb.path(ctx)
 	if err != nil {
 		return err
@@ -567,7 +575,7 @@ func (bgb *BookGroupBy) Scan(ctx context.Context, v interface{}) error {
 	return bgb.sqlScan(ctx, v)
 }
 
-func (bgb *BookGroupBy) sqlScan(ctx context.Context, v interface{}) error {
+func (bgb *BookGroupBy) sqlScan(ctx context.Context, v any) error {
 	for _, f := range bgb.fields {
 		if !book.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
@@ -592,8 +600,6 @@ func (bgb *BookGroupBy) sqlQuery() *sql.Selector {
 	for _, fn := range bgb.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	// If no columns were selected in a custom aggregation function, the default
-	// selection is the fields used for "group-by", and the aggregation functions.
 	if len(selector.SelectedColumns()) == 0 {
 		columns := make([]string, 0, len(bgb.fields)+len(bgb.fns))
 		for _, f := range bgb.fields {
@@ -613,8 +619,14 @@ type BookSelect struct {
 	sql *sql.Selector
 }
 
+// Aggregate adds the given aggregation functions to the selector query.
+func (bs *BookSelect) Aggregate(fns ...AggregateFunc) *BookSelect {
+	bs.fns = append(bs.fns, fns...)
+	return bs
+}
+
 // Scan applies the selector query and scans the result into the given value.
-func (bs *BookSelect) Scan(ctx context.Context, v interface{}) error {
+func (bs *BookSelect) Scan(ctx context.Context, v any) error {
 	if err := bs.prepareQuery(ctx); err != nil {
 		return err
 	}
@@ -622,7 +634,17 @@ func (bs *BookSelect) Scan(ctx context.Context, v interface{}) error {
 	return bs.sqlScan(ctx, v)
 }
 
-func (bs *BookSelect) sqlScan(ctx context.Context, v interface{}) error {
+func (bs *BookSelect) sqlScan(ctx context.Context, v any) error {
+	aggregation := make([]string, 0, len(bs.fns))
+	for _, fn := range bs.fns {
+		aggregation = append(aggregation, fn(bs.sql))
+	}
+	switch n := len(*bs.selector.flds); {
+	case n == 0 && len(aggregation) > 0:
+		bs.sql.Select(aggregation...)
+	case n != 0 && len(aggregation) > 0:
+		bs.sql.AppendSelect(aggregation...)
+	}
 	rows := &sql.Rows{}
 	query, args := bs.sql.Query()
 	if err := bs.driver.Query(ctx, query, args, rows); err != nil {

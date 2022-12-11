@@ -254,59 +254,31 @@ func (bc *BookCreate) createSpec() (*Book, *sqlgraph.CreateSpec) {
 		_spec.ID.Value = id
 	}
 	if value, ok := bc.mutation.Title(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: book.FieldTitle,
-		})
+		_spec.SetField(book.FieldTitle, field.TypeString, value)
 		_node.Title = value
 	}
 	if value, ok := bc.mutation.PublishedDate(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: book.FieldPublishedDate,
-		})
+		_spec.SetField(book.FieldPublishedDate, field.TypeTime, value)
 		_node.PublishedDate = value
 	}
 	if value, ok := bc.mutation.ImageURL(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: book.FieldImageURL,
-		})
+		_spec.SetField(book.FieldImageURL, field.TypeString, value)
 		_node.ImageURL = value
 	}
 	if value, ok := bc.mutation.Description(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: book.FieldDescription,
-		})
+		_spec.SetField(book.FieldDescription, field.TypeString, value)
 		_node.Description = value
 	}
 	if value, ok := bc.mutation.CreatedAt(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: book.FieldCreatedAt,
-		})
+		_spec.SetField(book.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
 	if value, ok := bc.mutation.UpdatedAt(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: book.FieldUpdatedAt,
-		})
+		_spec.SetField(book.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
 	if value, ok := bc.mutation.DeletedAt(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: book.FieldDeletedAt,
-		})
+		_spec.SetField(book.FieldDeletedAt, field.TypeTime, value)
 		_node.DeletedAt = &value
 	}
 	if nodes := bc.mutation.AuthorsIDs(); len(nodes) > 0 {

@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -16,9 +17,10 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/gmhafiz/go8/ent/gen"
 	"github.com/gmhafiz/go8/internal/domain/author"
 	"github.com/gmhafiz/go8/internal/domain/author/usecase"
+	"github.com/gmhafiz/go8/internal/domain/book"
+	"github.com/gmhafiz/go8/internal/utility/message"
 	"github.com/gmhafiz/go8/internal/utility/respond"
 )
 
@@ -40,113 +42,162 @@ func TestHandler_Create(t *testing.T) {
 	}
 
 	type want struct {
-		*gen.Author
-		error
+		usecase struct {
+			*author.Schema
+			error
+		}
+		response *author.GetResponse
+		err      error
 		Errs
-	}
-
-	type test struct {
-		name string
-		args
-		want
 		status int
 	}
 
-	namedTests := map[string]test{}
-
-	namedTests["simple"] = test{
-		args: args{
-			CreateRequest: &author.CreateRequest{
-				FirstName:  "First",
-				MiddleName: "Middle",
-				LastName:   "Last",
-				Books:      nil,
-			},
-		},
-		want: want{
-			Author: &gen.Author{
-				ID:         1,
-				FirstName:  "First",
-				MiddleName: "Middle",
-				LastName:   "Last",
-				CreatedAt:  time.Time{},
-				UpdatedAt:  time.Time{},
-				DeletedAt:  nil,
-				Edges: gen.AuthorEdges{
-					Books: nil,
+	tests := []struct {
+		name string
+		args
+		want
+	}{
+		{
+			name: "simple",
+			args: args{
+				CreateRequest: &author.CreateRequest{
+					FirstName:  "First",
+					MiddleName: "Middle",
+					LastName:   "Last",
+					Books:      nil,
 				},
 			},
-			error: nil,
-		},
-		status: http.StatusCreated,
-	}
-
-	namedTests["invalid create request"] = test{
-		args: args{
-			nil,
-			invalidCreateRequest{
-				LastName: "last Name",
+			want: want{
+				usecase: struct {
+					*author.Schema
+					error
+				}{
+					&author.Schema{
+						ID:         1,
+						FirstName:  "First",
+						MiddleName: "Middle",
+						LastName:   "Last",
+						CreatedAt:  time.Now(),
+						UpdatedAt:  time.Now(),
+						DeletedAt:  nil,
+						Books:      make([]*book.Schema, 0),
+					},
+					nil,
+				},
+				response: &author.GetResponse{
+					ID:         1,
+					FirstName:  "First",
+					MiddleName: "Middle",
+					LastName:   "Last",
+					Books:      make([]*book.Schema, 0),
+				},
+				err:    nil,
+				status: http.StatusCreated,
 			},
 		},
-		want: want{
-			Author: &gen.Author{},
-			Errs: Errs{
-				Message: []string{"CreateRequest.FirstName is required"},
+		{
+			name: "invalid create request",
+			args: args{
+				nil,
+				invalidCreateRequest{
+					LastName: "last Name",
+				},
+			},
+			want: want{
+				usecase: struct {
+					*author.Schema
+					error
+				}{
+					&author.Schema{},
+					nil,
+				},
+				response: &author.GetResponse{},
+				Errs: Errs{
+					Message: []string{"CreateRequest.FirstName is required"},
+				},
+				status: http.StatusBadRequest,
 			},
 		},
-		status: http.StatusBadRequest,
-	}
-
-	namedTests["simulate transaction rollback"] = test{
-		name: "",
-		args: args{
-			CreateRequest: &author.CreateRequest{
-				FirstName:  "First",
-				MiddleName: "Middle",
-				LastName:   "Last",
-				Books:      nil,
+		{
+			name: "simulate transaction rollback",
+			args: args{
+				CreateRequest: &author.CreateRequest{
+					FirstName:  "First",
+					MiddleName: "Middle",
+					LastName:   "Last",
+					Books:      nil,
+				},
+			},
+			want: want{
+				usecase: struct {
+					*author.Schema
+					error
+				}{
+					&author.Schema{
+						ID:         1,
+						FirstName:  "First",
+						MiddleName: "Middle",
+						LastName:   "Last",
+						CreatedAt:  time.Now(),
+						UpdatedAt:  time.Now(),
+						DeletedAt:  nil,
+						Books:      make([]*book.Schema, 0),
+					},
+					ErrTransactionFailed,
+				},
+				response: &author.GetResponse{},
+				err:      ErrTransactionFailed,
+				status:   http.StatusInternalServerError,
 			},
 		},
-		want: want{
-			Author: &gen.Author{},
-			error:  ErrTransactionFailed,
-		},
-		status: http.StatusInternalServerError,
-	}
-
-	namedTests["no row"] = test{
-		args: args{
-			CreateRequest: &author.CreateRequest{
-				FirstName:  "First",
-				MiddleName: "Middle",
-				LastName:   "Last",
+		{
+			name: "no row",
+			args: args{
+				CreateRequest: &author.CreateRequest{
+					FirstName:  "First",
+					MiddleName: "Middle",
+					LastName:   "Last",
+				},
+			},
+			want: want{
+				usecase: struct {
+					*author.Schema
+					error
+				}{
+					&author.Schema{},
+					sql.ErrNoRows,
+				},
+				response: &author.GetResponse{},
+				err:      message.ErrBadRequest,
+				status:   http.StatusBadRequest,
 			},
 		},
-		want: want{
-			Author: &gen.Author{},
-			error:  sql.ErrNoRows,
-		},
-		status: http.StatusBadRequest,
-	}
-
-	namedTests["other error"] = test{
-		name: "",
-		args: args{
-			CreateRequest: &author.CreateRequest{
-				FirstName:  "First",
-				MiddleName: "Middle",
-				LastName:   "Last",
+		{
+			name: "other error",
+			args: args{
+				CreateRequest: &author.CreateRequest{
+					FirstName:  "First",
+					MiddleName: "Middle",
+					LastName:   "Last",
+				},
+			},
+			want: want{
+				usecase: struct {
+					*author.Schema
+					error
+				}{
+					&author.Schema{},
+					errors.New("other error"),
+				},
+				response: &author.GetResponse{},
+				err:      errors.New("other error"),
+				status:   http.StatusInternalServerError,
 			},
 		},
-		want: want{
-			Author: &gen.Author{},
-			error:  errors.New("other error"),
-		},
-		status: http.StatusInternalServerError,
 	}
 
-	for name, test := range namedTests {
-		t.Run(name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			var buf bytes.Buffer
 			var err error
 			if test.args.CreateRequest != nil {
@@ -160,12 +211,11 @@ func TestHandler_Create(t *testing.T) {
 			ww := httptest.NewRecorder()
 
 			router := chi.NewRouter()
-
 			val := validator.New()
 
 			uc := &usecase.AuthorMock{
-				CreateFunc: func(ctx context.Context, a *author.CreateRequest) (*gen.Author, error) {
-					return test.want.Author, test.want.error
+				CreateFunc: func(ctx context.Context, a *author.CreateRequest) (*author.Schema, error) {
+					return test.want.usecase.Schema, test.want.usecase.error
 				},
 			}
 
@@ -179,153 +229,33 @@ func TestHandler_Create(t *testing.T) {
 				}
 				assert.Equal(t, test.want.Errs, errs)
 			} else {
-				var got gen.Author
-				if err = json.NewDecoder(ww.Body).Decode(&got); err != nil {
-					t.Fatal(err)
-				}
-
 				assert.Equal(t, ww.Code, test.status)
-				assert.Equal(t, &got, test.want.Author)
+
+				if ww.Code >= 200 && ww.Code < 300 {
+					var got author.GetResponse
+					if err = json.NewDecoder(ww.Body).Decode(&got); err != nil {
+						t.Fatal(err)
+					}
+
+					assert.Equal(t, &got, test.want.response)
+				} else {
+
+					b, err := io.ReadAll(ww.Body)
+					assert.Nil(t, err)
+
+					errStruct := struct {
+						Message string `json:"message"`
+					}{
+						Message: string(b),
+					}
+
+					err = json.Unmarshal(b, &errStruct)
+					assert.Nil(t, err)
+					assert.Equal(t, test.want.err.Error(), errStruct.Message)
+				}
 			}
 		})
 	}
-
-	//tests := []test{
-	//	{
-	//		name: "simple",
-	//		args: args{
-	//			CreateRequest: &author.CreateRequest{
-	//				FirstName:  "First",
-	//				MiddleName: "Middle",
-	//				LastName:   "Last",
-	//				Books:      nil,
-	//			},
-	//		},
-	//		want: want{
-	//			Author: &gen.Author{
-	//				ID:         1,
-	//				FirstName:  "First",
-	//				MiddleName: "Middle",
-	//				LastName:   "Last",
-	//				CreatedAt:  time.Time{},
-	//				UpdatedAt:  time.Time{},
-	//				DeletedAt:  nil,
-	//				Edges: gen.AuthorEdges{
-	//					Books: nil,
-	//				},
-	//			},
-	//			error: nil,
-	//		},
-	//		status: http.StatusCreated,
-	//	},
-	//	{
-	//		name: "invalid create request",
-	//		args: args{
-	//			nil,
-	//			invalidCreateRequest{
-	//				LastName: "last Name",
-	//			},
-	//		},
-	//		want: want{
-	//			Author: &gen.Author{},
-	//			Errs: Errs{
-	//				Message: []string{"CreateRequest.FirstName is required"},
-	//			},
-	//		},
-	//		status: http.StatusBadRequest,
-	//	},
-	//	{
-	//		name: "simulate transaction rollback",
-	//		args: args{
-	//			CreateRequest: &author.CreateRequest{
-	//				FirstName:  "First",
-	//				MiddleName: "Middle",
-	//				LastName:   "Last",
-	//				Books:      nil,
-	//			},
-	//		},
-	//		want: want{
-	//			Author: &gen.Author{},
-	//			error:  ErrTransactionFailed,
-	//		},
-	//		status: http.StatusInternalServerError,
-	//	},
-	//	{
-	//		name: "no row",
-	//		args: args{
-	//			CreateRequest: &author.CreateRequest{
-	//				FirstName:  "First",
-	//				MiddleName: "Middle",
-	//				LastName:   "Last",
-	//			},
-	//		},
-	//		want: want{
-	//			Author: &gen.Author{},
-	//			error:  sql.ErrNoRows,
-	//		},
-	//		status: http.StatusBadRequest,
-	//	},
-	//	{
-	//		name: "other error",
-	//		args: args{
-	//			CreateRequest: &author.CreateRequest{
-	//				FirstName:  "First",
-	//				MiddleName: "Middle",
-	//				LastName:   "Last",
-	//			},
-	//		},
-	//		want: want{
-	//			Author: &gen.Author{},
-	//			error:  errors.New("other error"),
-	//		},
-	//		status: http.StatusInternalServerError,
-	//	},
-	//}
-	//
-	//for _, test := range tests {
-	//	t.Run(test.name, func(t *testing.T) {
-	//		var buf bytes.Buffer
-	//		var err error
-	//		if test.args.CreateRequest != nil {
-	//			err = json.NewEncoder(&buf).Encode(test.args.CreateRequest)
-	//		} else {
-	//			err = json.NewEncoder(&buf).Encode(test.args.invalidCreateRequest)
-	//		}
-	//		assert.Nil(t, err)
-	//
-	//		rr := httptest.NewRequest(http.MethodPost, "/api/v1/author", &buf)
-	//		ww := httptest.NewRecorder()
-	//
-	//		router := chi.NewRouter()
-	//
-	//		val := validator.New()
-	//
-	//		uc := &usecase.AuthorMock{
-	//			CreateFunc: func(ctx context.Context, a *author.CreateRequest) (*gen.Author, error) {
-	//				return test.want.Author, test.want.error
-	//			},
-	//		}
-	//
-	//		h := RegisterHTTPEndPoints(router, val, uc)
-	//		h.Create(ww, rr)
-	//
-	//		if test.args.CreateRequest == nil {
-	//			var errs Errs
-	//			if err = json.NewDecoder(ww.Body).Decode(&errs); err != nil {
-	//				t.Fatal(err)
-	//			}
-	//			assert.Equal(t, test.want.Errs, errs)
-	//		} else {
-	//			var got gen.Author
-	//			if err = json.NewDecoder(ww.Body).Decode(&got); err != nil {
-	//				t.Fatal(err)
-	//			}
-	//
-	//			assert.Equal(t, ww.Code, test.status)
-	//			assert.Equal(t, &got, test.want.Author)
-	//		}
-	//	})
-	//}
 }
 
 func TestHandler_List(t *testing.T) {
@@ -335,13 +265,14 @@ func TestHandler_List(t *testing.T) {
 
 	type want struct {
 		usecase struct {
-			authors []*gen.Author
+			authors []*author.Schema
 			total   int
 			error
 		}
 		status int
 		size   int
 		total  int
+		error
 	}
 
 	type test struct {
@@ -357,18 +288,19 @@ func TestHandler_List(t *testing.T) {
 				uri: "/api/v1/author",
 			},
 			want: want{
-				status: http.StatusOK,
-				size:   0,
-				total:  0,
 				usecase: struct {
-					authors []*gen.Author
+					authors []*author.Schema
 					total   int
 					error
 				}{
-					authors: make([]*gen.Author, 0),
+					authors: make([]*author.Schema, 0),
 					total:   0,
 					error:   nil,
 				},
+				status: http.StatusOK,
+				error:  nil,
+				size:   0,
+				total:  0,
 			},
 		},
 		{
@@ -377,15 +309,12 @@ func TestHandler_List(t *testing.T) {
 				uri: "/api/v1/author",
 			},
 			want: want{
-				status: http.StatusOK,
-				size:   1,
-				total:  1,
 				usecase: struct {
-					authors []*gen.Author
+					authors []*author.Schema
 					total   int
 					error
 				}{
-					authors: []*gen.Author{
+					authors: []*author.Schema{
 						{
 							ID:         1,
 							FirstName:  "First",
@@ -394,14 +323,16 @@ func TestHandler_List(t *testing.T) {
 							CreatedAt:  time.Time{},
 							UpdatedAt:  time.Time{},
 							DeletedAt:  nil,
-							Edges: gen.AuthorEdges{
-								Books: nil,
-							},
+							Books:      nil,
 						},
 					},
 					total: 1,
 					error: nil,
 				},
+				status: http.StatusOK,
+				error:  nil,
+				size:   1,
+				total:  1,
 			},
 		},
 		{
@@ -414,14 +345,15 @@ func TestHandler_List(t *testing.T) {
 				size:   0,
 				total:  0,
 				usecase: struct {
-					authors []*gen.Author
+					authors []*author.Schema
 					total   int
 					error
 				}{
-					authors: []*gen.Author{},
+					authors: []*author.Schema{},
 					total:   0,
 					error:   errors.New("some use case internal error"),
 				},
+				error: errors.New("some use case internal error"),
 			},
 		},
 	}
@@ -437,7 +369,7 @@ func TestHandler_List(t *testing.T) {
 			val := validator.New()
 
 			uc := &usecase.AuthorMock{
-				ListFunc: func(ctx context.Context, f *author.Filter) ([]*gen.Author, int, error) {
+				ListFunc: func(ctx context.Context, f *author.Filter) ([]*author.Schema, int, error) {
 					return test.want.usecase.authors, test.want.usecase.total, test.want.usecase.error
 				},
 			}
@@ -445,14 +377,30 @@ func TestHandler_List(t *testing.T) {
 			h := RegisterHTTPEndPoints(router, val, uc)
 			h.List(ww, rr)
 
-			var got respond.Standard
-			if err := json.NewDecoder(ww.Body).Decode(&got); err != nil {
-				t.Fatal(err)
-			}
-
 			assert.Equal(t, test.want.status, ww.Code)
-			assert.Equal(t, test.want.size, got.Meta.Size)
-			assert.Equal(t, test.want.total, got.Meta.Total)
+
+			if ww.Code >= 200 && ww.Code < 300 {
+				var got respond.Standard
+				if err := json.NewDecoder(ww.Body).Decode(&got); err != nil {
+					t.Fatal(err)
+				}
+
+				assert.Equal(t, test.want.size, got.Meta.Size)
+				assert.Equal(t, test.want.total, got.Meta.Total)
+			} else {
+				b, err := io.ReadAll(ww.Body)
+				assert.Nil(t, err)
+
+				errStruct := struct {
+					Message string `json:"message"`
+				}{
+					Message: string(b),
+				}
+
+				err = json.Unmarshal(b, &errStruct)
+				assert.Nil(t, err)
+				assert.Equal(t, test.want.error.Error(), errStruct.Message)
+			}
 		})
 	}
 }
@@ -463,15 +411,16 @@ func TestHandler_Read(t *testing.T) {
 	}
 
 	type want struct {
-		*gen.Author
-		error
+		status   int
+		usecase  *author.Schema
+		response *author.GetResponse
+		err      error
 	}
 
 	type test struct {
 		name string
 		args
 		want
-		status int
 	}
 
 	tests := []test{
@@ -481,7 +430,8 @@ func TestHandler_Read(t *testing.T) {
 				paramAuthorID: 1,
 			},
 			want: want{
-				Author: &gen.Author{
+				status: http.StatusOK,
+				usecase: &author.Schema{
 					ID:         1,
 					FirstName:  "First",
 					MiddleName: "Middle",
@@ -489,31 +439,38 @@ func TestHandler_Read(t *testing.T) {
 					CreatedAt:  time.Time{},
 					UpdatedAt:  time.Time{},
 					DeletedAt:  nil,
-					Edges: gen.AuthorEdges{
-						Books: nil,
-					},
+					Books:      nil,
 				},
-				error: nil,
+				response: &author.GetResponse{
+					ID:         1,
+					FirstName:  "First",
+					MiddleName: "Middle",
+					LastName:   "Last",
+				},
+				err: nil,
 			},
-			status: http.StatusOK,
 		},
 		{
-			"param not supplied",
-			args{},
-			want{
-				&gen.Author{},
+			name: "param not supplied",
+			args: args{},
+			want: want{
+				http.StatusBadRequest,
+				&author.Schema{},
+				&author.GetResponse{},
 				errors.New("id is required"),
 			},
-			http.StatusBadRequest,
 		},
 		{
 			"simulate lower layer internal error",
-			args{paramAuthorID: 1},
+			args{
+				paramAuthorID: 1,
+			},
 			want{
-				&gen.Author{},
+				http.StatusInternalServerError,
+				&author.Schema{},
+				&author.GetResponse{},
 				errors.New("lower layer error"),
 			},
-			http.StatusInternalServerError,
 		},
 	}
 
@@ -533,46 +490,65 @@ func TestHandler_Read(t *testing.T) {
 			val := validator.New()
 
 			uc := &usecase.AuthorMock{
-				ReadFunc: func(ctx context.Context, authorID uint) (*gen.Author, error) {
-					return test.want.Author, test.want.error
+				ReadFunc: func(ctx context.Context, authorID uint) (*author.Schema, error) {
+					return test.want.usecase, test.want.err
 				},
 			}
 
 			h := RegisterHTTPEndPoints(router, val, uc)
 			h.Get(ww, rr)
 
-			var got gen.Author
-			if err := json.NewDecoder(ww.Body).Decode(&got); err != nil {
-				t.Fatal(err)
+			assert.Equal(t, test.status, ww.Code)
+
+			if ww.Code >= 200 && ww.Code < 300 {
+
+				var got author.GetResponse
+				if err := json.NewDecoder(ww.Body).Decode(&got); err != nil {
+					t.Fatal(err)
+				}
+
+				assert.Equal(t, *test.want.response, got)
+			} else {
+				b, err := io.ReadAll(ww.Body)
+				assert.Nil(t, err)
+
+				errStruct := struct {
+					Message string `json:"message"`
+				}{
+					Message: string(b),
+				}
+
+				err = json.Unmarshal(b, &errStruct)
+				assert.Nil(t, err)
+				assert.Equal(t, test.want.err.Error(), errStruct.Message)
 			}
 
-			assert.Equal(t, test.status, ww.Code)
-			assert.Equal(t, *test.want.Author, got)
 		})
 	}
 }
 
 func TestHandler_Update(t *testing.T) {
 	type args struct {
-		updateRequest *author.Update
+		updateRequest *author.UpdateRequest
 		paramAuthorID int
 	}
 	type want struct {
-		*gen.Author
-		error
+		usecase  *author.Schema
+		response *author.GetResponse
+		err      error
+		status   int
 	}
 	type test struct {
 		name string
 		args
 		want
-		status int
 	}
 
 	tests := []test{
 		{
 			name: "update name",
 			args: args{
-				updateRequest: &author.Update{
+				updateRequest: &author.UpdateRequest{
 					FirstName:  "Updated First",
 					MiddleName: "Updated Middle",
 					LastName:   "Updated Last",
@@ -580,38 +556,46 @@ func TestHandler_Update(t *testing.T) {
 				paramAuthorID: 1,
 			},
 			want: want{
-				Author: &gen.Author{
+				usecase: &author.Schema{
 					ID:         1,
 					FirstName:  "Updated First",
 					MiddleName: "Updated Middle",
 					LastName:   "Updated Last",
 					CreatedAt:  time.Time{},
 					UpdatedAt:  time.Time{},
-					DeletedAt:  nil,
+					//DeletedAt:  sql.NullTime{},
+					DeletedAt: nil,
 				},
-				error: nil,
+				response: &author.GetResponse{
+					ID:         1,
+					FirstName:  "Updated First",
+					MiddleName: "Updated Middle",
+					LastName:   "Updated Last",
+				},
+				err:    nil,
+				status: http.StatusOK,
 			},
-			status: http.StatusOK,
 		},
 		{
 			name: "paramAuthorID not supplied",
 			args: args{
-				updateRequest: &author.Update{
+				updateRequest: &author.UpdateRequest{
 					FirstName:  "",
 					MiddleName: "",
 					LastName:   "",
 				},
 			},
 			want: want{
-				Author: &gen.Author{},
-				error:  errors.New("id is required"),
+				usecase:  &author.Schema{},
+				response: nil,
+				err:      errors.New("id is required"),
+				status:   http.StatusBadRequest,
 			},
-			status: http.StatusBadRequest,
 		},
 		{
 			name: "simulate lower layer internal error",
 			args: args{
-				updateRequest: &author.Update{
+				updateRequest: &author.UpdateRequest{
 					FirstName: "First",
 					LastName:  "Last",
 				},
@@ -619,11 +603,11 @@ func TestHandler_Update(t *testing.T) {
 			},
 
 			want: want{
-				Author: &gen.Author{},
-				error:  errors.New("lower layer error"),
+				usecase:  &author.Schema{},
+				response: nil,
+				err:      errors.New("lower layer error"),
+				status:   http.StatusInternalServerError,
 			},
-
-			status: http.StatusInternalServerError,
 		},
 	}
 
@@ -647,20 +631,37 @@ func TestHandler_Update(t *testing.T) {
 			val := validator.New()
 
 			uc := &usecase.AuthorMock{
-				UpdateFunc: func(ctx context.Context, author *author.Update) (*gen.Author, error) {
-					return test.want.Author, test.want.error
+				UpdateFunc: func(ctx context.Context, author *author.UpdateRequest) (*author.Schema, error) {
+					return test.want.usecase, test.want.err
 				}}
 
 			h := RegisterHTTPEndPoints(router, val, uc)
 			h.Update(ww, rr)
 
-			var got gen.Author
-			if err = json.NewDecoder(ww.Body).Decode(&got); err != nil {
-				t.Fatal(err)
+			assert.Equal(t, test.status, ww.Code)
+
+			if ww.Code >= 200 && ww.Code < 300 {
+				var got author.GetResponse
+				if err = json.NewDecoder(ww.Body).Decode(&got); err != nil {
+					t.Fatal(err)
+				}
+
+				assert.Equal(t, test.want.response, &got)
+			} else {
+				b, err := io.ReadAll(ww.Body)
+				assert.Nil(t, err)
+
+				errStruct := struct {
+					Message string `json:"message"`
+				}{
+					Message: string(b),
+				}
+
+				err = json.Unmarshal(b, &errStruct)
+				assert.Nil(t, err)
+				assert.Equal(t, test.want.err.Error(), errStruct.Message)
 			}
 
-			assert.Equal(t, test.status, ww.Code)
-			assert.Equal(t, test.want.Author, &got)
 		})
 	}
 }
@@ -672,13 +673,13 @@ func TestHandler_Delete(t *testing.T) {
 
 	type want struct {
 		error
+		status int
 	}
 
 	type test struct {
 		name string
 		args
 		want
-		status int
 	}
 
 	tests := []test{
@@ -688,9 +689,9 @@ func TestHandler_Delete(t *testing.T) {
 				authorID: 1,
 			},
 			want: want{
-				error: nil,
+				error:  nil,
+				status: http.StatusOK,
 			},
-			status: http.StatusOK,
 		},
 		{
 			name: "paramAuthorID not provided",
@@ -698,9 +699,9 @@ func TestHandler_Delete(t *testing.T) {
 				authorID: 0,
 			},
 			want: want{
-				error: errors.New("id is required"),
+				error:  errors.New("id is required"),
+				status: http.StatusBadRequest,
 			},
-			status: http.StatusBadRequest,
 		},
 		{
 			name: "Simulate deleting non-existent record",
@@ -708,9 +709,9 @@ func TestHandler_Delete(t *testing.T) {
 				authorID: 999,
 			},
 			want: want{
-				error: respond.ErrNoRecord,
+				error:  respond.ErrNoRecord,
+				status: http.StatusBadRequest,
 			},
-			status: http.StatusBadRequest,
 		},
 		{
 			name: "Catch-all other errors",
@@ -718,9 +719,9 @@ func TestHandler_Delete(t *testing.T) {
 				authorID: 1,
 			},
 			want: want{
-				error: errors.New("all other errors"),
+				error:  errors.New("all other errors"),
+				status: http.StatusInternalServerError,
 			},
-			status: http.StatusInternalServerError,
 		},
 	}
 

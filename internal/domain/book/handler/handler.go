@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
@@ -17,14 +16,6 @@ import (
 	"github.com/gmhafiz/go8/internal/utility/respond"
 	"github.com/gmhafiz/go8/internal/utility/validate"
 )
-
-type HTTP interface {
-	Create(w http.ResponseWriter, r *http.Request)
-	Update(w http.ResponseWriter, r *http.Request)
-	List(w http.ResponseWriter, r *http.Request)
-	Get(w http.ResponseWriter, r *http.Request)
-	Delete(w http.ResponseWriter, r *http.Request)
-}
 
 type Handler struct {
 	useCase  usecase.Book
@@ -90,14 +81,14 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 	bookID, err := param.Int(r, "bookID")
 	if err != nil {
-		respond.Error(w, http.StatusBadRequest, err)
+		respond.Error(w, http.StatusBadRequest, message.ErrBadRequest)
 		return
 	}
 
 	b, err := h.useCase.Read(context.Background(), bookID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			respond.Error(w, http.StatusBadRequest, fmt.Errorf("no book is found for this ID"))
+			respond.Error(w, http.StatusBadRequest, errors.New("no book is found for this ID"))
 			return
 		}
 		respond.Error(w, http.StatusInternalServerError, nil)
@@ -123,7 +114,7 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 	filters := book.Filters(r.URL.Query())
 
-	var books []*book.DB
+	var books []*book.Schema
 	ctx := r.Context()
 
 	switch filters.Base.Search {
@@ -173,7 +164,7 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	bookID, err := param.Int(r, "bookID")
 	if err != nil {
-		respond.Error(w, http.StatusBadRequest, err)
+		respond.Error(w, http.StatusBadRequest, message.ErrBadRequest)
 		return
 	}
 

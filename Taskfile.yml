@@ -75,7 +75,7 @@ tasks:
       - task fmt
       - task vet
       - task golint
-#      - task security
+      - task security
       - task test
     silent: true
 
@@ -84,6 +84,11 @@ tasks:
     cmds:
       - rm -rf ./bin/*
       - rm -rf ./bin/.*
+
+  clean:cache:
+    desc: Clear tests cache
+    cmds:
+      - go clean -testcache
 
   tidy:
     desc: Downloads dependencies and removes unused ones

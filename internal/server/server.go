@@ -65,6 +65,7 @@ type Options func(opts *Server) error
 
 func defaultServer() *Server {
 	return &Server{
+		cfg:    config.New(),
 		router: chi.NewRouter(),
 	}
 }
@@ -83,7 +84,6 @@ func New(opts ...Options) *Server {
 
 func (s *Server) Init(version string) {
 	s.Version = version
-	s.newConfig()
 	s.newRedis()
 	s.newDatabase()
 	s.newValidator()
@@ -91,11 +91,6 @@ func (s *Server) Init(version string) {
 	s.setGlobalMiddleware()
 	s.InitDomains()
 }
-
-func (s *Server) newConfig() {
-	s.cfg = config.New()
-}
-
 func (s *Server) newRedis() {
 	s.cache = redisLib.New(s.cfg.Cache)
 }

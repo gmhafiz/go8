@@ -1,1 +1,0 @@
-drop table book_authors;

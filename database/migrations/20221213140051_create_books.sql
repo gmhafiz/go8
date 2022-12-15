@@ -1,3 +1,5 @@
+-- +goose Up
+-- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS books
 (
     id bigserial,
@@ -22,3 +24,10 @@ $$ language 'plpgsql';
 CREATE TRIGGER update_book_updated_at BEFORE UPDATE
     ON books FOR EACH ROW EXECUTE PROCEDURE
     update_updated_at_column();
+
+-- +goose StatementEnd
+
+-- +goose Down
+-- +goose StatementBegin
+drop table books;
+-- +goose StatementEnd

@@ -22,17 +22,13 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
 	"github.com/go-redis/redis/v8"
-	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database"
-	"github.com/golang-migrate/migrate/v4/database/mysql"
-	"github.com/golang-migrate/migrate/v4/database/postgres"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/jackc/pgx/stdlib"
 	"github.com/jmoiron/sqlx"
 	"github.com/jwalton/gchalk"
 	"golang.org/x/mod/modfile"
 
 	"github.com/gmhafiz/go8/config"
+	"github.com/gmhafiz/go8/database"
 	_ "github.com/gmhafiz/go8/docs"
 	"github.com/gmhafiz/go8/ent/gen"
 	"github.com/gmhafiz/go8/internal/middleware"
@@ -143,35 +139,30 @@ func (s *Server) setGlobalMiddleware() {
 func (s *Server) Migrate() {
 	log.Println("migrating...")
 
-	var driver database.Driver
+	var databaseUrl string
 	switch s.cfg.Database.Driver {
 	case "postgres":
-		d, err := postgres.WithInstance(s.DB().DB, &postgres.Config{})
-		if err != nil {
-			log.Fatalf("error instantiating database: %v", err)
-		}
-		driver = d
+		databaseUrl = fmt.Sprintf("%s://%s:%s@%s:%d/%s?sslmode=%s",
+			s.cfg.Database.Driver,
+			s.cfg.Database.User,
+			s.cfg.Database.Pass,
+			s.cfg.Database.Host,
+			s.cfg.Database.Port,
+			s.cfg.Database.Name,
+			s.cfg.Database.SslMode,
+		)
 	case "mysql":
-		d, err := mysql.WithInstance(s.DB().DB, &mysql.Config{})
-		if err != nil {
-			log.Fatalf("error instantiating database: %v", err)
-		}
-		driver = d
+		databaseUrl = fmt.Sprintf("%s:%s@(%s:%d)/%s?parseTime=true",
+			s.cfg.Database.User,
+			s.cfg.Database.Pass,
+			s.cfg.Database.Host,
+			s.cfg.Database.Port,
+			s.cfg.Database.Name,
+		)
 	}
 
-	m, err := migrate.NewWithDatabaseInstance(
-		databaseMigrationPath, s.cfg.Database.Driver, driver,
-	)
-	if err != nil {
-		log.Fatalf("error connecting to database: %v", err)
-	}
-
-	err = m.Up()
-	if err != nil {
-		if err != migrate.ErrNoChange {
-			log.Panicf("error migrating: %v", err)
-		}
-	}
+	migrator := database.Migrator(database.WithDSN(databaseUrl))
+	migrator.Up()
 
 	log.Println("done migration.")
 }

@@ -9,17 +9,14 @@ import (
 	"testing"
 	"time"
 
-	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
 	_ "github.com/gmhafiz/go8/ent/gen/runtime"
-	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database/postgres"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/gmhafiz/go8/database"
 	"github.com/gmhafiz/go8/ent/gen"
 	"github.com/gmhafiz/go8/internal/domain/author"
 	"github.com/gmhafiz/go8/internal/domain/book"
@@ -27,45 +24,17 @@ import (
 	parseTime "github.com/gmhafiz/go8/internal/utility/time"
 )
 
+const (
+	DBDriver = "postgres"
+)
+
 var (
-	dockerDB *db
+	migrator *database.Migrate
 )
 
 var (
 	startTime = time.Now()
 )
-
-type db struct {
-	Conn *sql.DB
-	Ent  *gen.Client
-}
-
-func (d db) migrate(upOrDown string) {
-	driver, err := postgres.WithInstance(d.Conn, &postgres.Config{})
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	m, err := migrate.NewWithDatabaseInstance(
-		"file://../../../../database/migrations/",
-		"postgres",
-		driver,
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	switch upOrDown {
-	case "down":
-		if err = m.Down(); err != nil {
-			log.Fatalln(err)
-		}
-	default:
-		if err = m.Up(); err != nil {
-			log.Fatalln(err)
-		}
-	}
-}
 
 func TestMain(m *testing.M) {
 	// uses a sensible default on windows (tcp/http) and linux/osx (socket)
@@ -98,17 +67,17 @@ func TestMain(m *testing.M) {
 
 	_ = resource.Expire(120) // Tell docker to hard kill the container in 120 seconds
 
-	dockerDB = &db{}
+	migrator = database.Migrator(database.WithDSN(databaseUrl))
 
 	// exponential backoff-retry, because the application in the container might not be ready to accept connections yet
 	pool.MaxWait = 120 * time.Second
 	if err = pool.Retry(func() error {
-		dockerDB.Conn, err = sql.Open("postgres", databaseUrl)
+		migrator.DB, err = sql.Open(DBDriver, databaseUrl)
 		if err != nil {
 			log.Println(err)
 			return err
 		}
-		return dockerDB.Conn.Ping()
+		return migrator.DB.Ping()
 	}); err != nil {
 		log.Fatalf("Could not connect to docker: %s", err)
 	}
@@ -117,7 +86,7 @@ func TestMain(m *testing.M) {
 	// the same db schema across all unit test.
 	// If isolation is needed, then do away with using `testing.M`. Do a
 	// migration for each test handler instead.
-	dockerDB.migrate("up")
+	migrator.Up()
 
 	// We can access database with m.hostAndPort or m.databaseUrl
 	// port changes everytime a new docker instance is run
@@ -497,19 +466,8 @@ func TestRepository_List(t *testing.T) {
 }
 
 func TestRepository_Update(t *testing.T) {
-	//oneAuthor := &author.UpdateRequest{
-	//	ID:         1,
-	//	FirstName:  "First",
-	//	MiddleName: "Middle",
-	//	LastName:   "Last",
-	//}
-
 	client := dbClient()
-	//repo := New(client)
 	ctx := context.Background()
-
-	//_, err := repo.Update(ctx, oneAuthor)
-	//assert.Nil(t, err)
 
 	type fields struct {
 		ent *gen.Client
@@ -637,10 +595,6 @@ func TestRepository_Delete(t *testing.T) {
 func TestRepository_Search(t *testing.T) {}
 
 func dbClient() *gen.Client {
-	sqlxDB := sqlx.NewDb(dockerDB.Conn, "postgres")
-	drv := entsql.OpenDB(dialect.Postgres, sqlxDB.DB)
-	client := gen.NewClient(gen.Driver(drv))
-	dockerDB.Ent = client
-
-	return client
+	drv := entsql.OpenDB(DBDriver, migrator.DB)
+	return gen.NewClient(gen.Driver(drv))
 }

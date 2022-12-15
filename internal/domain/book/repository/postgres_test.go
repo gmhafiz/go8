@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/gmhafiz/go8/internal/utility/message"
 	"log"
 	"math"
 	"os"
@@ -13,59 +12,29 @@ import (
 	"time"
 
 	_ "github.com/gmhafiz/go8/ent/gen/runtime"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database/postgres"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/jackc/pgx/stdlib"
 	"github.com/jmoiron/sqlx"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/gmhafiz/go8/database"
 	"github.com/gmhafiz/go8/internal/domain/book"
 	"github.com/gmhafiz/go8/internal/utility/filter"
+	"github.com/gmhafiz/go8/internal/utility/message"
+)
+
+const (
+	DBDriver = "pgx"
 )
 
 var (
-	dockerDB *db
+	migrator *database.Migrate
 )
 
 var (
 	startTime = time.Now()
 )
-
-type db struct {
-	Conn *sql.DB
-	Sqlx *sqlx.DB
-}
-
-func (d db) migrate(upOrDown string) {
-	driver, err := postgres.WithInstance(d.Conn, &postgres.Config{})
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	m, err := migrate.NewWithDatabaseInstance(
-		"file://../../../../database/migrations/",
-		"postgres",
-		driver,
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	switch upOrDown {
-	case "down":
-		if err = m.Down(); err != nil {
-			log.Fatalln(err)
-		}
-	default:
-		if err = m.Up(); err != nil {
-			log.Fatalln(err)
-		}
-	}
-}
 
 func TestMain(m *testing.M) {
 	// uses a sensible default on windows (tcp/http) and linux/osx (socket)
@@ -98,16 +67,16 @@ func TestMain(m *testing.M) {
 
 	_ = resource.Expire(120) // Tell docker to hard kill the container in 120 seconds
 
-	dockerDB = &db{}
+	migrator = database.Migrator(database.WithDSN(databaseUrl))
 
 	// exponential backoff-retry, because the application in the container might not be ready to accept connections yet
 	pool.MaxWait = 120 * time.Second
 	if err = pool.Retry(func() error {
-		dockerDB.Conn, err = sql.Open("postgres", databaseUrl)
+		migrator.DB, err = sql.Open(DBDriver, databaseUrl)
 		if err != nil {
 			return err
 		}
-		return dockerDB.Conn.Ping()
+		return migrator.DB.Ping()
 	}); err != nil {
 		log.Fatalf("Could not connect to docker: %s", err)
 	}
@@ -116,7 +85,7 @@ func TestMain(m *testing.M) {
 	// the same db schema across all unit test.
 	// If isolation is needed, then do away with using `testing.M`. Do a
 	// migration for each test handler instead.
-	dockerDB.migrate("up")
+	migrator.Up()
 
 	// We can access database with m.hostAndPort or m.databaseUrl
 	// port changes everytime a new docker instance is run
@@ -197,7 +166,7 @@ func TestRepository_Create(t *testing.T) {
 		},
 	}
 
-	client := dbClient()
+	client := sqlxDBClient(migrator.DB)
 	repo := New(client)
 
 	for _, test := range tests {
@@ -224,8 +193,6 @@ func TestRepository_List(t *testing.T) {
 		args
 		want
 	}
-
-	//startTime := time.Now()
 
 	timeParsed, err := time.Parse(time.RFC3339, "2020-01-01T15:04:05Z")
 	assert.Nil(t, err)
@@ -354,7 +321,7 @@ func TestRepository_List(t *testing.T) {
 		},
 	}
 
-	client := dbClient()
+	client := sqlxDBClient(migrator.DB)
 	repo := New(client)
 
 	for _, test := range tests {
@@ -395,8 +362,6 @@ func TestRepository_Read(t *testing.T) {
 		args
 		want
 	}
-
-	//startTime := time.Now()
 
 	timeParsed, err := time.Parse(time.RFC3339, "2020-02-17T00:00:00Z")
 	assert.Nil(t, err)
@@ -442,7 +407,7 @@ func TestRepository_Read(t *testing.T) {
 		},
 	}
 
-	client := dbClient()
+	client := sqlxDBClient(migrator.DB)
 	repo := New(client)
 
 	_, err = repo.Create(context.Background(), createOneBook)
@@ -536,7 +501,7 @@ func TestRepository_Update(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			client := dbClient()
+			client := sqlxDBClient(migrator.DB)
 			repo := New(client)
 
 			err := repo.Update(test.args.Context, test.args.UpdateRequest)
@@ -557,8 +522,6 @@ func TestRepository_Update(t *testing.T) {
 			assert.True(t, startTime.Before(got.CreatedAt) || startTime.Equal(got.CreatedAt))
 			assert.True(t, startTime.Before(got.UpdatedAt) || startTime.Equal(got.UpdatedAt))
 			assert.Equal(t, test.want.book.DeletedAt, got.DeletedAt)
-
-			//assert.True(t, test.want.book.DeletedAt.Before(*got.DeletedAt))
 		})
 	}
 }
@@ -602,7 +565,7 @@ func TestRepository_Delete(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			client := dbClient()
+			client := sqlxDBClient(migrator.DB)
 			repo := New(client)
 
 			err := repo.Delete(test.args.Context, test.args.bookID)
@@ -682,7 +645,7 @@ func TestRepository_Search(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			client := dbClient()
+			client := sqlxDBClient(migrator.DB)
 			repo := New(client)
 
 			got, err := repo.Search(test.args.Context, test.args.f)
@@ -707,8 +670,6 @@ func TestRepository_Search(t *testing.T) {
 	}
 }
 
-func dbClient() *sqlx.DB {
-	sqlxDB := sqlx.NewDb(dockerDB.Conn, "pgx")
-	dockerDB.Sqlx = sqlxDB
-	return sqlxDB
+func sqlxDBClient(db *sql.DB) *sqlx.DB {
+	return sqlx.NewDb(db, DBDriver)
 }

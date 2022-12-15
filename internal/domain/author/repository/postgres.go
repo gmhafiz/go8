@@ -53,14 +53,22 @@ func (r *repository) Create(ctx context.Context, request *author.CreateRequest) 
 		return nil, fmt.Errorf("author.repository.Create bulk books: %w", err)
 	}
 
-	created, err := r.ent.Author.Create().
+	create, err := r.ent.Author.Create().
 		SetFirstName(request.FirstName).
 		SetNillableMiddleName(&request.MiddleName).
 		SetLastName(request.LastName).
 		AddBooks(books...).
 		Save(ctx)
+
 	if err != nil {
 		return nil, fmt.Errorf("author.repository.Create: %w", err)
+	}
+
+	// Both created_at and updated_at are created database-side instead of ent.
+	// So ent does not return both.
+	created, err := r.ent.Author.Get(ctx, create.ID)
+	if err != nil {
+		return nil, fmt.Errorf("author not found: %w", err)
 	}
 
 	var b []*book.Schema

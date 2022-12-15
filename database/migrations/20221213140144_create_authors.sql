@@ -1,3 +1,5 @@
+-- +goose Up
+-- +goose StatementBegin
 create table IF not exists authors
 (
     id bigserial
@@ -15,3 +17,10 @@ create table IF not exists authors
 CREATE TRIGGER update_author_updated_at BEFORE UPDATE
     ON authors FOR EACH ROW EXECUTE PROCEDURE
     update_updated_at_column();
+
+-- +goose StatementEnd
+
+-- +goose Down
+-- +goose StatementBegin
+drop table authors
+-- +goose StatementEnd

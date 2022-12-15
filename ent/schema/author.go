@@ -1,8 +1,6 @@
 package schema
 
 import (
-	"time"
-
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
@@ -20,8 +18,8 @@ func (Author) Fields() []ent.Field {
 		field.String("first_name"),
 		field.String("middle_name").Optional(),
 		field.String("last_name"),
-		field.Time("created_at").Default(time.Now).Immutable().StructTag(`json:"-"`),
-		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now).Immutable().StructTag(`json:"-"`),
+		field.Time("created_at").Optional().StructTag(`json:"-"`),
+		field.Time("updated_at").Optional().StructTag(`json:"-"`),
 		field.Time("deleted_at").Optional().Nillable().StructTag(`json:"-"`),
 	}
 }

@@ -16,22 +16,22 @@ tasks:
   migrate:create:
     desc: Creates .sql migration files (Up and Down). Set name by appending with 'NAME=name_of_file'
     cmds:
-      - migrate create -ext sql -dir database/migrations -format unix "{{.NAME}}"
+      - goose -dir database/migrations postgres "user=$DB_USER password=$DB_PASS dbname=$DB_NAME host=$DB_HOST port=$DB_PORT sslmode=$DB_SSLMODE" create "{{.NAME}}" sql
 
   migrate:
     desc: Migrates UP the database
     cmds:
-      - migrate -path database/migrations -database $DB_DRIVER://$DB_USER:$DB_PASS@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=$DB_SSLMODE up
+      - goose -dir database/goose postgres "user=$DB_USER password=$DB_PASS dbname=$DB_NAME host=$DB_HOST port=$DB_PORT sslmode=$DB_SSLMODE" up
 
   migrate:step:
-    desc: Migrates UP the database
+    desc: Migrates UP bt one step the database
     cmds:
-      - migrate -path database/migrations -database $DB_DRIVER://$DB_USER:$DB_PASS@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=$DB_SSLMODE up "{{.n}}"
+      - goose -dir database/goose $DB_DRIVER "user=$DB_USER password=$DB_PASS dbname=$DB_NAME host=$DB_HOST port=$DB_PORT sslmode=$DB_SSLMODE" up-by-one
 
   migrate:rollback:
-    desc: Rollback the database by 'n' step(s)
+    desc: Rollback the database by one step
     cmds:
-      - migrate -path database/migrations -database $DB_DRIVER://$DB_USER:$DB_PASS@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=$DB_SSLMODE down "{{.n}}"
+      - goose -dir database/goose postgres "user=$DB_USER password=$DB_PASS dbname=$DB_NAME host=$DB_HOST port=$DB_PORT sslmode=$DB_SSLMODE" down
 
   run:
     desc: Runs the app
@@ -205,7 +205,7 @@ tasks:
     cmds:
       - task: install:golangci
       - task: install:swagger
-      - task: install:golangmigrate
+      - task: install:goose
       - task: install:mirip
       - task: install:gosec
       - task: install:air
@@ -227,12 +227,10 @@ tasks:
     cmds:
       - go install github.com/gmhafiz/mirip/cmd/mirip@latest
 
-  install:golangmigrate:
+  install:goose:
     desc: Install golang migration tool
     cmds:
-      - curl -L https://github.com/golang-migrate/migrate/releases/download/v4.15.1/migrate.linux-amd64.tar.gz | tar xvz
-      - mkdir -p ~/.local/bin
-      - mv migrate ~/.local/bin/migrate
+      - go install github.com/pressly/goose/v3/cmd/goose@latest
 
   install:gosec:
     desc: Install golang security check. https://github.com/securego/gosec

@@ -33,7 +33,7 @@ This kit is composed of standard Go library together with some well-known librar
   - [x] Router/Mux with [Chi Router](https://github.com/go-chi/chi)
   - [x] Database Operations with [sqlx](https://github.com/jmoiron/sqlx)
   - [x] Database Operations with [ent](https://entgo.io/docs/getting-started)
-  - [x] Database migration with [golang-migrate](https://github.com/golang-migrate/migrate/)
+  - [x] Database migration with [goose](https://github.com/pressly/goose)
   - [x] Input [validation](https://github.com/go-playground/validator) that returns multiple error strings
   - [x] Read all configurations using a single `.env` file or environment variable
   - [x] Clear directory structure, so you know where to find the middleware, domain, server struct, handle, business logic, store, configuration files, migrations etc. 
@@ -85,7 +85,7 @@ docker-compose up -d postgres
 Once the database is up you may run the migration with,
 
 ```shell
-go run cmd/extmigrate/main.go
+go run cmd/migrate/main.go
 ```
 
 Run the API with the following command. For the first time run, dependencies will be downloaded first.
@@ -221,7 +221,7 @@ go test ./...
 
 # Tooling
 
-The above quick start is sufficient to start the API. However, we can take advantage of a tool to make task management easier. While you may run migration with `go run cmd/extmigrate/main.go`,  it is a lot easier to remember to type `task migrate` instead. Think of it as a simplified `Makefile`.
+The above quick start is sufficient to start the API. However, we can take advantage of a tool to make task management easier. While you may run migration with `go run cmd/migrate/main.go`,  it is a lot easier to remember to type `task migrate` instead. Think of it as a simplified `Makefile`.
 
 You may also choose to run sql scripts directly from `database/migrations` folder instead.
 
@@ -246,7 +246,7 @@ Various tooling can be installed automatically by running which includes
     * An opinionated code linter from https://golangci-lint.run/
  * [swag](https://github.com/swaggo/swag)
     * Generates swagger documentation
- * [golang-migrate](https://github.com/golang-migrate/migrate)
+ * [goose](https://github.com/pressly/goose)
     * Migration tool
  * [ent](https://entgo.io/docs/getting-started)
     * Database ORM tool
@@ -372,7 +372,7 @@ Using `Task`, creating a migration file is done by the following command. Name t
 
     task migrate:create NAME=create_a_tablename
 
-Write your schema in pure sql in the 'up' version and any reversal in the 'down' version of the files.
+Write your schema in pure sql in the 'up' section and any reversal in the 'down' section of the file.
  
 ### Migrate up
 
@@ -382,22 +382,22 @@ After you are satisfied with your `.sql` files, run the following command to mig
 
 To migrate one step
 
-    task migrate:step n=1
+    task migrate:step
       
 ### Rollback
     
-To roll back migration
+To roll back migration by one step
 
-    task migrate:rollback n=1
+    task migrate:rollback
 
-Further `golang-migrate` commands are available in its [documentation (postgres)](https://github.com/golang-migrate/migrate/blob/master/database/postgres/TUTORIAL.md)
+Further `goose` commands are available in its [page](https://github.com/pressly/goose)
 
 
 ## Without Task
 
 ### Create Migration
 
-Once `golang-migrate` tool is [installed](https://github.com/golang-migrate/migrate/tree/master/cmd/migrate), create a migration with
+Once `goose` tool is [installed](https://github.com/pressly/goose), create a migration with
 
     migrate create -ext sql -dir database/migrations -format unix "{{.NAME}}"
 
@@ -415,15 +415,15 @@ Then migrate with the following command, specifying the path to migration files,
 
     migrate -path database/migrations -database $DSN up
 
-To migrate 2 steps,
+To migrate 1 step,
 
-    migrate -path database/migrations -database $DSN up 2
+    migrate -path database/migrations -database $DSN up-by-one
 
 ### Rollback
 
 Rollback migration by using `down` action and the number of steps
 
-    migrate -path database/migrations -database $DSN down 1
+    migrate -path database/migrations -database $DSN down
 
 # Run
 
@@ -445,9 +445,9 @@ You can build a docker image with the app with its config files. Docker needs to
 
      task docker:build
 
-This task also makes a copy of `.env`. Since Docker doesn't copy hidden file, we make a copy of it on our `src` stage before transferring it to our final `scratch` stage. It also inserts formats git tag and git hash as the API version which runs at compile time. -[upx](https://upx.github.io/) is used to make the resulting binary smaller.-gg
+This task also makes a copy of `.env`. Since Docker doesn't copy hidden file, we make a copy of it on our `src` stage before transferring it to our final `scratch` stage. It also inserts formats git tag and git hash as the API version which runs at compile time.
 
-Note that this is a multistage Dockerfile. Since we statically compile this API, we can use `scratch` image (it is empty! - no file/folder exists).
+Note that this is a multistage Dockerfile. Since we statically compile this API, we can use a minimal images like a `distroless` that includes both timezones and CA certificates.
 
 Run the following command to build a container from this image. `--net=host` tells the container to use local's network so that it can access host database.
 
@@ -606,7 +606,7 @@ Limiting the number of connection pool avoids ['time-slicing' of the CPU](https:
 
 ## Database
 
-Migrations files are stored in `database/migrations` folder. [golang-migrate](https://github.com/golang-migrate/migrate) library is used to perform migration using `task` commands.
+Migrations files are stored in `database/migrations` folder. [goose](https://github.com/pressly/goose) library is used to perform migration using `task` commands.
 
 ## Router
 

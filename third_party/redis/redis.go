@@ -15,3 +15,13 @@ func New(cfg config.Cache) *redis.Client {
 		DB:       cfg.Name,
 	})
 }
+
+func NewCluster(cfg config.Cache) *redis.ClusterClient {
+	return redis.NewClusterClient(&redis.ClusterOptions{
+		Addrs: cfg.Hosts,
+
+		// To route commands by latency or randomly, enable one of the following.
+		//RouteByLatency: true,
+		//RouteRandomly: true,
+	})
+}

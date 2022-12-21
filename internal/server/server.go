@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"math"
@@ -15,7 +16,6 @@ import (
 	"syscall"
 	"time"
 
-	"encoding/json"
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	chiMiddleware "github.com/go-chi/chi/middleware"
@@ -25,6 +25,7 @@ import (
 	_ "github.com/jackc/pgx/stdlib"
 	"github.com/jmoiron/sqlx"
 	"github.com/jwalton/gchalk"
+	_ "github.com/lib/pq"
 	"golang.org/x/mod/modfile"
 
 	"github.com/gmhafiz/go8/config"
@@ -38,7 +39,6 @@ import (
 )
 
 const (
-	databaseMigrationPath = "file://database/migrations/"
 	swaggerDocsAssetPath  = "./docs/"
 )
 
@@ -46,25 +46,20 @@ type Server struct {
 	Version string
 	cfg     *config.Config
 
-	db    *sqlx.DB
-	ent   *gen.Client
+	DB  *sqlx.DB
+	ent *gen.Client
+
 	cache *redis.Client
+	cluster *redis.ClusterClient
 
 	validator  *validator.Validate
 	router     *chi.Mux
-	httpServer *http.Server
 
+	httpServer *http.Server
 	Domain
 }
 
 type Options func(opts *Server) error
-
-func defaultServer() *Server {
-	return &Server{
-		cfg:    config.New(),
-		router: chi.NewRouter(),
-	}
-}
 
 func New(opts ...Options) *Server {
 	s := defaultServer()
@@ -78,6 +73,13 @@ func New(opts ...Options) *Server {
 	return s
 }
 
+func defaultServer() *Server {
+	return &Server{
+		cfg:    config.New(),
+		router: chi.NewRouter(),
+	}
+}
+
 func (s *Server) Init(version string) {
 	s.Version = version
 	s.newRedis()
@@ -88,17 +90,21 @@ func (s *Server) Init(version string) {
 	s.InitDomains()
 }
 func (s *Server) newRedis() {
-	s.cache = redisLib.New(s.cfg.Cache)
+	if len(s.cfg.Cache.Hosts) > 0 {
+		s.cluster = redisLib.NewCluster(s.cfg.Cache)
+	} else {
+		s.cache = redisLib.New(s.cfg.Cache)
+	}
 }
 
 func (s *Server) newDatabase() {
 	if s.cfg.Database.Driver == "" {
 		log.Fatal("please fill in database credentials in .env file or set in environment variable")
 	}
-	s.db = db.NewSqlx(s.cfg.Database)
-	s.db.SetMaxOpenConns(s.cfg.Database.MaxConnectionPool)
-	s.db.SetMaxIdleConns(s.cfg.Database.MaxIdleConnections)
-	s.db.SetConnMaxLifetime(s.cfg.Database.ConnectionsMaxLifeTime)
+	s.DB = db.NewSqlx(s.cfg.Database)
+	s.DB.SetMaxOpenConns(s.cfg.Database.MaxConnectionPool)
+	s.DB.SetMaxIdleConns(s.cfg.Database.MaxIdleConnections)
+	s.DB.SetConnMaxLifetime(s.cfg.Database.ConnectionsMaxLifeTime)
 
 	dsn := fmt.Sprintf("postgres://%s:%d/%s?sslmode=%s&user=%s&password=%s",
 		s.cfg.Database.Host,
@@ -124,7 +130,7 @@ func (s *Server) setGlobalMiddleware() {
 	s.router.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusNotFound)
-		_, _ = w.Write([]byte(`{"error": "endpoint not found"}`))
+		_, _ = w.Write([]byte(`{"message": "endpoint not found"}`))
 	})
 	s.router.Use(middleware.Json)
 	s.router.Use(middleware.AuthN())
@@ -195,14 +201,6 @@ func (s *Server) Run() {
 
 func (s *Server) Config() *config.Config {
 	return s.cfg
-}
-
-func (s *Server) DB() *sqlx.DB {
-	return s.db
-}
-
-func (s *Server) Cache() *redis.Client {
-	return s.cache
 }
 
 // PrintAllRegisteredRoutes prints all registered routes from Chi router.
@@ -366,7 +364,8 @@ func gracefulShutdown(ctx context.Context, s *Server) error {
 	ctx, shutdown := context.WithTimeout(ctx, s.Config().Api.GracefulTimeout*time.Second)
 	defer shutdown()
 
-	_ = s.DB().Close()
+	// Close all opened resources
+	_ = s.DB.Close()
 	s.cache.Shutdown(ctx)
 
 	return s.httpServer.Shutdown(ctx)

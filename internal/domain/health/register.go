@@ -3,11 +3,11 @@ package http
 import (
 	"github.com/go-chi/chi/v5"
 
-	"github.com/gmhafiz/go8/internal/domain/health"
+	"github.com/gmhafiz/go8/internal/domain/health/usecase"
 	"github.com/gmhafiz/go8/internal/middleware"
 )
 
-func RegisterHTTPEndPoints(router *chi.Mux, uc health.UseCase) {
+func RegisterHTTPEndPoints(router *chi.Mux, uc usecase.UseCase) *Handler {
 	h := NewHandler(uc)
 
 	router.Route("/api/health", func(router chi.Router) {
@@ -16,4 +16,6 @@ func RegisterHTTPEndPoints(router *chi.Mux, uc health.UseCase) {
 		router.Get("/", h.Health)
 		router.Get("/readiness", h.Readiness)
 	})
+
+	return h
 }

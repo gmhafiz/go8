@@ -6,7 +6,7 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-func Validate(v *validator.Validate, generic interface{}) []string {
+func Validate(v *validator.Validate, generic any) []string {
 	err := v.Struct(generic)
 	if err != nil {
 		// this check is only needed when your code could produce

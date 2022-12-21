@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+
+	"github.com/gmhafiz/go8/internal/utility/message"
 )
 
 type Standard struct {
@@ -27,7 +29,7 @@ func Json(w http.ResponseWriter, statusCode int, payload interface{}) {
 	data, err := json.Marshal(payload)
 	if err != nil {
 		log.Println(err)
-		Error(w, http.StatusInternalServerError, ErrInternalServerError)
+		Error(w, http.StatusInternalServerError, message.ErrInternalError)
 		return
 	}
 
@@ -39,7 +41,7 @@ func Json(w http.ResponseWriter, statusCode int, payload interface{}) {
 	_, err = w.Write(data)
 	if err != nil {
 		log.Println(err)
-		Error(w, http.StatusInternalServerError, ErrInternalServerError)
+		Error(w, http.StatusInternalServerError, message.ErrInternalError)
 		return
 	}
 }

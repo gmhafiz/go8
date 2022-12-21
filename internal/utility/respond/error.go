@@ -2,18 +2,8 @@ package respond
 
 import (
 	"encoding/json"
-	"errors"
 	"log"
 	"net/http"
-)
-
-var (
-	ErrBadRequest          = errors.New("bad request")
-	ErrNoRecord            = errors.New("no record found")
-	ErrInternalServerError = errors.New("internal server error")
-
-	ErrDatabase       = errors.New("connecting to database")
-	ErrInvalidRequest = errors.New("invalid request")
 )
 
 func Errors(w http.ResponseWriter, statusCode int, errors []string) {

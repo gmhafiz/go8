@@ -7,7 +7,7 @@ import (
 	"net/http/httputil"
 	"runtime/debug"
 
-	chiMiddleware "github.com/go-chi/chi/middleware"
+	"github.com/go-chi/chi/middleware"
 )
 
 // Recovery adapted from https://github.com/go-chi/chi/blob/master/middleware/recoverer.go
@@ -17,7 +17,7 @@ func Recovery(next http.Handler) http.Handler {
 			if rvr := recover(); rvr != nil && rvr != http.ErrAbortHandler {
 				defer r.Body.Close()
 
-				logEntry := chiMiddleware.GetLogEntry(r)
+				logEntry := middleware.GetLogEntry(r)
 				if logEntry != nil {
 					logEntry.Panic(rvr, debug.Stack())
 				} else {
@@ -27,8 +27,6 @@ func Recovery(next http.Handler) http.Handler {
 				log.Printf("PANIC: %v", rvr)
 				// send to centralised logging system
 				log.Printf("request: %s %s\n", r.Method, r.URL.RequestURI())
-
-				//body := r.GetBody
 
 				dump, err := httputil.DumpRequest(r, true)
 				if err != nil {

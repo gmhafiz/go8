@@ -188,7 +188,7 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 	err = h.useCase.Delete(ctx, id)
 	if err != nil {
 		log.Println(err)
-		if errors.Is(err, respond.ErrNoRecord) {
+		if errors.Is(err, message.ErrNoRecord) {
 			respond.Error(w, http.StatusBadRequest, err)
 			return
 		}

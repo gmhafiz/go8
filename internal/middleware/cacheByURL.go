@@ -29,7 +29,7 @@ func CacheByURL(next http.Handler) http.Handler {
 		if err != nil {
 			log.Println(err)
 			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(`{"error":"internal error"}`))
+			_, _ = w.Write([]byte(`{"message":"internal error"}`))
 			return
 		}
 

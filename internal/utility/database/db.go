@@ -8,7 +8,7 @@ import (
 )
 
 func Alive(db *sql.DB) {
-	log.Println("Connecting to database... ")
+	log.Println("connecting to database... ")
 	for {
 		// Ping by itself is un-reliable, the connections are cached. This
 		// ensures that the database is still running by executing a harmless
@@ -18,7 +18,7 @@ func Alive(db *sql.DB) {
 		// to spread our retries.
 		_, err := db.Exec("SELECT true")
 		if err == nil {
-			log.Println("Database connected")
+			log.Println("database connected")
 			return
 		}
 
@@ -36,7 +36,7 @@ func Alive(db *sql.DB) {
 			time.Sleep(sleep)
 			_, err := db.Exec("SELECT true")
 			if err == nil {
-				log.Println("Database connected")
+				log.Println("database connected")
 				return
 			}
 		}

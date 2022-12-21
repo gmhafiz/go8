@@ -1,19 +1,18 @@
-package http
+package health
 
 import (
 	"net/http"
 
-	"github.com/gmhafiz/go8/internal/domain/health/usecase"
 	"github.com/gmhafiz/go8/internal/utility/respond"
 )
 
 
 
 type Handler struct {
-	useCase usecase.UseCase
+	useCase UseCase
 }
 
-func NewHandler(useCase usecase.UseCase) *Handler {
+func NewHandler(useCase UseCase) *Handler {
 	return &Handler{
 		useCase: useCase,
 	}

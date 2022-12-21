@@ -31,7 +31,7 @@ func parseISO8601(iso8601 string) time.Time {
 func parse3339(rfc3339 string) time.Time {
 	timeWant, err := time.Parse(time.RFC3339, rfc3339)
 	if err != nil {
-		log.Println(err)
+		log.Panic(err)
 	}
 	return timeWant
 }

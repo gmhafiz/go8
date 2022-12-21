@@ -18,12 +18,12 @@ const (
 )
 
 type Filter struct {
-	Page          int  `json:"page"`
-	Offset        int  `json:"offset"`
-	Limit         int  `json:"size"`
-	DisablePaging bool `json:"disable_paging"`
+	Page          int
+	Offset        int
+	Limit         int
+	DisablePaging bool
 
-	Sort   map[string]string `json:"sort"`
+	Sort   map[string]string
 	Search bool
 }
 
@@ -49,18 +49,11 @@ func New(queries url.Values) *Filter {
 	if queries.Has(queryParamSort) {
 		s := queries[queryParamSort]
 		for _, val := range s {
-			//// new strings.Cut() in go v1.18
-			//key, order, found := strings.Cut(val, ",")
-			//if found {
-			//	sortKey[key] = strings.ToUpper(order)
-			//} else {
-			//	sortKey[key] = "asc"
-			//}
-			split := strings.Split(val, ",")
-			if len(split) == 2 {
-				sortKey[split[0]] = strings.ToUpper(split[1])
+			key, order, found := strings.Cut(val, ",")
+			if found {
+				sortKey[key] = strings.ToUpper(order)
 			} else {
-				sortKey[split[0]] = "ASC"
+				sortKey[key] = "asc"
 			}
 		}
 	}

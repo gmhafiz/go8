@@ -1,18 +1,14 @@
-package usecase
-
-import (
-	"github.com/gmhafiz/go8/internal/domain/health/repository/postgres"
-)
+package health
 
 type UseCase interface {
 	Readiness() error
 }
 
 type Health struct {
-	healthRepo postgres.Repository
+	healthRepo Repository
 }
 
-func New(health postgres.Repository) *Health {
+func New(health Repository) *Health {
 	return &Health{
 		healthRepo: health,
 	}

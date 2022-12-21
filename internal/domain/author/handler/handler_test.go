@@ -709,7 +709,7 @@ func TestHandler_Delete(t *testing.T) {
 				authorID: 999,
 			},
 			want: want{
-				error:  respond.ErrNoRecord,
+				error:  message.ErrNoRecord,
 				status: http.StatusBadRequest,
 			},
 		},

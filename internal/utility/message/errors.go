@@ -8,5 +8,7 @@ var (
 
 	ErrFormingResponse = errors.New("error forming response")
 
+	ErrNoRecord = errors.New("no record found")
+
 	ErrFetchingBook = errors.New("error fetching books")
 )

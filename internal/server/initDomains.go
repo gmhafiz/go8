@@ -11,14 +11,13 @@ import (
 	bookHandler "github.com/gmhafiz/go8/internal/domain/book/handler"
 	bookRepo "github.com/gmhafiz/go8/internal/domain/book/repository"
 	bookUseCase "github.com/gmhafiz/go8/internal/domain/book/usecase"
-	healthHandlerHTTP "github.com/gmhafiz/go8/internal/domain/health/handler/http"
-	healthRepo "github.com/gmhafiz/go8/internal/domain/health/repository/postgres"
-	healthUseCase "github.com/gmhafiz/go8/internal/domain/health/usecase"
+	"github.com/gmhafiz/go8/internal/domain/health"
 	"github.com/gmhafiz/go8/internal/middleware"
 	"github.com/gmhafiz/go8/internal/utility/respond"
 )
 
 type Domain struct {
+	Health *health.Handler
 	Book   *bookHandler.Handler
 	Author *authorHandler.Handler
 }
@@ -42,9 +41,9 @@ func (s *Server) initVersion() {
 }
 
 func (s *Server) initHealth() {
-	newHealthRepo := healthRepo.New(s.DB())
-	newHealthUseCase := healthUseCase.New(newHealthRepo)
-	healthHandlerHTTP.RegisterHTTPEndPoints(s.router, newHealthUseCase)
+	newHealthRepo := health.NewRepo(s.DB)
+	newHealthUseCase := health.New(newHealthRepo)
+	s.Domain.Health = health.RegisterHTTPEndPoints(s.router, newHealthUseCase)
 }
 
 func (s *Server) initSwagger() {
@@ -60,7 +59,7 @@ func (s *Server) initSwagger() {
 }
 
 func (s *Server) initBook() {
-	newBookRepo := bookRepo.New(s.DB())
+	newBookRepo := bookRepo.New(s.DB)
 	newBookUseCase := bookUseCase.New(newBookRepo)
 	s.Domain.Book = bookHandler.RegisterHTTPEndPoints(s.router, s.validator, newBookUseCase)
 }
@@ -68,7 +67,7 @@ func (s *Server) initBook() {
 func (s *Server) initAuthor() {
 	newAuthorRepo := authorRepo.New(s.ent)
 	newLRUCache := authorRepo.NewLRUCache(newAuthorRepo)
-	newRedisCache := authorRepo.NewRedisCache(newAuthorRepo, s.Cache())
+	newRedisCache := authorRepo.NewRedisCache(newAuthorRepo, s.cache)
 	newAuthorSearchRepo := authorRepo.NewSearch(s.ent)
 
 	newAuthorUseCase := authorUseCase.New(

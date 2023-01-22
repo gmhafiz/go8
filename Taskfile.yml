@@ -21,17 +21,17 @@ tasks:
   migrate:
     desc: Migrates UP the database
     cmds:
-      - goose -dir database/goose postgres "user=$DB_USER password=$DB_PASS dbname=$DB_NAME host=$DB_HOST port=$DB_PORT sslmode=$DB_SSLMODE" up
+      - goose -dir database/migrations postgres "user=$DB_USER password=$DB_PASS dbname=$DB_NAME host=$DB_HOST port=$DB_PORT sslmode=$DB_SSLMODE" up
 
   migrate:step:
     desc: Migrates UP bt one step the database
     cmds:
-      - goose -dir database/goose $DB_DRIVER "user=$DB_USER password=$DB_PASS dbname=$DB_NAME host=$DB_HOST port=$DB_PORT sslmode=$DB_SSLMODE" up-by-one
+      - goose -dir database/migrations $DB_DRIVER "user=$DB_USER password=$DB_PASS dbname=$DB_NAME host=$DB_HOST port=$DB_PORT sslmode=$DB_SSLMODE" up-by-one
 
   migrate:rollback:
     desc: Rollback the database by one step
     cmds:
-      - goose -dir database/goose postgres "user=$DB_USER password=$DB_PASS dbname=$DB_NAME host=$DB_HOST port=$DB_PORT sslmode=$DB_SSLMODE" down
+      - goose -dir database/migrations postgres "user=$DB_USER password=$DB_PASS dbname=$DB_NAME host=$DB_HOST port=$DB_PORT sslmode=$DB_SSLMODE" down
 
   run:
     desc: Runs the app
@@ -74,8 +74,7 @@ tasks:
       - task swagger
       - task fmt
       - task vet
-      - task golint
-      - task security
+      - task lint
       - task vuln
       - task test
     silent: true
@@ -101,15 +100,10 @@ tasks:
     cmds:
       - go vet ./...
 
-  golint:
+  lint:
     desc: Uses golangci-lint
     cmds:
       - golangci-lint run
-
-  security:
-    desc: Run golang security
-    cmds:
-      - gosec -quiet ./...
 
   vuln:
     desc: Run Go Vulnerability Check
@@ -208,7 +202,6 @@ tasks:
       - task: install:swagger
       - task: install:goose
       - task: install:mirip
-      - task: install:gosec
       - task: install:air
       - task: install:vuln
     silent: true
@@ -232,11 +225,6 @@ tasks:
     desc: Install golang migration tool
     cmds:
       - go install github.com/pressly/goose/v3/cmd/goose@latest
-
-  install:gosec:
-    desc: Install golang security check. https://github.com/securego/gosec
-    cmds:
-      - go install github.com/securego/gosec/v2/cmd/gosec@latest
 
   install:air:
     desc: Install a hot reloader. Watch for file changes and automatically rebuilds binary

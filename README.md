@@ -250,8 +250,6 @@ Various tooling can be installed automatically by running which includes
     * Migration tool
  * [ent](https://entgo.io/docs/getting-started)
     * Database ORM tool
- * [gosec](https://github.com/securego/gosec)
-    * Security Checker
  * [mirip](https://github.com/gmhafiz/mirip)
     * Generate mocks from interface 
  * [air](https://github.com/cosmtrek/air)
@@ -306,15 +304,9 @@ Quickly catches compile error.
 
 ### golangci Linter
 
-    task golint
+    task lint
 
-Runs [https://golangci-lint.run](https://golangci-lint.run/) linter.
-
-### Security Checks
-
-    task security
-
-Runs opinionated security checks from [https://github.com/securego/gosec](https://github.com/securego/gosec).
+Runs [https://golangci-lint.run](https://golangci-lint.run/) linter. Includes [gosec](https://github.com/securego/gosec) via `golangci.yaml`.
 
 ### Unit tests
 

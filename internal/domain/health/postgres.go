@@ -3,6 +3,7 @@ package health
 import (
 	"github.com/jmoiron/sqlx"
 )
+
 type Repository interface {
 	Readiness() error
 }

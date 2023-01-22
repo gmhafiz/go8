@@ -6,8 +6,6 @@ import (
 	"github.com/gmhafiz/go8/internal/utility/respond"
 )
 
-
-
 type Handler struct {
 	useCase UseCase
 }

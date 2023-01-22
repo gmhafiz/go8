@@ -39,7 +39,7 @@ import (
 )
 
 const (
-	swaggerDocsAssetPath  = "./docs/"
+	swaggerDocsAssetPath = "./docs/"
 )
 
 type Server struct {
@@ -49,11 +49,11 @@ type Server struct {
 	DB  *sqlx.DB
 	ent *gen.Client
 
-	cache *redis.Client
+	cache   *redis.Client
 	cluster *redis.ClusterClient
 
-	validator  *validator.Validate
-	router     *chi.Mux
+	validator *validator.Validate
+	router    *chi.Mux
 
 	httpServer *http.Server
 	Domain

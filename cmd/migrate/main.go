@@ -16,8 +16,8 @@ func main() {
 	log.Printf("Version: %s\n", Version)
 
 	cfg := config.New()
-	store := db.NewSqlx(cfg.Database)
-	migrator := database.Migrator(database.WithDB(store.DB))
+	store := db.New(cfg)
+	migrator := database.Migrator(database.WithDB(store))
 
 	// todo: accept cli flag for other operations
 	migrator.Up()

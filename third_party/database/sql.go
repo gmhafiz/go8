@@ -6,7 +6,7 @@ import (
 	"log"
 
 	_ "github.com/go-sql-driver/mysql"
-	_ "github.com/jackc/pgx/stdlib"
+	_ "github.com/lib/pq"
 
 	"github.com/gmhafiz/go8/config"
 	_ "github.com/gmhafiz/go8/ent/gen/runtime"

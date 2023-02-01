@@ -58,14 +58,9 @@ git clone https://github.com/gmhafiz/go8
 cd go8
 ```
 
-Set database credentials by either
+The application depends on a database. Ideally applications load configurations from [environment variable](https://12factor.net/config) or from a vault. 
 
-1. Filling in your database credentials in `.env` by making a copy of `env.example` first.
-```shell
- cp env.example .env
-```
-
-2. Or by exporting into environment variable
+1. By exporting values into environment variables
 
 ```shell
 export DB_DRIVER=postgres
@@ -76,10 +71,19 @@ export DB_PASS=password
 export DB_NAME=go8_db
 ```
 
-Have a database ready either by installing them yourself or the following command. The `docker-compose.yml` will use database credentials set in `.env` file which is initialized by the previous step if you chose that route. Optionally, you may want redis as well.
+It is also possible to set them in `env` file. Just make sure this fle is ignored in `.gitignore` because it should not be checked into source control.
+
+2. Or by filling in your database credentials in `.env` by making a copy of `env.example` first.
+```shell
+ cp env.example .env
+```
+
+Have a database ready either by installing them yourself or the following command. The `docker-compose.yml` will use database credentials set in either `.env` file or environment variables which is initialized in the previous step. Optionally, you may want redis as well.
 
 ```shell
 docker-compose up -d postgres
+# or
+docker-compose up -d postgres redis
 ```
 
 Once the database is up you may run the migration with,

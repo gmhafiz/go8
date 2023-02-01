@@ -27,7 +27,7 @@ services:
     expose:
       - "5432"
     volumes:
-      - postgres15go8db:/var/lib/postgresql/data
+      - postgres:/var/lib/postgresql/data
 
   redis:
     image: 'redis:7.0'
@@ -39,4 +39,4 @@ services:
 
 
 volumes:
-  postgres14go8db:
+  postgres:

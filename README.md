@@ -60,7 +60,7 @@ cd go8
 
 The application depends on a database. Ideally applications load configurations from [environment variable](https://12factor.net/config) or from a vault. 
 
-1. By exporting values into environment variables
+1. Set values by exporting them into environment variables
 
 ```shell
 export DB_DRIVER=postgres
@@ -71,11 +71,11 @@ export DB_PASS=password
 export DB_NAME=go8_db
 ```
 
-It is also possible to set them in `env` file. Just make sure this fle is ignored in `.gitignore` because it should not be checked into source control.
+It is also possible to set them in `env` file. Just make sure this file is ignored in `.gitignore` because it should never be checked into source control.
 
-2. Or by filling in your database credentials in `.env` by making a copy of `env.example` first.
+2. Fill in your database credentials in `.env` by making a copy of `env.example` first.
 ```shell
- cp env.example .env
+cp env.example .env
 ```
 
 Have a database ready either by installing them yourself or the following command. The `docker-compose.yml` will use database credentials set in either `.env` file or environment variables which is initialized in the previous step. Optionally, you may want redis as well.

@@ -15,7 +15,7 @@ type Cache struct {
 	Name      int `default:"1"`
 	User      string
 	Pass      string
-	CacheTime time.Duration `default:"5s"`
+	CacheTime time.Duration `split_words:"true" default:"5s"`
 }
 
 func NewCache() Cache {

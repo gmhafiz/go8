@@ -7,16 +7,16 @@ import (
 )
 
 type Database struct {
-	Driver                 string
-	Host                   string
-	Port                   uint16
-	Name                   string
-	User                   string
-	Pass                   string
-	SslMode                string        `default:"disable"`
-	MaxConnectionPool      int           `default:"4"`
-	MaxIdleConnections     int           `default:"4"`
-	ConnectionsMaxLifeTime time.Duration `default:"300s"`
+	Driver                 string        `required:"true"`
+	Host                   string        `default:"localhost"`
+	Port                   uint16        `default:"5432"`
+	Name                   string        `default:"postgres"`
+	User                   string        `default:"postgres"`
+	Pass                   string        `default:"password"`
+	SslMode                string        `split_words:"true" default:"disable"`
+	MaxConnectionPool      int           `split_words:"true" default:"4"`
+	MaxIdleConnections     int           `split_words:"true" default:"4"`
+	ConnectionsMaxLifeTime time.Duration `split_words:"true" default:"300s"`
 }
 
 func DataStore() Database {

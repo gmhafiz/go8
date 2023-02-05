@@ -49,7 +49,7 @@ This kit is composed of standard Go library together with some well-known librar
 
 # Quick Start
 
-It is advisable to use the latest supported [Go version](#appendix) (>= v1.18). Optionally `docker` and `docker-compose` for easier start up.
+It is advisable to use the latest supported [Go version](#appendix) (>= v1.19). Optionally `docker` and `docker-compose` for easier start up. There is a quick guide for Ubuntu in the [appendix](wget https://go.dev/dl/go1.20.0.linux-amd64.tar.gz).
 
 Get it
 
@@ -86,13 +86,24 @@ docker-compose up -d postgres
 docker-compose up -d postgres redis
 ```
 
-Once the database is up you may run the migration with,
+Once the database is up you may run the migration with the following command:
 
 ```shell
 go run cmd/migrate/main.go
 ```
 
-Run the API with the following command. For the first time run, dependencies will be downloaded first.
+You will see a bunch of dependencies download for a first time run followed by the sql migration files
+
+```
+2023/02/05 19:23:48 connecting to database...
+2023/02/05 19:23:48 connecting connected
+2023/02/05 19:23:48 OK    20221213140051_create_books.sql
+2023/02/05 19:23:48 OK    20221213140144_create_authors.sql
+2023/02/05 19:23:48 OK    20221213140219_create_book_authors.sql
+2023/02/05 19:23:48 goose: no migrations to run. current verseion: 20221213140219
+```
+
+Run the API with the following command.
 
 ```shell
 go run cmd/go8/main.go
@@ -121,6 +132,8 @@ You will see the address of the API is running at.
 
 To use, open a new terminal and follow examples in the `examples/` folder
 
+Create a book:
+
 ```shell
 curl -v --location --request POST 'http://localhost:3080/api/v1/book' \
  --header 'Content-Type: application/json' \
@@ -132,7 +145,11 @@ curl -v --location --request POST 'http://localhost:3080/api/v1/book' \
     "test description"
   }' \
  | jq
+```
 
+Retrieve all books:
+
+```shell
 curl --location --request GET 'http://localhost:3080/api/v1/book' | jq
 ```
 
@@ -1579,20 +1596,16 @@ or
 For Ubuntu:
 
 ```shell
-sudo apt update && sudo apt install git curl build-essential jq
-wget https://go.dev/dl/go1.19.4.linux-amd64.tar.gz
-sudo tar -C /usr/local -xzf go1.19.4.linux-amd64.tar.gz
+sudo apt update && sudo apt install git curl build-essential docker docker-composse jq
+wget https://go.dev/dl/go1.20.linux-amd64.tar.gz
+sudo tar -C /usr/local -xzf go1.20.linux-amd64.tar.gz
 export PATH=$PATH:/usr/local/go/bin
 echo 'PATH=$PATH:/usr/local/go/bin' >> ~/.bash_aliases
 echo 'PATH=$PATH:$HOME/go/bin' >> ~/.bash_aliases
 source ~/.bashrc
 go install golang.org/x/tools/...@latest
 
-curl -s https://get.docker.com | sudo bash
 sudo usermod -aG docker ${USER}
 newgrp docker
 su - ${USER} # or logout and login
-
-sudo curl -L "https://github.com/docker/compose/releases/download/v2.9.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
 ```

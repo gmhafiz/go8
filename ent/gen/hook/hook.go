@@ -15,11 +15,10 @@ type AuthorFunc func(context.Context, *gen.AuthorMutation) (gen.Value, error)
 
 // Mutate calls f(ctx, m).
 func (f AuthorFunc) Mutate(ctx context.Context, m gen.Mutation) (gen.Value, error) {
-	mv, ok := m.(*gen.AuthorMutation)
-	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *gen.AuthorMutation", m)
+	if mv, ok := m.(*gen.AuthorMutation); ok {
+		return f(ctx, mv)
 	}
-	return f(ctx, mv)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *gen.AuthorMutation", m)
 }
 
 // The BookFunc type is an adapter to allow the use of ordinary
@@ -28,11 +27,10 @@ type BookFunc func(context.Context, *gen.BookMutation) (gen.Value, error)
 
 // Mutate calls f(ctx, m).
 func (f BookFunc) Mutate(ctx context.Context, m gen.Mutation) (gen.Value, error) {
-	mv, ok := m.(*gen.BookMutation)
-	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *gen.BookMutation", m)
+	if mv, ok := m.(*gen.BookMutation); ok {
+		return f(ctx, mv)
 	}
-	return f(ctx, mv)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *gen.BookMutation", m)
 }
 
 // Condition is a hook condition function.

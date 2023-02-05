@@ -31,7 +31,7 @@ type Client struct {
 
 // NewClient creates a new client configured with the given options.
 func NewClient(opts ...Option) *Client {
-	cfg := config{log: log.Println, hooks: &hooks{}}
+	cfg := config{log: log.Println, hooks: &hooks{}, inters: &inters{}}
 	cfg.options(opts...)
 	client := &Client{config: cfg}
 	client.init()
@@ -130,6 +130,25 @@ func (c *Client) Use(hooks ...Hook) {
 	c.Book.Use(hooks...)
 }
 
+// Intercept adds the query interceptors to all the entity clients.
+// In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
+func (c *Client) Intercept(interceptors ...Interceptor) {
+	c.Author.Intercept(interceptors...)
+	c.Book.Intercept(interceptors...)
+}
+
+// Mutate implements the ent.Mutator interface.
+func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
+	switch m := m.(type) {
+	case *AuthorMutation:
+		return c.Author.mutate(ctx, m)
+	case *BookMutation:
+		return c.Book.mutate(ctx, m)
+	default:
+		return nil, fmt.Errorf("gen: unknown mutation type %T", m)
+	}
+}
+
 // AuthorClient is a client for the Author schema.
 type AuthorClient struct {
 	config
@@ -144,6 +163,12 @@ func NewAuthorClient(c config) *AuthorClient {
 // A call to `Use(f, g, h)` equals to `author.Hooks(f(g(h())))`.
 func (c *AuthorClient) Use(hooks ...Hook) {
 	c.hooks.Author = append(c.hooks.Author, hooks...)
+}
+
+// Use adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `author.Intercept(f(g(h())))`.
+func (c *AuthorClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Author = append(c.inters.Author, interceptors...)
 }
 
 // Create returns a builder for creating a Author entity.
@@ -198,6 +223,8 @@ func (c *AuthorClient) DeleteOneID(id uint) *AuthorDeleteOne {
 func (c *AuthorClient) Query() *AuthorQuery {
 	return &AuthorQuery{
 		config: c.config,
+		ctx:    &QueryContext{Type: TypeAuthor},
+		inters: c.Interceptors(),
 	}
 }
 
@@ -217,7 +244,7 @@ func (c *AuthorClient) GetX(ctx context.Context, id uint) *Author {
 
 // QueryBooks queries the books edge of a Author.
 func (c *AuthorClient) QueryBooks(a *Author) *BookQuery {
-	query := &BookQuery{config: c.config}
+	query := (&BookClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := a.ID
 		step := sqlgraph.NewStep(
@@ -236,6 +263,26 @@ func (c *AuthorClient) Hooks() []Hook {
 	return c.hooks.Author
 }
 
+// Interceptors returns the client interceptors.
+func (c *AuthorClient) Interceptors() []Interceptor {
+	return c.inters.Author
+}
+
+func (c *AuthorClient) mutate(ctx context.Context, m *AuthorMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&AuthorCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&AuthorUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&AuthorUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&AuthorDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("gen: unknown Author mutation op: %q", m.Op())
+	}
+}
+
 // BookClient is a client for the Book schema.
 type BookClient struct {
 	config
@@ -250,6 +297,12 @@ func NewBookClient(c config) *BookClient {
 // A call to `Use(f, g, h)` equals to `book.Hooks(f(g(h())))`.
 func (c *BookClient) Use(hooks ...Hook) {
 	c.hooks.Book = append(c.hooks.Book, hooks...)
+}
+
+// Use adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `book.Intercept(f(g(h())))`.
+func (c *BookClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Book = append(c.inters.Book, interceptors...)
 }
 
 // Create returns a builder for creating a Book entity.
@@ -304,6 +357,8 @@ func (c *BookClient) DeleteOneID(id uint) *BookDeleteOne {
 func (c *BookClient) Query() *BookQuery {
 	return &BookQuery{
 		config: c.config,
+		ctx:    &QueryContext{Type: TypeBook},
+		inters: c.Interceptors(),
 	}
 }
 
@@ -323,7 +378,7 @@ func (c *BookClient) GetX(ctx context.Context, id uint) *Book {
 
 // QueryAuthors queries the authors edge of a Book.
 func (c *BookClient) QueryAuthors(b *Book) *AuthorQuery {
-	query := &AuthorQuery{config: c.config}
+	query := (&AuthorClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := b.ID
 		step := sqlgraph.NewStep(
@@ -340,4 +395,24 @@ func (c *BookClient) QueryAuthors(b *Book) *AuthorQuery {
 // Hooks returns the client hooks.
 func (c *BookClient) Hooks() []Hook {
 	return c.hooks.Book
+}
+
+// Interceptors returns the client interceptors.
+func (c *BookClient) Interceptors() []Interceptor {
+	return c.inters.Book
+}
+
+func (c *BookClient) mutate(ctx context.Context, m *BookMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&BookCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&BookUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&BookUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&BookDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("gen: unknown Book mutation op: %q", m.Op())
+	}
 }

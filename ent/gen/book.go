@@ -135,14 +135,14 @@ func (b *Book) assignValues(columns []string, values []any) error {
 
 // QueryAuthors queries the "authors" edge of the Book entity.
 func (b *Book) QueryAuthors() *AuthorQuery {
-	return (&BookClient{config: b.config}).QueryAuthors(b)
+	return NewBookClient(b.config).QueryAuthors(b)
 }
 
 // Update returns a builder for updating this Book.
 // Note that you need to call Book.Unwrap() before calling this method if this Book
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (b *Book) Update() *BookUpdateOne {
-	return (&BookClient{config: b.config}).UpdateOne(b)
+	return NewBookClient(b.config).UpdateOne(b)
 }
 
 // Unwrap unwraps the Book entity that was returned from a transaction after it was closed,

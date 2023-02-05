@@ -19,11 +19,9 @@ import (
 // BookQuery is the builder for querying Book entities.
 type BookQuery struct {
 	config
-	limit       *int
-	offset      *int
-	unique      *bool
+	ctx         *QueryContext
 	order       []OrderFunc
-	fields      []string
+	inters      []Interceptor
 	predicates  []predicate.Book
 	withAuthors *AuthorQuery
 	// intermediate query (i.e. traversal path).
@@ -37,26 +35,26 @@ func (bq *BookQuery) Where(ps ...predicate.Book) *BookQuery {
 	return bq
 }
 
-// Limit adds a limit step to the query.
+// Limit the number of records to be returned by this query.
 func (bq *BookQuery) Limit(limit int) *BookQuery {
-	bq.limit = &limit
+	bq.ctx.Limit = &limit
 	return bq
 }
 
-// Offset adds an offset step to the query.
+// Offset to start from.
 func (bq *BookQuery) Offset(offset int) *BookQuery {
-	bq.offset = &offset
+	bq.ctx.Offset = &offset
 	return bq
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
 func (bq *BookQuery) Unique(unique bool) *BookQuery {
-	bq.unique = &unique
+	bq.ctx.Unique = &unique
 	return bq
 }
 
-// Order adds an order step to the query.
+// Order specifies how the records should be ordered.
 func (bq *BookQuery) Order(o ...OrderFunc) *BookQuery {
 	bq.order = append(bq.order, o...)
 	return bq
@@ -64,7 +62,7 @@ func (bq *BookQuery) Order(o ...OrderFunc) *BookQuery {
 
 // QueryAuthors chains the current query on the "authors" edge.
 func (bq *BookQuery) QueryAuthors() *AuthorQuery {
-	query := &AuthorQuery{config: bq.config}
+	query := (&AuthorClient{config: bq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := bq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -87,7 +85,7 @@ func (bq *BookQuery) QueryAuthors() *AuthorQuery {
 // First returns the first Book entity from the query.
 // Returns a *NotFoundError when no Book was found.
 func (bq *BookQuery) First(ctx context.Context) (*Book, error) {
-	nodes, err := bq.Limit(1).All(ctx)
+	nodes, err := bq.Limit(1).All(setContextOp(ctx, bq.ctx, "First"))
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +108,7 @@ func (bq *BookQuery) FirstX(ctx context.Context) *Book {
 // Returns a *NotFoundError when no Book ID was found.
 func (bq *BookQuery) FirstID(ctx context.Context) (id uint, err error) {
 	var ids []uint
-	if ids, err = bq.Limit(1).IDs(ctx); err != nil {
+	if ids, err = bq.Limit(1).IDs(setContextOp(ctx, bq.ctx, "FirstID")); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -133,7 +131,7 @@ func (bq *BookQuery) FirstIDX(ctx context.Context) uint {
 // Returns a *NotSingularError when more than one Book entity is found.
 // Returns a *NotFoundError when no Book entities are found.
 func (bq *BookQuery) Only(ctx context.Context) (*Book, error) {
-	nodes, err := bq.Limit(2).All(ctx)
+	nodes, err := bq.Limit(2).All(setContextOp(ctx, bq.ctx, "Only"))
 	if err != nil {
 		return nil, err
 	}
@@ -161,7 +159,7 @@ func (bq *BookQuery) OnlyX(ctx context.Context) *Book {
 // Returns a *NotFoundError when no entities are found.
 func (bq *BookQuery) OnlyID(ctx context.Context) (id uint, err error) {
 	var ids []uint
-	if ids, err = bq.Limit(2).IDs(ctx); err != nil {
+	if ids, err = bq.Limit(2).IDs(setContextOp(ctx, bq.ctx, "OnlyID")); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -186,10 +184,12 @@ func (bq *BookQuery) OnlyIDX(ctx context.Context) uint {
 
 // All executes the query and returns a list of Books.
 func (bq *BookQuery) All(ctx context.Context) ([]*Book, error) {
+	ctx = setContextOp(ctx, bq.ctx, "All")
 	if err := bq.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
-	return bq.sqlAll(ctx)
+	qr := querierAll[[]*Book, *BookQuery]()
+	return withInterceptors[[]*Book](ctx, bq, qr, bq.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
@@ -204,6 +204,7 @@ func (bq *BookQuery) AllX(ctx context.Context) []*Book {
 // IDs executes the query and returns a list of Book IDs.
 func (bq *BookQuery) IDs(ctx context.Context) ([]uint, error) {
 	var ids []uint
+	ctx = setContextOp(ctx, bq.ctx, "IDs")
 	if err := bq.Select(book.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -221,10 +222,11 @@ func (bq *BookQuery) IDsX(ctx context.Context) []uint {
 
 // Count returns the count of the given query.
 func (bq *BookQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, bq.ctx, "Count")
 	if err := bq.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return bq.sqlCount(ctx)
+	return withInterceptors[int](ctx, bq, querierCount[*BookQuery](), bq.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
@@ -238,10 +240,15 @@ func (bq *BookQuery) CountX(ctx context.Context) int {
 
 // Exist returns true if the query has elements in the graph.
 func (bq *BookQuery) Exist(ctx context.Context) (bool, error) {
-	if err := bq.prepareQuery(ctx); err != nil {
-		return false, err
+	ctx = setContextOp(ctx, bq.ctx, "Exist")
+	switch _, err := bq.FirstID(ctx); {
+	case IsNotFound(err):
+		return false, nil
+	case err != nil:
+		return false, fmt.Errorf("gen: check existence: %w", err)
+	default:
+		return true, nil
 	}
-	return bq.sqlExist(ctx)
 }
 
 // ExistX is like Exist, but panics if an error occurs.
@@ -261,22 +268,21 @@ func (bq *BookQuery) Clone() *BookQuery {
 	}
 	return &BookQuery{
 		config:      bq.config,
-		limit:       bq.limit,
-		offset:      bq.offset,
+		ctx:         bq.ctx.Clone(),
 		order:       append([]OrderFunc{}, bq.order...),
+		inters:      append([]Interceptor{}, bq.inters...),
 		predicates:  append([]predicate.Book{}, bq.predicates...),
 		withAuthors: bq.withAuthors.Clone(),
 		// clone intermediate query.
-		sql:    bq.sql.Clone(),
-		path:   bq.path,
-		unique: bq.unique,
+		sql:  bq.sql.Clone(),
+		path: bq.path,
 	}
 }
 
 // WithAuthors tells the query-builder to eager-load the nodes that are connected to
 // the "authors" edge. The optional arguments are used to configure the query builder of the edge.
 func (bq *BookQuery) WithAuthors(opts ...func(*AuthorQuery)) *BookQuery {
-	query := &AuthorQuery{config: bq.config}
+	query := (&AuthorClient{config: bq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -299,16 +305,11 @@ func (bq *BookQuery) WithAuthors(opts ...func(*AuthorQuery)) *BookQuery {
 //		Aggregate(gen.Count()).
 //		Scan(ctx, &v)
 func (bq *BookQuery) GroupBy(field string, fields ...string) *BookGroupBy {
-	grbuild := &BookGroupBy{config: bq.config}
-	grbuild.fields = append([]string{field}, fields...)
-	grbuild.path = func(ctx context.Context) (prev *sql.Selector, err error) {
-		if err := bq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		return bq.sqlQuery(ctx), nil
-	}
+	bq.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &BookGroupBy{build: bq}
+	grbuild.flds = &bq.ctx.Fields
 	grbuild.label = book.Label
-	grbuild.flds, grbuild.scan = &grbuild.fields, grbuild.Scan
+	grbuild.scan = grbuild.Scan
 	return grbuild
 }
 
@@ -325,11 +326,11 @@ func (bq *BookQuery) GroupBy(field string, fields ...string) *BookGroupBy {
 //		Select(book.FieldTitle).
 //		Scan(ctx, &v)
 func (bq *BookQuery) Select(fields ...string) *BookSelect {
-	bq.fields = append(bq.fields, fields...)
-	selbuild := &BookSelect{BookQuery: bq}
-	selbuild.label = book.Label
-	selbuild.flds, selbuild.scan = &bq.fields, selbuild.Scan
-	return selbuild
+	bq.ctx.Fields = append(bq.ctx.Fields, fields...)
+	sbuild := &BookSelect{BookQuery: bq}
+	sbuild.label = book.Label
+	sbuild.flds, sbuild.scan = &bq.ctx.Fields, sbuild.Scan
+	return sbuild
 }
 
 // Aggregate returns a BookSelect configured with the given aggregations.
@@ -338,7 +339,17 @@ func (bq *BookQuery) Aggregate(fns ...AggregateFunc) *BookSelect {
 }
 
 func (bq *BookQuery) prepareQuery(ctx context.Context) error {
-	for _, f := range bq.fields {
+	for _, inter := range bq.inters {
+		if inter == nil {
+			return fmt.Errorf("gen: uninitialized interceptor (forgotten import gen/runtime?)")
+		}
+		if trv, ok := inter.(Traverser); ok {
+			if err := trv.Traverse(ctx, bq); err != nil {
+				return err
+			}
+		}
+	}
+	for _, f := range bq.ctx.Fields {
 		if !book.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("gen: invalid field %q for query", f)}
 		}
@@ -412,27 +423,30 @@ func (bq *BookQuery) loadAuthors(ctx context.Context, query *AuthorQuery, nodes 
 	if err := query.prepareQuery(ctx); err != nil {
 		return err
 	}
-	neighbors, err := query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
-		assign := spec.Assign
-		values := spec.ScanValues
-		spec.ScanValues = func(columns []string) ([]any, error) {
-			values, err := values(columns[1:])
-			if err != nil {
-				return nil, err
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
 			}
-			return append([]any{new(sql.NullInt64)}, values...), nil
-		}
-		spec.Assign = func(columns []string, values []any) error {
-			outValue := uint(values[0].(*sql.NullInt64).Int64)
-			inValue := uint(values[1].(*sql.NullInt64).Int64)
-			if nids[inValue] == nil {
-				nids[inValue] = map[*Book]struct{}{byID[outValue]: {}}
-				return assign(columns[1:], values[1:])
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := uint(values[0].(*sql.NullInt64).Int64)
+				inValue := uint(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Book]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
 			}
-			nids[inValue][byID[outValue]] = struct{}{}
-			return nil
-		}
+		})
 	})
+	neighbors, err := withInterceptors[[]*Author](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}
@@ -450,22 +464,11 @@ func (bq *BookQuery) loadAuthors(ctx context.Context, query *AuthorQuery, nodes 
 
 func (bq *BookQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := bq.querySpec()
-	_spec.Node.Columns = bq.fields
-	if len(bq.fields) > 0 {
-		_spec.Unique = bq.unique != nil && *bq.unique
+	_spec.Node.Columns = bq.ctx.Fields
+	if len(bq.ctx.Fields) > 0 {
+		_spec.Unique = bq.ctx.Unique != nil && *bq.ctx.Unique
 	}
 	return sqlgraph.CountNodes(ctx, bq.driver, _spec)
-}
-
-func (bq *BookQuery) sqlExist(ctx context.Context) (bool, error) {
-	switch _, err := bq.FirstID(ctx); {
-	case IsNotFound(err):
-		return false, nil
-	case err != nil:
-		return false, fmt.Errorf("gen: check existence: %w", err)
-	default:
-		return true, nil
-	}
 }
 
 func (bq *BookQuery) querySpec() *sqlgraph.QuerySpec {
@@ -481,10 +484,10 @@ func (bq *BookQuery) querySpec() *sqlgraph.QuerySpec {
 		From:   bq.sql,
 		Unique: true,
 	}
-	if unique := bq.unique; unique != nil {
+	if unique := bq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
 	}
-	if fields := bq.fields; len(fields) > 0 {
+	if fields := bq.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, book.FieldID)
 		for i := range fields {
@@ -500,10 +503,10 @@ func (bq *BookQuery) querySpec() *sqlgraph.QuerySpec {
 			}
 		}
 	}
-	if limit := bq.limit; limit != nil {
+	if limit := bq.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := bq.offset; offset != nil {
+	if offset := bq.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
 	if ps := bq.order; len(ps) > 0 {
@@ -519,7 +522,7 @@ func (bq *BookQuery) querySpec() *sqlgraph.QuerySpec {
 func (bq *BookQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(bq.driver.Dialect())
 	t1 := builder.Table(book.Table)
-	columns := bq.fields
+	columns := bq.ctx.Fields
 	if len(columns) == 0 {
 		columns = book.Columns
 	}
@@ -528,7 +531,7 @@ func (bq *BookQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector = bq.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if bq.unique != nil && *bq.unique {
+	if bq.ctx.Unique != nil && *bq.ctx.Unique {
 		selector.Distinct()
 	}
 	for _, p := range bq.predicates {
@@ -537,12 +540,12 @@ func (bq *BookQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	for _, p := range bq.order {
 		p(selector)
 	}
-	if offset := bq.offset; offset != nil {
+	if offset := bq.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := bq.limit; limit != nil {
+	if limit := bq.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
@@ -550,13 +553,8 @@ func (bq *BookQuery) sqlQuery(ctx context.Context) *sql.Selector {
 
 // BookGroupBy is the group-by builder for Book entities.
 type BookGroupBy struct {
-	config
 	selector
-	fields []string
-	fns    []AggregateFunc
-	// intermediate query (i.e. traversal path).
-	sql  *sql.Selector
-	path func(context.Context) (*sql.Selector, error)
+	build *BookQuery
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
@@ -565,58 +563,46 @@ func (bgb *BookGroupBy) Aggregate(fns ...AggregateFunc) *BookGroupBy {
 	return bgb
 }
 
-// Scan applies the group-by query and scans the result into the given value.
+// Scan applies the selector query and scans the result into the given value.
 func (bgb *BookGroupBy) Scan(ctx context.Context, v any) error {
-	query, err := bgb.path(ctx)
-	if err != nil {
+	ctx = setContextOp(ctx, bgb.build.ctx, "GroupBy")
+	if err := bgb.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	bgb.sql = query
-	return bgb.sqlScan(ctx, v)
+	return scanWithInterceptors[*BookQuery, *BookGroupBy](ctx, bgb.build, bgb, bgb.build.inters, v)
 }
 
-func (bgb *BookGroupBy) sqlScan(ctx context.Context, v any) error {
-	for _, f := range bgb.fields {
-		if !book.ValidColumn(f) {
-			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
-		}
+func (bgb *BookGroupBy) sqlScan(ctx context.Context, root *BookQuery, v any) error {
+	selector := root.sqlQuery(ctx).Select()
+	aggregation := make([]string, 0, len(bgb.fns))
+	for _, fn := range bgb.fns {
+		aggregation = append(aggregation, fn(selector))
 	}
-	selector := bgb.sqlQuery()
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(*bgb.flds)+len(bgb.fns))
+		for _, f := range *bgb.flds {
+			columns = append(columns, selector.C(f))
+		}
+		columns = append(columns, aggregation...)
+		selector.Select(columns...)
+	}
+	selector.GroupBy(selector.Columns(*bgb.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := bgb.driver.Query(ctx, query, args, rows); err != nil {
+	if err := bgb.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
 }
 
-func (bgb *BookGroupBy) sqlQuery() *sql.Selector {
-	selector := bgb.sql.Select()
-	aggregation := make([]string, 0, len(bgb.fns))
-	for _, fn := range bgb.fns {
-		aggregation = append(aggregation, fn(selector))
-	}
-	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(bgb.fields)+len(bgb.fns))
-		for _, f := range bgb.fields {
-			columns = append(columns, selector.C(f))
-		}
-		columns = append(columns, aggregation...)
-		selector.Select(columns...)
-	}
-	return selector.GroupBy(selector.Columns(bgb.fields...)...)
-}
-
 // BookSelect is the builder for selecting fields of Book entities.
 type BookSelect struct {
 	*BookQuery
 	selector
-	// intermediate query (i.e. traversal path).
-	sql *sql.Selector
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
@@ -627,26 +613,27 @@ func (bs *BookSelect) Aggregate(fns ...AggregateFunc) *BookSelect {
 
 // Scan applies the selector query and scans the result into the given value.
 func (bs *BookSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, bs.ctx, "Select")
 	if err := bs.prepareQuery(ctx); err != nil {
 		return err
 	}
-	bs.sql = bs.BookQuery.sqlQuery(ctx)
-	return bs.sqlScan(ctx, v)
+	return scanWithInterceptors[*BookQuery, *BookSelect](ctx, bs.BookQuery, bs, bs.inters, v)
 }
 
-func (bs *BookSelect) sqlScan(ctx context.Context, v any) error {
+func (bs *BookSelect) sqlScan(ctx context.Context, root *BookQuery, v any) error {
+	selector := root.sqlQuery(ctx)
 	aggregation := make([]string, 0, len(bs.fns))
 	for _, fn := range bs.fns {
-		aggregation = append(aggregation, fn(bs.sql))
+		aggregation = append(aggregation, fn(selector))
 	}
 	switch n := len(*bs.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
-		bs.sql.Select(aggregation...)
+		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
-		bs.sql.AppendSelect(aggregation...)
+		selector.AppendSelect(aggregation...)
 	}
 	rows := &sql.Rows{}
-	query, args := bs.sql.Query()
+	query, args := selector.Query()
 	if err := bs.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}

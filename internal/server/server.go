@@ -93,7 +93,7 @@ func (s *Server) newRedis() {
 	if !s.cfg.Cache.Enable {
 		return
 	}
-	
+
 	if len(s.cfg.Cache.Hosts) > 0 {
 		s.cluster = redisLib.NewCluster(s.cfg.Cache)
 	} else {

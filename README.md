@@ -100,7 +100,7 @@ You will see a bunch of dependencies download for a first time run followed by t
 2023/02/05 19:23:48 OK    20221213140051_create_books.sql
 2023/02/05 19:23:48 OK    20221213140144_create_authors.sql
 2023/02/05 19:23:48 OK    20221213140219_create_book_authors.sql
-2023/02/05 19:23:48 goose: no migrations to run. current verseion: 20221213140219
+2023/02/05 19:23:48 goose: no migrations to run. current version: 20221213140219
 ```
 
 Run the API with the following command.

@@ -185,7 +185,6 @@ go test ./...
       + [Compile Check](#compile-check)
       + [Unit tests](#unit-tests)
       + [golangci Linter](#golangci-linter)
-      + [Security Checks](#security-checks)
       + [Check](#check)
       + [Hot reload](#hot-reload)
       + [Generate Swagger Documentation](#generate-swagger-documentation)
@@ -371,6 +370,414 @@ Create a statically linked executable for linux.
 
 Clears all files inside `bin` directory.
 
+
+# Structure
+
+This project follows a layered architecture mainly consisting of three layers:
+
+1. Handler
+2. Use Case
+3. Repository
+
+![layered-architecture](assets/layered-architecture.png)
+
+The handler is responsible to receiving requests, validating them hand over to business logic.
+Values returned from use case layer is then formatted and to be returned to the client.
+
+Business logic (use case) is the meat of operations, and it calls a repository if necessary.
+
+Database calls lives in this repository layer where data is retrieved from a store.
+
+All of these layers are encapsulated in a domain, and an API can contain many domain.
+
+Each layer communicates through an interface which means the layer depends on
+abstraction instead of concrete implementation. This achieves loose-coupling and
+makes unit testing easier.
+
+## Starting Point
+
+Starting point of project is at `cmd/go8/main.go`
+
+![main](assets/main.png)
+
+
+The `Server` struct in `internal/server/server.go` is where all important dependencies are
+registered and to give a quick glance on what your server needs.
+
+![server](assets/server.png)
+
+`s.Init()` in `internal/server/server.go` simply initializes server configuration, database, input validator, router, global middleware, domains, and swagger. Any new dependency added to the `Server` struct can be initialized here too.
+
+![init](assets/init.png)
+
+
+## Configurations
+![configs](assets/configs.png)
+
+All environment variables are read into specific `Configs` struct initialized in `configs/configs.go`. Each of the embedded struct are defined in its own file of the same package where its fields are read from either environment variable or `.env` file.
+
+This approach allows code completion when accessing your configurations.
+
+![config code completion](assets/config-code-completion.png)
+
+
+#### .env files
+
+The `.env` file defines settings for various parts of the API including the database credentials. If you choose to export the variables into environment variables for example:
+
+    export DB_DRIVER=postgres
+    export DB_HOST=localhost
+    export DB_PORT=5432
+    etc
+
+
+To add a new type of configuration, for example for Elasticsearch
+
+1. Create a new go file in `./configs`
+
+```shell
+touch configs/elasticsearch.go
+```
+
+2. Create a new struct for your type
+
+```go
+type Elasticsearch struct {
+  Address  string
+  User     string
+  Password string
+}
+```
+
+3. Add a constructor for it
+
+```go
+func ElasticSearch() Elasticsearch {
+   var elasticsearch Elasticsearch
+   envconfig.MustProcess("ELASTICSEARCH", &elasticsearch)
+
+   return elasticsearch
+}
+``` 
+
+A namespace is defined
+
+4. Add to `.env` of the new environment variables
+
+```shell
+ELASTICSEARCH_ADDRESS=http://localhost:9200
+ELASTICSEARCH_USER=user
+ELASTICSEARCH_PASS=password
+```
+
+Limiting the number of connection pool avoids ['time-slicing' of the CPU](https://github.com/brettwooldridge/HikariCP/wiki/About-Pool-Sizing). Use the following formula to determine a suitable number
+
+    number of connections = ((core_count * 2) + effective_spindle_count)    
+
+## Database
+
+Migrations files are stored in `database/migrations` folder. [goose](https://github.com/pressly/goose) library is used to perform migration using `task` commands.
+
+## Router
+
+Router multiplexer or mux is created for use by `Domain`. While [chi](https://github.com/go-chi/chi) library is being used here, you can swap out the router to an alternative one when assigning `s.router` field. However, you will need to adjust how you register your handlers in each domain.
+
+## Domain
+
+Let us look at how this project attempts at layered architecture. A domain consists of:
+
+1. Handler (Controllers)
+2. Use case (Business Logic)
+3. Repository (Database)
+
+Let us start by looking at how `repository` is implemented.
+
+### Repository
+
+Starting with `Database`. This is where all database operations are handled. Inside the `internal/domain/health` folder:
+
+![book-domain](assets/domain-health.png)
+
+Interfaces for both use case and repository are on its own file under the `health` package while its implementation are in `usecase` and `repository` package respectively.
+
+The `health` repository has a single method
+
+`internal/domain/health/repository.go`
+
+```go
+ type Repository interface {
+     Readiness() error
+ }
+````    
+
+And it is implemented in a package called `postgres` in `internal/domain/health/repository/postgres/postgres.go`
+
+```go
+func (r *repository) Readiness() error {
+  return r.db.Ping()
+}
+```
+
+### Use Case
+
+This is where all business logic lives. By having repository layer underneath in a separate layer, those functions are reusable in other use case layers.
+
+### Handler
+
+This layer is responsible in handling request from outside world and into the `use case` layer. It does the following:
+
+1. Parse request into a 'request' struct
+2. Sanitize and validates said struct
+3. Pass into `use case` layer
+4. Process results from coming from `use case` layer and decide how the payload is going to be formatted to the outside world.
+
+Route API are defined in `RegisterHTTPEndPoints` in their respective `register.go` file.
+
+####  1. Parse request into 'request' struct
+
+A struct must be defined with fields along with its type. For example in `book.CreateRequest`, there are four possible inputs and all of them are required, denoted by struct tag. `ImageURL` needs to be a URL, which is a handy utility provided by the [validation library](https://github.com/go-playground/validator), among others.
+
+```go
+type CreateRequest struct {
+	Title         string `json:"title" validate:"required"`
+	PublishedDate string `json:"published_date" validate:"required"`
+	ImageURL      string `json:"image_url" validate:"url"`
+	Description   string `json:"description" validate:"required"`
+}
+```
+`validate` struct tag is parsed by the library to know which one is required. `json` struct tag helps with customising fields' letter case.
+
+To parse the request, simply use the `json` package.
+
+```go
+var bookRequest book.CreateRequest
+err := json.NewDecoder(r.Body).Decode(&bookRequest)
+```
+
+Take care to supply the address of `bookRequest` variable by prepending ampersand `&` to it.
+
+If there are no errors, the `bookRequest` can be passed into the usecase or repository layer.
+
+Using the `json` package to parse is although simple, works well. It doesn't cover all cases in which you may want to refer to this [article](https://www.alexedwards.net/blog/how-to-properly-parse-a-json-request-body)
+
+### Initialize Domain
+
+Finally, a domain is initialized by wiring up all dependencies in server/initDomains.go. Here, any dependencies can be injected such as a custom logger.
+
+```go
+func (s *Server) initBook() {
+   newBookRepo := bookRepo.New(s.GetDB())
+   newBookUseCase := bookUseCase.New(newBookRepo)
+    s.Domain.Book = bookHandler.RegisterHTTPEndPoints(s.router, newBookUseCase)
+}
+```
+
+## Middleware
+
+A middleware is just a handler that returns a handler as can be seen in the `internal/middleware/cors.go`
+
+```go
+func Cors(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+    
+        // do something before going into Handler
+        
+        next.ServerHTTP(w, r)
+        
+        // do something after handler has been served
+    }
+}
+```
+
+Then you may choose to have this middleware to affect all routes by registering it in`setGlobalMiddleware()` or only a specific domain at `RegisterHTTPEndPoints()` function in its `register.go` file.
+
+
+### Middleware External Dependency
+
+Sometimes you need to add an external dependency to the middleware which is often the case for
+authorization be that a config or a database. To do that, we wrap our middleware with a
+`func(http.Handler) http.Handler`. Any dependencies can now be passed in into `Auth()`.
+
+```go
+func Auth(cfg configs.Configs) func(http.Handler) http.Handler {
+    return func(next http.Handler) http.Handler {
+        return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+            claims, err := getClaims(r, cfg.Jwt.SecretKey)
+            if err != nil {
+                w.WriteHeader(http.StatusUnauthorized)
+                return
+            }
+    
+            next.ServeHTTP(w, r)
+        })
+    }
+}
+```
+
+## Dependency Injection
+
+Dependency injection in Go is simple. We can simply pass in whatever we need
+into the function or method signature. There is no need to make a dependency injection
+container like other object-oriented programming language.
+
+How does dependency injection happens? It starts with `InitDomains()` method. We
+initialize the dependency we want early in the start-up of the program and then
+pass it down the layers.
+
+```go
+newBookRepo := bookRepo.New(s.DB())
+newBookUseCase := bookUseCase.New(newBookRepo)
+s.Domain.Book = bookHandler.RegisterHTTPEndPoints(
+	s.router,
+	s.validator,
+	newBookUseCase,
+)
+```
+
+The repository gets access to a pointer to `sql.DB` from the `s.DB()`
+initialisation to perform database operations. This layer also knows nothing of
+layers above it. `NewBookUseCase` depends on that repository and finally the
+handler depends on the use case.
+
+## Libraries
+
+Initialization of external libraries are located in `third_party/`
+
+Since `sqlx` is a third party library, it is initialized in `/third_party/database/sqlx.go`
+
+# Cache
+
+The three most significant bottlenecks are
+
+1. Input output (I/O) like disk access including database.
+2. Network calls - like calling another API.
+3. Serialization - like serializing or deserializing JSON
+
+We demonstrate how caching results can speed up API response:
+
+## LRU
+
+To make this work, we introduce another layer that sits between use case and database layer.
+
+`internal/author/repository/cache/lru.go` shows an example of using an LRU cache to tackle the biggest bottleneck. Once we get a result for the first time, we store it by using the requesting URL as its key. Subsequent requests of the same URL will return the result from the cache instead of from the database.
+
+The request url only exists in the handler layer by accessing it from `*http.Request`.
+To pass the request url to our cache layer, we can either pass it down the layers as
+a method parameter, or we can use `context` to save this url. In general, `context`
+is not the way to store variables but since this url is scoped to this one request,
+it is okay.
+
+```go
+ctx := context.WithValue(r.Context(), author.CacheURL, r.URL.String())
+```
+
+Then in the cache layer, we retrieve it using the same key (`author.CacheURL`)
+and we must assert the type to `string`.
+
+```go
+url := ctx.Value(author.CacheURL).(string)
+```
+
+The code above can panic if the key does not exist. To be safer, we can check if
+a value is retrieved successfully.
+
+```go
+url, ok := ctx.Value(author.CacheURL).(string)
+if !ok {
+	// handle if not ok, or call repository layer.
+}
+```
+
+Using the `url`, we try and retrieve a value from the cache,
+```go
+val, ok := c.lru.Get(url)
+```
+
+If it doesn't exist, we can simply add it to our cache.
+```go
+c.lru.Add(url, res)
+```
+
+Avoiding I/O bottleneck results in an amazing speed, **11x** more requests/second (328 bytes response size) compared to an already blazing fast endpoint as shown by `wrk` benchmark:
+
+CPU: AMD 3600 3.6Ghz
+Storage: SSD
+
+```shell
+wrk -t2 -d60 -c200  'http://localhost:3080/api/v1/author?page=1&size=3'
+Running 1m test @ http://localhost:3080/api/v1/author?page=1&size=3
+  2 threads and 200 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     4.23ms    5.07ms  71.75ms   83.36%
+    Req/Sec    40.64k     3.55k   52.91k    68.45%
+  4847965 requests in 1.00m, 1.48GB read
+Requests/sec:  80775.66
+Transfer/sec:     25.27MB
+```
+
+Compared to calling database layer:
+```shell
+wrk -t2 -d60 -c200  'http://localhost:3080/api/v1/author?page=1&size=3'
+Running 1m test @ http://localhost:3080/api/v1/author?page=1&size=3
+  2 threads and 200 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    70.66ms  116.57ms   1.24s    88.09%
+    Req/Sec     3.66k   276.15     4.53k    70.50%
+  437285 requests in 1.00m, 136.79MB read
+Requests/sec:   7280.82
+Transfer/sec:      2.28MB
+```
+
+Since a cache stays in the store if it is frequently accessed, invalidating the cache must be done if there are any changes to the stored value in the event of update and deletion. Thus, we need to delete the cache that starts with the base URL of this domain endpoint.
+
+For example:
+```go
+func (c *AuthorLRU) Update(ctx context.Context, toAuthor *models.Author) (*models.Author, error) {
+	c.invalidate(ctx)
+
+	return c.service.Update(ctx, toAuthor)
+}
+
+func (c *AuthorLRU) invalidate(ctx context.Context) {
+	url := ctx.Value(author.CacheURL)
+	split := strings.Split(url.(string), "/")
+	baseURL := strings.Join(split[:4], "/")
+
+	keys := c.lru.Keys()
+	for _, key := range keys {
+		if strings.HasPrefix(key.(string), baseURL) {
+			c.lru.Remove(key)
+		}
+	}
+}
+```
+## Redis
+
+By using Redis as a cache, you can potentially take advantage of a cluster architecture for more RAM instead of relying on the RAM on current server your API is hosted. Also, the cache won't be cleared like in-memory `LRU` when a new API is deployed.
+
+Similar to LRU implementation above, this Redis layer sits in between use case and database layer.
+
+This Redis library requires payload in a binary format. You may choose the builtin `encoding/json` package or `msgpack` for smaller payload and **7x** higher speed than without a cache. Using `msgpack` over `json` tackles serialization bottleneck.
+
+```go
+// marshal 
+cacheEntry, err := msgpack.Marshal(res)
+// unmarshal
+err = msgpack.Unmarshal([]byte(val), &res)
+```
+
+```shell
+wrk -t2 -d60 -c200  'http://localhost:3080/api/v1/author?page=1&size=3'
+Running 1m test @ http://localhost:3080/api/v1/author?page=1&size=3
+  2 threads and 200 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     4.05ms    2.56ms  37.48ms   73.63%
+    Req/Sec    25.48k     1.45k   30.73k    71.29%
+  3039522 requests in 1.00m, 0.93GB read
+Requests/sec:  50638.73
+Transfer/sec:     15.84MB
+```
+
 # Migration
 
 Migration is a good step towards having a versioned database and makes publishing to a production server a safe process.
@@ -481,7 +888,7 @@ If you have task installed, simply run
 
     task build
 
-It does task check prior to build and puts both the binary and `.env` files into `./bin` folder
+It does a task check prior to the build and puts both the binary and `.env` files into `./bin` folder
 
 ## Without Task
 
@@ -513,387 +920,6 @@ Access at
 The command `swag init` scans the whole directory and looks for [swagger's declarative comments](https://github.com/swaggo/swag#declarative-comments-format) format.
 
 Custom theme is obtained from [https://github.com/ostranme/swagger-ui-themes](https://github.com/ostranme/swagger-ui-themes)
-
-# Structure
-
-This project follows a layered architecture mainly consisting of three layers:
-
- 1. Handler
- 2. Use Case
- 3. Repository
-
-![layered-architecture](assets/layered-architecture.png)
-
-The handler is responsible to receiving requests, validating them hand over to business logic.
-Values returned from use case layer is then formatted and to be returned to the client.
-
-Business logic (use case) is the meat of operations, and it calls a repository if necessary.
-
-Database calls lives in this repository layer where data is retrieved from a store.
-
-All of these layers are encapsulated in a domain, and an API can contain many domain.
-
-Each layer communicates through an interface which means the layer depends on
-abstraction instead of concrete implementation. This achieves loose-coupling and 
-makes unit testing easier.
-
-## Starting Point
-
-Starting point of project is at `cmd/go8/main.go`
-
-![main](assets/main.png)
-
-
-The `Server` struct in `internal/server/server.go` is where all important dependencies are 
-registered and to give a quick glance on what your server needs.
-
-![server](assets/server.png)
-
-`s.Init()` in `internal/server/server.go` simply initializes server configuration, database, input validator, router, global middleware, domains, and swagger. Any new dependency added to the `Server` struct can be initialized here too.
-
-![init](assets/init.png)
-
-
-## Configurations
-![configs](assets/configs.png)
-
-All environment variables are read into specific `Configs` struct initialized in `configs/configs.go`. Each of the embedded struct are defined in its own file of the same package where its fields are read from either environment variable or `.env` file.
-
-This approach allows code completion when accessing your configurations.
-
-![config code completion](assets/config-code-completion.png)
-
-
-#### .env files
-
-The `.env` file defines settings for various parts of the API including the database credentials. If you choose to export the variables into environment variables for example:
-
-    export DB_DRIVER=postgres
-    export DB_HOST=localhost
-    export DB_PORT=5432
-    etc
-
-
-To add a new type of configuration, for example for Elasticsearch
- 
-1. Create a new go file in `./configs`
-
-```shell
-touch configs/elasticsearch.go
-```
-    
-2. Create a new struct for your type
-
-```go
-type Elasticsearch struct {
-  Address  string
-  User     string
-  Password string
-}
-```
-    
-3. Add a constructor for it
-
-```go
-func ElasticSearch() Elasticsearch {
-   var elasticsearch Elasticsearch
-   envconfig.MustProcess("ELASTICSEARCH", &elasticsearch)
-
-   return elasticsearch
-}
-``` 
-
-A namespace is defined 
-
-4. Add to `.env` of the new environment variables
-
-```shell
-ELASTICSEARCH_ADDRESS=http://localhost:9200
-ELASTICSEARCH_USER=user
-ELASTICSEARCH_PASS=password
-```
-
-Limiting the number of connection pool avoids ['time-slicing' of the CPU](https://github.com/brettwooldridge/HikariCP/wiki/About-Pool-Sizing). Use the following formula to determine a suitable number
- 
-    number of connections = ((core_count * 2) + effective_spindle_count)    
-
-## Database
-
-Migrations files are stored in `database/migrations` folder. [goose](https://github.com/pressly/goose) library is used to perform migration using `task` commands.
-
-## Router
-
-Router multiplexer or mux is created for use by `Domain`. While [chi](https://github.com/go-chi/chi) library is being used here, you can swap out the router to an alternative one when assigning `s.router` field. However, you will need to adjust how you register your handlers in each domain.
-
-## Domain
-
-Let us look at how this project attempts at layered architecture. A domain consists of: 
-
-  1. Handler (Controllers)
-  2. Use case (Business Logic)
-  3. Repository (Database)
-
-Let us start by looking at how `repository` is implemented.
-
-### Repository
-
-Starting with `Database`. This is where all database operations are handled. Inside the `internal/domain/health` folder:
-
-![book-domain](assets/domain-health.png)
-
-Interfaces for both use case and repository are on its own file under the `health` package while its implementation are in `usecase` and `repository` package respectively.
-
-The `health` repository has a single method
-
-`internal/domain/health/repository.go`
-
-```go
- type Repository interface {
-     Readiness() error
- }
-````    
-
-And it is implemented in a package called `postgres` in `internal/domain/health/repository/postgres/postgres.go`
-
-```go
-func (r *repository) Readiness() error {
-  return r.db.Ping()
-}
-```
-
-### Use Case
-
-This is where all business logic lives. By having repository layer underneath in a separate layer, those functions are reusable in other use case layers.
-
-### Handler
-
-This layer is responsible in handling request from outside world and into the `use case` layer. It does the following:
-
- 1. Parse request into private 'request' struct
- 2. Sanitize and validates said struct
- 3. Pass into `use case` layer
- 4. Process results from coming from `use case` layer and decide how the payload is going to be formatted to the outside world.
-  
-Route API are defined in `RegisterHTTPEndPoints` in their respective `register.go` file. 
-
-
-### Initialize Domain
-
-Finally, a domain is initialized by wiring up all dependencies in server/initDomains.go. Here, any dependencies can be injected such as a custom logger.
-
-```go
-func (s *Server) initBook() {
-   newBookRepo := bookRepo.New(s.GetDB())
-   newBookUseCase := bookUseCase.New(newBookRepo)
-    s.Domain.Book = bookHandler.RegisterHTTPEndPoints(s.router, newBookUseCase)
-}
-```
-
-## Middleware
-
-A middleware is just a handler that returns a handler as can be seen in the `internal/middleware/cors.go`
-
-```go
-func Cors(next http.Handler) http.Handler {
-    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-    
-        // do something before going into Handler
-        
-        next.ServerHTTP(w, r)
-        
-        // do something after handler has been served
-    }
-}
-```
-
-Then you may choose to have this middleware to affect all routes by registering it in`setGlobalMiddleware()` or only a specific domain at `RegisterHTTPEndPoints()` function in its `register.go` file. 
-
-
-### Middleware External Dependency
-
-Sometimes you need to add an external dependency to the middleware which is often the case for 
-authorization be that a config or a database. To do that, we wrap our middleware with a
-`func(http.Handler) http.Handler`. Any dependencies can now be passed in into `Auth()`.
-
-```go
-func Auth(cfg configs.Configs) func(http.Handler) http.Handler {
-    return func(next http.Handler) http.Handler {
-        return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-            claims, err := getClaims(r, cfg.Jwt.SecretKey)
-            if err != nil {
-                w.WriteHeader(http.StatusUnauthorized)
-                return
-            }
-    
-            next.ServeHTTP(w, r)
-        })
-    }
-}
-```
-
-## Dependency Injection
-
-Dependency injection in Go is simple. We can simply pass in whatever we need
-into the function or method signature. There is no need to make a dependency injection
-container like other object-oriented programming language.
-
-How does dependency injection happens? It starts with `InitDomains()` method. We
-initialize the dependency we want early in the start-up of the program and then 
-pass it down the layers.
-
-```go
-newBookRepo := bookRepo.New(s.DB())
-newBookUseCase := bookUseCase.New(newBookRepo)
-s.Domain.Book = bookHandler.RegisterHTTPEndPoints(
-	s.router,
-	s.validator,
-	newBookUseCase,
-)
-```
-
-The repository gets access to a pointer to `sql.DB` from the `s.DB()` 
-initialisation to perform database operations. This layer also knows nothing of
-layers above it. `NewBookUseCase` depends on that repository and finally the
-handler depends on the use case.
-
-## Libraries
-
-Initialization of external libraries are located in `third_party/`
-
-Since `sqlx` is a third party library, it is initialized in `/third_party/database/sqlx.go`
-
-# Cache
-
-The three most significant bottlenecks are 
-
-  1. Input output (I/O) like disk access including database.
-  2. Network calls - like calling another API.
-  3. Serialization - like serializing or deserializing JSON
-
-We demonstrate how caching results can speed up API response: 
-
-## LRU
-
-To make this work, we introduce another layer that sits between use case and database layer.
-
-`internal/author/repository/cache/lru.go` shows an example of using an LRU cache to tackle the biggest bottleneck. Once we get a result for the first time, we store it by using the requesting URL as its key. Subsequent requests of the same URL will return the result from the cache instead of from the database. 
-
-The request url only exists in the handler layer by accessing it from `*http.Request`.
-To pass the request url to our cache layer, we can either pass it down the layers as
-a method parameter, or we can use `context` to save this url. In general, `context`
-is not the way to store variables but since this url is scoped to this one request,
-it is okay.
-
-```go
-ctx := context.WithValue(r.Context(), author.CacheURL, r.URL.String())
-```
-
-Then in the cache layer, we retrieve it using the same key (`author.CacheURL`)
-and we must assert the type to `string`.
-
-```go
-url := ctx.Value(author.CacheURL).(string)
-```
-
-The code above can panic if the key does not exist. To be safer, we can check if
-a value is retrieved successfully.
-
-```go
-url, ok := ctx.Value(author.CacheURL).(string)
-if !ok {
-	// handle if not ok, or call repository layer.
-}
-```
-
-Using the `url`, we try and retrieve a value from the cache,
-```go
-val, ok := c.lru.Get(url)
-```
-
-If it doesn't exist, we can simply add it to our cache. 
-```go
-c.lru.Add(url, res)
-```
-
-Avoiding I/O bottleneck results in an amazing speed, **11x** more requests/second (328 bytes response size) compared to an already blazing fast endpoint as shown by `wrk` benchmark:
-
-CPU: AMD 3600 3.6Ghz
-Storage: SSD
-
-```shell
-wrk -t2 -d60 -c200  'http://localhost:3080/api/v1/author?page=1&size=3'
-Running 1m test @ http://localhost:3080/api/v1/author?page=1&size=3
-  2 threads and 200 connections
-  Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency     4.23ms    5.07ms  71.75ms   83.36%
-    Req/Sec    40.64k     3.55k   52.91k    68.45%
-  4847965 requests in 1.00m, 1.48GB read
-Requests/sec:  80775.66
-Transfer/sec:     25.27MB
-```
-
-Compared to calling database layer:
-```shell
-wrk -t2 -d60 -c200  'http://localhost:3080/api/v1/author?page=1&size=3'
-Running 1m test @ http://localhost:3080/api/v1/author?page=1&size=3
-  2 threads and 200 connections
-  Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency    70.66ms  116.57ms   1.24s    88.09%
-    Req/Sec     3.66k   276.15     4.53k    70.50%
-  437285 requests in 1.00m, 136.79MB read
-Requests/sec:   7280.82
-Transfer/sec:      2.28MB
-```
-
-Since a cache stays in the store if it is frequently accessed, invalidating the cache must be done if there are any changes to the stored value in the event of update and deletion. Thus, we need to delete the cache that starts with the base URL of this domain endpoint. 
-
-For example:
-```go
-func (c *AuthorLRU) Update(ctx context.Context, toAuthor *models.Author) (*models.Author, error) {
-	c.invalidate(ctx)
-
-	return c.service.Update(ctx, toAuthor)
-}
-
-func (c *AuthorLRU) invalidate(ctx context.Context) {
-	url := ctx.Value(author.CacheURL)
-	split := strings.Split(url.(string), "/")
-	baseURL := strings.Join(split[:4], "/")
-
-	keys := c.lru.Keys()
-	for _, key := range keys {
-		if strings.HasPrefix(key.(string), baseURL) {
-			c.lru.Remove(key)
-		}
-	}
-}
-```
-## Redis
-
-By using Redis as a cache, you can potentially take advantage of a cluster architecture for more RAM instead of relying on the RAM on current server your API is hosted. Also, the cache won't be cleared like in-memory `LRU` when a new API is deployed.
-
-Similar to LRU implementation above, this Redis layer sits in between use case and database layer.
-
-This Redis library requires payload in a binary format. You may choose the builtin `encoding/json` package or `msgpack` for smaller payload and **7x** higher speed than without a cache. Using `msgpack` over `json` tackles serialization bottleneck.
-
-```go
-// marshal 
-cacheEntry, err := msgpack.Marshal(res)
-// unmarshal
-err = msgpack.Unmarshal([]byte(val), &res)
-```
-
-```shell
-wrk -t2 -d60 -c200  'http://localhost:3080/api/v1/author?page=1&size=3'
-Running 1m test @ http://localhost:3080/api/v1/author?page=1&size=3
-  2 threads and 200 connections
-  Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency     4.05ms    2.56ms  37.48ms   73.63%
-    Req/Sec    25.48k     1.45k   30.73k    71.29%
-  3039522 requests in 1.00m, 0.93GB read
-Requests/sec:  50638.73
-Transfer/sec:     15.84MB
-````
 
 # Utility
 

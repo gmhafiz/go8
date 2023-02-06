@@ -1,10 +1,5 @@
 package author
 
-import (
-	"encoding/json"
-	"io"
-)
-
 type CreateRequest struct {
 	FirstName  string `json:"first_name" validate:"required"`
 	MiddleName string `json:"middle_name"`
@@ -24,12 +19,4 @@ type UpdateRequest struct {
 	FirstName  string `json:"first_name"`
 	MiddleName string `json:"middle_name,omitempty"`
 	LastName   string `json:"last_name"`
-}
-
-func (r *UpdateRequest) Bind(body io.ReadCloser) error {
-	return json.NewDecoder(body).Decode(r)
-}
-
-func (r *CreateRequest) Bind(body io.ReadCloser) error {
-	return json.NewDecoder(body).Decode(r)
 }

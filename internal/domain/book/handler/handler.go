@@ -41,7 +41,7 @@ func NewHandler(useCase usecase.Book, validate *validator.Validate) *Handler {
 // @router /api/v1/book [post]
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	var bookRequest book.CreateRequest
-	err := book.Bind(r.Body, &bookRequest)
+	err := json.NewDecoder(r.Body).Decode(&bookRequest)
 	if err != nil {
 		respond.Error(w, http.StatusBadRequest, nil)
 		return

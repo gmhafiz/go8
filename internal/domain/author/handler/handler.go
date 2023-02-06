@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"log"
 	"net/http"
@@ -42,7 +43,7 @@ func NewHandler(useCase usecase.Author, v *validator.Validate) *Handler {
 // @router /api/v1/author [post]
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	var req author.CreateRequest
-	err := req.Bind(r.Body)
+	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		respond.Error(w, http.StatusBadRequest, err)
 		return
@@ -150,7 +151,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	ctx := context.WithValue(r.Context(), middleware.CacheURL, r.URL.String())
 
 	var req author.UpdateRequest
-	err = req.Bind(r.Body)
+	err = json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		respond.Error(w, http.StatusBadRequest, err)
 		return

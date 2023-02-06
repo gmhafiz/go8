@@ -19,7 +19,7 @@ func Validate(v *validator.Validate, generic any) []string {
 
 		var errs []string
 		for _, err := range err.(validator.ValidationErrors) {
-			errs = append(errs, fmt.Sprintf("%s is %s", err.StructNamespace(), err.Tag()))
+			errs = append(errs, fmt.Sprintf("%s is %s with type %s", err.StructField(), err.Tag(), err.Type()))
 		}
 
 		return errs

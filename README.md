@@ -49,7 +49,7 @@ This kit is composed of standard Go library together with some well-known librar
 
 # Quick Start
 
-It is advisable to use the latest supported [Go version](https://go.dev/dl/go1.20.0.linux-amd64.tar.gz) (>= v1.19). Optionally `docker` and `docker-compose` for easier start up. There is a quick guide for Ubuntu in the [appendix](#appendix).
+It is advisable to use the latest supported [Go version](https://go.dev/dl/go1.20.linux-amd64.tar.gz) (>= v1.19). Optionally `docker` and `docker-compose` for easier start up. There is a quick guide for Ubuntu in the [appendix](#appendix).
 
 Get it
 

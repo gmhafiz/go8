@@ -944,7 +944,26 @@ task test
     
 Which runs `go test -v ./...`
 
-A quick note, in Go, unit test file is handled by appending `_test` to a file's name. For example, to test `/internal/domain/book/handler/http/handler.go`, we add unit test file by creating `/internal/domain/book/handler/http/handler_test.go`
+A quick note, in Go, a unit test file is handled by appending `_test` to a file's name. For example, to test `/internal/domain/book/handler/http/handler.go`, we add unit test file by creating `/internal/domain/book/handler/http/handler_test.go`
+
+
+Tests that run fast means you run them [more often](https://medium.com/pragmatic-programmers/unit-tests-are-first-fast-isolated-repeatable-self-verifying-and-timely), which leads to writing more tests. You can find top ten slow tests by running the following [command](https://leighmcculloch.com/posts/go-find-slow-tests/)
+
+_Only for Unix-based operating system_
+
+Shell command:
+```sh
+# Cleans test cache
+go clean -testcache
+
+# Test output is json format for easy parsing by jq tool.
+go test -v -json ./... | jq -r 'select(.Action == "pass" and .Test != null) | .Test + "," + (.Elapsed | tostring)'  | sort -r -k2 -n -t, | head
+```
+
+Or using `Task`:
+```sh
+task test:slow
+```
 
 To perform a unit test we take advantage of go's interface. The layers between
 handler, use case and database are loosely-coupled. This is achieved by accepting

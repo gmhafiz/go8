@@ -130,6 +130,13 @@ tasks:
     cmds:
       - go test -cover ./...
 
+  test:slow:
+    desc: Find slow running tests
+    platforms: [ linux ]
+    cmds:
+      - go clean -testcache
+      - go test -v -json ./... | jq -r 'select(.Action == "pass" and .Test != null) | .Test + "," + (.Elapsed | tostring)'  | sort -r -k2 -n -t, | head
+
   generate:
     desc: Runs all //go:generate commands embedded in .go files
     cmds:

@@ -359,7 +359,7 @@ func start(s *Server) {
 
 func gracefulShutdown(ctx context.Context, s *Server) error {
 	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
 	<-quit
 
@@ -368,9 +368,18 @@ func gracefulShutdown(ctx context.Context, s *Server) error {
 	ctx, shutdown := context.WithTimeout(ctx, s.Config().Api.GracefulTimeout*time.Second)
 	defer shutdown()
 
-	// Close all opened resources
-	_ = s.DB.Close()
-	s.cache.Shutdown(ctx)
+	err := s.httpServer.Shutdown(ctx)
+	if err != nil {
+		log.Println(err)
+	}
+	s.closeResources(ctx)
 
-	return s.httpServer.Shutdown(ctx)
+	return nil
+}
+
+func (s *Server) closeResources(ctx context.Context) {
+	_ = s.DB.Close()
+	_ = s.ent.Close()
+	s.cluster.Shutdown(ctx)
+	s.cache.Shutdown(ctx)
 }

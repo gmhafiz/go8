@@ -113,7 +113,7 @@ func TestHandler_Create(t *testing.T) {
 				},
 				response: &author.GetResponse{},
 				Errs: Errs{
-					Message: []string{"CreateRequest.FirstName is required"},
+					Message: []string{"FirstName is required with type string"},
 				},
 				status: http.StatusBadRequest,
 			},

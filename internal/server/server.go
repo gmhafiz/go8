@@ -20,6 +20,7 @@ import (
 	"entgo.io/ent/dialect"
 	chiMiddleware "github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/cors"
 	"github.com/go-playground/validator/v10"
 	"github.com/go-redis/redis/v8"
 	_ "github.com/jackc/pgx/stdlib"
@@ -45,6 +46,7 @@ const (
 type Server struct {
 	Version string
 	cfg     *config.Config
+	cors    *cors.Cors
 
 	DB  *sqlx.DB
 	ent *gen.Client
@@ -53,8 +55,8 @@ type Server struct {
 	cluster *redis.ClusterClient
 
 	validator *validator.Validate
-	router    *chi.Mux
 
+	router     *chi.Mux
 	httpServer *http.Server
 	Domain
 }
@@ -82,6 +84,7 @@ func defaultServer() *Server {
 
 func (s *Server) Init(version string) {
 	s.Version = version
+	s.setCors()
 	s.newRedis()
 	s.newDatabase()
 	s.newValidator()
@@ -89,6 +92,24 @@ func (s *Server) Init(version string) {
 	s.setGlobalMiddleware()
 	s.InitDomains()
 }
+
+func (s *Server) setCors() {
+	s.cors = cors.New(
+		cors.Options{
+			AllowedOrigins: s.cfg.Cors.AllowedOrigins,
+			AllowedMethods: []string{
+				http.MethodHead,
+				http.MethodGet,
+				http.MethodPost,
+				http.MethodPut,
+				http.MethodPatch,
+				http.MethodDelete,
+			},
+			AllowedHeaders:   []string{"*"},
+			AllowCredentials: true,
+		})
+}
+
 func (s *Server) newRedis() {
 	if !s.cfg.Cache.Enable {
 		return

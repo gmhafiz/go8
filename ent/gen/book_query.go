@@ -20,7 +20,7 @@ import (
 type BookQuery struct {
 	config
 	ctx         *QueryContext
-	order       []OrderFunc
+	order       []book.OrderOption
 	inters      []Interceptor
 	predicates  []predicate.Book
 	withAuthors *AuthorQuery
@@ -55,7 +55,7 @@ func (bq *BookQuery) Unique(unique bool) *BookQuery {
 }
 
 // Order specifies how the records should be ordered.
-func (bq *BookQuery) Order(o ...OrderFunc) *BookQuery {
+func (bq *BookQuery) Order(o ...book.OrderOption) *BookQuery {
 	bq.order = append(bq.order, o...)
 	return bq
 }
@@ -202,10 +202,12 @@ func (bq *BookQuery) AllX(ctx context.Context) []*Book {
 }
 
 // IDs executes the query and returns a list of Book IDs.
-func (bq *BookQuery) IDs(ctx context.Context) ([]uint, error) {
-	var ids []uint
+func (bq *BookQuery) IDs(ctx context.Context) (ids []uint, err error) {
+	if bq.ctx.Unique == nil && bq.path != nil {
+		bq.Unique(true)
+	}
 	ctx = setContextOp(ctx, bq.ctx, "IDs")
-	if err := bq.Select(book.FieldID).Scan(ctx, &ids); err != nil {
+	if err = bq.Select(book.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
@@ -269,7 +271,7 @@ func (bq *BookQuery) Clone() *BookQuery {
 	return &BookQuery{
 		config:      bq.config,
 		ctx:         bq.ctx.Clone(),
-		order:       append([]OrderFunc{}, bq.order...),
+		order:       append([]book.OrderOption{}, bq.order...),
 		inters:      append([]Interceptor{}, bq.inters...),
 		predicates:  append([]predicate.Book{}, bq.predicates...),
 		withAuthors: bq.withAuthors.Clone(),
@@ -472,20 +474,12 @@ func (bq *BookQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (bq *BookQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := &sqlgraph.QuerySpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   book.Table,
-			Columns: book.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUint,
-				Column: book.FieldID,
-			},
-		},
-		From:   bq.sql,
-		Unique: true,
-	}
+	_spec := sqlgraph.NewQuerySpec(book.Table, book.Columns, sqlgraph.NewFieldSpec(book.FieldID, field.TypeUint))
+	_spec.From = bq.sql
 	if unique := bq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
+	} else if bq.path != nil {
+		_spec.Unique = true
 	}
 	if fields := bq.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))

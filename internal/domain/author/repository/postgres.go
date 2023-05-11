@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
+
 	"github.com/gmhafiz/go8/ent/gen"
 	entAuthor "github.com/gmhafiz/go8/ent/gen/author"
 	"github.com/gmhafiz/go8/ent/gen/predicate"
@@ -114,14 +116,7 @@ func (r *repository) List(ctx context.Context, f *author.Filter) ([]*author.Sche
 	}
 
 	// sort by field
-	var orderFunc []gen.OrderFunc
-	for col, ord := range f.Base.Sort {
-		if ord == "ASC" {
-			orderFunc = append(orderFunc, gen.Asc(col))
-		} else {
-			orderFunc = append(orderFunc, gen.Desc(col))
-		}
-	}
+	orderFunc := authorOrder(f.Base.Sort)
 
 	total, err := r.ent.Author.Query().
 		Where(entAuthor.DeletedAtIsNil()).
@@ -156,7 +151,6 @@ func (r *repository) List(ctx context.Context, f *author.Filter) ([]*author.Sche
 				Description:   b.Description,
 				CreatedAt:     b.CreatedAt,
 				UpdatedAt:     b.UpdatedAt,
-				//DeletedAt:     sql.NullTime{Time: *b.DeletedAt, Valid: true},
 			})
 		}
 
@@ -168,11 +162,7 @@ func (r *repository) List(ctx context.Context, f *author.Filter) ([]*author.Sche
 			CreatedAt:  a.CreatedAt,
 			UpdatedAt:  a.UpdatedAt,
 			DeletedAt:  a.DeletedAt,
-			//DeletedAt: sql.NullTime{
-			//	Time:  *a.DeletedAt,
-			//	Valid: true,
-			//},
-			Books: books,
+			Books:      books,
 		})
 	}
 
@@ -200,7 +190,6 @@ func (r *repository) Read(ctx context.Context, id uint) (*author.Schema, error) 
 			Description:   b.Description,
 			CreatedAt:     b.CreatedAt,
 			UpdatedAt:     b.UpdatedAt,
-			//DeletedAt:     sql.NullTime{Time: *b.DeletedAt, Valid: true},
 		})
 	}
 
@@ -212,8 +201,7 @@ func (r *repository) Read(ctx context.Context, id uint) (*author.Schema, error) 
 		CreatedAt:  found.CreatedAt,
 		UpdatedAt:  found.UpdatedAt,
 		DeletedAt:  found.DeletedAt,
-		//DeletedAt:  sql.NullTime{Time: *found.DeletedAt, Valid: true},
-		Books: books,
+		Books:      books,
 	}, err
 }
 
@@ -237,7 +225,6 @@ func (r *repository) Update(ctx context.Context, a *author.UpdateRequest) (*auth
 			Description:   b.Description,
 			CreatedAt:     b.CreatedAt,
 			UpdatedAt:     b.UpdatedAt,
-			//DeletedAt:     sql.NullTime{Time: *b.DeletedAt, Valid: true},
 		})
 	}
 
@@ -259,4 +246,38 @@ func (r *repository) Delete(ctx context.Context, authorID uint) error {
 		Save(ctx)
 
 	return err
+}
+
+func authorOrder(sorts map[string]string) []entAuthor.OrderOption {
+	var orderFunc []entAuthor.OrderOption
+	for col, ord := range sorts {
+		switch col {
+		case entAuthor.FieldFirstName:
+			if ord == "ASC" {
+				orderFunc = append(orderFunc, entAuthor.ByFirstName(sql.OrderAsc()))
+			} else {
+				orderFunc = append(orderFunc, entAuthor.ByFirstName(sql.OrderDesc()))
+			}
+		case entAuthor.FieldLastName:
+			if ord == "ASC" {
+				orderFunc = append(orderFunc, entAuthor.ByLastName(sql.OrderAsc()))
+			} else {
+				orderFunc = append(orderFunc, entAuthor.ByLastName(sql.OrderDesc()))
+			}
+		case entAuthor.FieldCreatedAt:
+			if ord == "ASC" {
+				orderFunc = append(orderFunc, entAuthor.ByCreatedAt(sql.OrderAsc()))
+			} else {
+				orderFunc = append(orderFunc, entAuthor.ByCreatedAt(sql.OrderDesc()))
+			}
+		case entAuthor.FieldUpdatedAt:
+			if ord == "ASC" {
+				orderFunc = append(orderFunc, entAuthor.ByUpdatedAt(sql.OrderAsc()))
+			} else {
+				orderFunc = append(orderFunc, entAuthor.ByUpdatedAt(sql.OrderDesc()))
+			}
+		}
+	}
+
+	return orderFunc
 }

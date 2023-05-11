@@ -20,7 +20,7 @@ import (
 type AuthorQuery struct {
 	config
 	ctx        *QueryContext
-	order      []OrderFunc
+	order      []author.OrderOption
 	inters     []Interceptor
 	predicates []predicate.Author
 	withBooks  *BookQuery
@@ -55,7 +55,7 @@ func (aq *AuthorQuery) Unique(unique bool) *AuthorQuery {
 }
 
 // Order specifies how the records should be ordered.
-func (aq *AuthorQuery) Order(o ...OrderFunc) *AuthorQuery {
+func (aq *AuthorQuery) Order(o ...author.OrderOption) *AuthorQuery {
 	aq.order = append(aq.order, o...)
 	return aq
 }
@@ -202,10 +202,12 @@ func (aq *AuthorQuery) AllX(ctx context.Context) []*Author {
 }
 
 // IDs executes the query and returns a list of Author IDs.
-func (aq *AuthorQuery) IDs(ctx context.Context) ([]uint, error) {
-	var ids []uint
+func (aq *AuthorQuery) IDs(ctx context.Context) (ids []uint, err error) {
+	if aq.ctx.Unique == nil && aq.path != nil {
+		aq.Unique(true)
+	}
 	ctx = setContextOp(ctx, aq.ctx, "IDs")
-	if err := aq.Select(author.FieldID).Scan(ctx, &ids); err != nil {
+	if err = aq.Select(author.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
@@ -269,7 +271,7 @@ func (aq *AuthorQuery) Clone() *AuthorQuery {
 	return &AuthorQuery{
 		config:     aq.config,
 		ctx:        aq.ctx.Clone(),
-		order:      append([]OrderFunc{}, aq.order...),
+		order:      append([]author.OrderOption{}, aq.order...),
 		inters:     append([]Interceptor{}, aq.inters...),
 		predicates: append([]predicate.Author{}, aq.predicates...),
 		withBooks:  aq.withBooks.Clone(),
@@ -472,20 +474,12 @@ func (aq *AuthorQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (aq *AuthorQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := &sqlgraph.QuerySpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   author.Table,
-			Columns: author.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUint,
-				Column: author.FieldID,
-			},
-		},
-		From:   aq.sql,
-		Unique: true,
-	}
+	_spec := sqlgraph.NewQuerySpec(author.Table, author.Columns, sqlgraph.NewFieldSpec(author.FieldID, field.TypeUint))
+	_spec.From = aq.sql
 	if unique := aq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
+	} else if aq.path != nil {
+		_spec.Unique = true
 	}
 	if fields := aq.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))

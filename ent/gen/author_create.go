@@ -117,7 +117,7 @@ func (ac *AuthorCreate) Mutation() *AuthorMutation {
 
 // Save creates the Author in the database.
 func (ac *AuthorCreate) Save(ctx context.Context) (*Author, error) {
-	return withHooks[*Author, AuthorMutation](ctx, ac.sqlSave, ac.mutation, ac.hooks)
+	return withHooks(ctx, ac.sqlSave, ac.mutation, ac.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
@@ -176,13 +176,7 @@ func (ac *AuthorCreate) sqlSave(ctx context.Context) (*Author, error) {
 func (ac *AuthorCreate) createSpec() (*Author, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Author{config: ac.config}
-		_spec = &sqlgraph.CreateSpec{
-			Table: author.Table,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUint,
-				Column: author.FieldID,
-			},
-		}
+		_spec = sqlgraph.NewCreateSpec(author.Table, sqlgraph.NewFieldSpec(author.FieldID, field.TypeUint))
 	)
 	if id, ok := ac.mutation.ID(); ok {
 		_node.ID = id
@@ -220,10 +214,7 @@ func (ac *AuthorCreate) createSpec() (*Author, *sqlgraph.CreateSpec) {
 			Columns: author.BooksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUint,
-					Column: book.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(book.FieldID, field.TypeUint),
 			},
 		}
 		for _, k := range nodes {
@@ -257,8 +248,8 @@ func (acb *AuthorCreateBulk) Save(ctx context.Context) ([]*Author, error) {
 					return nil, err
 				}
 				builder.mutation = mutation
-				nodes[i], specs[i] = builder.createSpec()
 				var err error
+				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, acb.builders[i+1].mutation)
 				} else {

@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/gmhafiz/go8/ent/gen/book"
 )
@@ -32,7 +33,8 @@ type Book struct {
 	DeletedAt *time.Time `json:"-"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the BookQuery when eager-loading is set.
-	Edges BookEdges `json:"edges"`
+	Edges        BookEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // BookEdges holds the relations/edges for other nodes in the graph.
@@ -65,7 +67,7 @@ func (*Book) scanValues(columns []string) ([]any, error) {
 		case book.FieldPublishedDate, book.FieldCreatedAt, book.FieldUpdatedAt, book.FieldDeletedAt:
 			values[i] = new(sql.NullTime)
 		default:
-			return nil, fmt.Errorf("unexpected column %q for type Book", columns[i])
+			values[i] = new(sql.UnknownType)
 		}
 	}
 	return values, nil
@@ -128,9 +130,17 @@ func (b *Book) assignValues(columns []string, values []any) error {
 				b.DeletedAt = new(time.Time)
 				*b.DeletedAt = value.Time
 			}
+		default:
+			b.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
+}
+
+// Value returns the ent.Value that was dynamically selected and assigned to the Book.
+// This includes values selected through modifiers, order, etc.
+func (b *Book) Value(name string) (ent.Value, error) {
+	return b.selectValues.Get(name)
 }
 
 // QueryAuthors queries the "authors" edge of the Book entity.
@@ -188,9 +198,3 @@ func (b *Book) String() string {
 
 // Books is a parsable slice of Book.
 type Books []*Book
-
-func (b Books) config(cfg config) {
-	for _i := range b {
-		b[_i].config = cfg
-	}
-}

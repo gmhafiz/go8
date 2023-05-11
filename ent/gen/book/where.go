@@ -499,11 +499,7 @@ func HasAuthors() predicate.Book {
 // HasAuthorsWith applies the HasEdge predicate on the "authors" edge with a given conditions (other predicates).
 func HasAuthorsWith(preds ...predicate.Author) predicate.Book {
 	return predicate.Book(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(AuthorsInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, AuthorsTable, AuthorsPrimaryKey...),
-		)
+		step := newAuthorsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

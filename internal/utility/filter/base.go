@@ -53,7 +53,7 @@ func New(queries url.Values) *Filter {
 			if found {
 				sortKey[key] = strings.ToUpper(order)
 			} else {
-				sortKey[key] = "asc"
+				sortKey[key] = "ASC"
 			}
 		}
 	}

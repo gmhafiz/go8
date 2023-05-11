@@ -27,16 +27,6 @@ func (r *repository) Search(ctx context.Context, f *author.Filter) ([]*author.Sc
 		predicateUser = append(predicateUser, entAuthor.LastNameContainsFold(f.LastName))
 	}
 
-	// sort by field
-	var orderFunc []gen.OrderFunc
-	for col, ord := range f.Base.Sort {
-		if ord == "ASC" {
-			orderFunc = append(orderFunc, gen.Asc(col))
-		} else {
-			orderFunc = append(orderFunc, gen.Desc(col))
-		}
-	}
-
 	total, err := r.ent.Author.Query().
 		Where(entAuthor.DeletedAtIsNil()).
 		Count(ctx)
@@ -67,7 +57,7 @@ func (r *repository) Search(ctx context.Context, f *author.Filter) ([]*author.Sc
 		Where(entAuthor.DeletedAtIsNil()).
 		Limit(f.Base.Limit).
 		Offset(f.Base.Offset).
-		Order(orderFunc...).
+		Order(authorOrder(f.Base.Sort)...).
 		All(ctx)
 	if err != nil {
 		return nil, 0, fmt.Errorf("error retrieving Author list: %w", err)
@@ -84,11 +74,7 @@ func (r *repository) Search(ctx context.Context, f *author.Filter) ([]*author.Sc
 			CreatedAt:  a.CreatedAt,
 			UpdatedAt:  a.UpdatedAt,
 			DeletedAt:  a.DeletedAt,
-			//DeletedAt: sql.NullTime{
-			//	Time:  *a.DeletedAt,
-			//	Valid: true,
-			//},
-			Books: nil,
+			Books:      nil,
 		})
 	}
 

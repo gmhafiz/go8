@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -49,8 +50,9 @@ type Server struct {
 	Version string
 	cfg     *config.Config
 
-	DB  *sqlx.DB
-	ent *gen.Client
+	db   *sql.DB
+	sqlx *sqlx.DB
+	ent  *gen.Client
 
 	cache   *redis.Client
 	cluster *redis.ClusterClient
@@ -113,10 +115,11 @@ func (s *Server) NewDatabase() {
 	if s.cfg.Database.Driver == "" {
 		log.Fatal("please fill in database credentials in .env file or set in environment variable")
 	}
-	s.DB = db.NewSqlx(s.cfg.Database)
-	s.DB.SetMaxOpenConns(s.cfg.Database.MaxConnectionPool)
-	s.DB.SetMaxIdleConns(s.cfg.Database.MaxIdleConnections)
-	s.DB.SetConnMaxLifetime(s.cfg.Database.ConnectionsMaxLifeTime)
+
+	s.sqlx = db.NewSqlx(s.cfg.Database)
+	s.sqlx.SetMaxOpenConns(s.cfg.Database.MaxConnectionPool)
+	s.sqlx.SetMaxIdleConns(s.cfg.Database.MaxIdleConnections)
+	s.sqlx.SetConnMaxLifetime(s.cfg.Database.ConnectionsMaxLifeTime)
 
 	dsn := fmt.Sprintf("postgres://%s:%d/%s?sslmode=%s&user=%s&password=%s",
 		s.cfg.Database.Host,
@@ -126,7 +129,7 @@ func (s *Server) NewDatabase() {
 		s.cfg.Database.User,
 		s.cfg.Database.Pass,
 	)
-
+	s.db = s.sqlx.DB
 	s.newEnt(dsn)
 }
 
@@ -136,8 +139,8 @@ func (s *Server) newValidator() {
 
 func (s *Server) newAuthentication() {
 	manager := scs.New()
-	manager.Store = postgresstore.New(s.DB.DB)
-	manager.CtxStore = postgresstore.New(s.DB.DB)
+	manager.Store = postgresstore.New(s.sqlx.DB)
+	manager.CtxStore = postgresstore.New(s.sqlx.DB)
 	manager.Lifetime = s.cfg.Session.Duration
 	manager.Cookie.Name = s.cfg.Session.Name
 	manager.Cookie.Domain = s.cfg.Session.Domain
@@ -147,7 +150,7 @@ func (s *Server) newAuthentication() {
 	manager.Cookie.SameSite = http.SameSite(s.cfg.Session.SameSite)
 	manager.Cookie.Secure = s.cfg.Session.Secure
 
-	s.sessionCloser = postgresstore.NewWithCleanupInterval(s.DB.DB, 30*time.Minute)
+	s.sessionCloser = postgresstore.NewWithCleanupInterval(s.sqlx.DB, 30*time.Minute)
 
 	s.session = manager
 }
@@ -404,7 +407,7 @@ func gracefulShutdown(ctx context.Context, s *Server) error {
 }
 
 func (s *Server) closeResources(ctx context.Context) {
-	_ = s.DB.Close()
+	_ = s.sqlx.Close()
 	_ = s.ent.Close()
 	s.cluster.Shutdown(ctx)
 	s.cache.Shutdown(ctx)

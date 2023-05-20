@@ -37,7 +37,7 @@ func (s *Server) initVersion() {
 }
 
 func (s *Server) initHealth() {
-	newHealthRepo := health.NewRepo(s.DB)
+	newHealthRepo := health.NewRepo(s.sqlx)
 	newHealthUseCase := health.New(newHealthRepo)
 	health.RegisterHTTPEndPoints(s.router, newHealthUseCase)
 }
@@ -55,7 +55,7 @@ func (s *Server) initSwagger() {
 }
 
 func (s *Server) initBook() {
-	newBookRepo := bookRepo.New(s.DB)
+	newBookRepo := bookRepo.New(s.sqlx)
 	newBookUseCase := bookUseCase.New(newBookRepo)
 	bookHandler.RegisterHTTPEndPoints(s.router, s.validator, newBookUseCase)
 }
@@ -77,6 +77,6 @@ func (s *Server) initAuthor() {
 }
 
 func (s *Server) initAuthentication() {
-	repo := authentication.NewRepo(s.ent, s.DB.DB, s.session)
+	repo := authentication.NewRepo(s.ent, s.db, s.session)
 	authentication.RegisterHTTPEndPoints(s.router, s.session, repo)
 }

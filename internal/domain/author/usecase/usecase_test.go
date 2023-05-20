@@ -223,7 +223,7 @@ func TestAuthorUseCase_List(t *testing.T) {
 
 func TestAuthorUseCase_Read(t *testing.T) {
 	type args struct {
-		ID uint
+		ID uint64
 	}
 
 	type want struct {
@@ -274,7 +274,7 @@ func TestAuthorUseCase_Read(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 
 			repoAuthor := &repository.AuthorMock{
-				ReadFunc: func(ctx context.Context, id uint) (*author.Schema, error) {
+				ReadFunc: func(ctx context.Context, id uint64) (*author.Schema, error) {
 					return test.want.Author, test.want.err
 				},
 			}
@@ -378,7 +378,7 @@ func TestAuthorUseCase_Update(t *testing.T) {
 func TestAuthorUseCase_Delete(t *testing.T) {
 	type args struct {
 		context.Context
-		ID uint
+		ID uint64
 	}
 	type want struct {
 		error
@@ -416,12 +416,12 @@ func TestAuthorUseCase_Delete(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 
 			repoAuthor := &AuthorMock{
-				DeleteFunc: func(ctx context.Context, authorID uint) error {
+				DeleteFunc: func(ctx context.Context, authorID uint64) error {
 					return test.want.error
 				},
 			}
 			cacheMock := &repository.AuthorRedisServiceMock{
-				DeleteFunc: func(ctx context.Context, id uint) error {
+				DeleteFunc: func(ctx context.Context, id uint64) error {
 					return test.want.error
 				},
 			}

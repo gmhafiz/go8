@@ -3,7 +3,7 @@ package redis
 import (
 	"fmt"
 
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 
 	"github.com/gmhafiz/go8/config"
 )
@@ -21,7 +21,7 @@ func NewCluster(cfg config.Cache) *redis.ClusterClient {
 		Addrs: cfg.Hosts,
 
 		// To route commands by latency or randomly, enable one of the following.
-		//RouteByLatency: true,
+		RouteByLatency: true,
 		//RouteRandomly: true,
 	})
 }

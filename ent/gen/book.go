@@ -16,7 +16,7 @@ import (
 type Book struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID uint `json:"id,omitempty"`
+	ID uint64 `json:"id,omitempty"`
 	// Title holds the value of the "title" field.
 	Title string `json:"title,omitempty"`
 	// PublishedDate holds the value of the "published_date" field.
@@ -86,7 +86,7 @@ func (b *Book) assignValues(columns []string, values []any) error {
 			if !ok {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
-			b.ID = uint(value.Int64)
+			b.ID = uint64(value.Int64)
 		case book.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field title", values[i])

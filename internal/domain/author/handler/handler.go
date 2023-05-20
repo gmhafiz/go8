@@ -113,7 +113,7 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {string} Internal Server Error
 // @router /api/v1/author/{id} [get]
 func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
-	authorID, err := param.UInt(r, "id")
+	authorID, err := param.UInt64(r, "id")
 	if authorID == 0 || err != nil {
 		respond.Error(w, http.StatusBadRequest, errors.New("id is required"))
 		return
@@ -178,7 +178,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {string} Internal Server Error
 // @router /api/v1/author/{id} [delete]
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
-	id, err := param.UInt(r, "id")
+	id, err := param.UInt64(r, "id")
 	if id == 0 || err != nil {
 		respond.Error(w, http.StatusBadRequest, errors.New("id is required"))
 		return

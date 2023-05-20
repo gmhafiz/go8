@@ -51,6 +51,7 @@ func WithDSN(dsn string) func(opts *Migrate) error {
 		return nil
 	}
 }
+
 func WithDB(db *sql.DB) func(opts *Migrate) error {
 	return func(opts *Migrate) error {
 		opts.DB = db

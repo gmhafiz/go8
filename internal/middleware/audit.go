@@ -9,13 +9,13 @@ import (
 type key string
 
 const (
-	AuditID key = "auditID"
+	KeyAuditID key = "auditID"
 )
 
 type Action string
 
 type Event struct {
-	ActorID    int       `db:"actor_id" json:"actor_id,omitempty"`
+	ActorID    uint64    `db:"actor_id" json:"actor_id,omitempty"`
 	TableRowID int       `db:"table_row_id" json:"table_row_id,omitempty"`
 	Table      string    `db:"table_name" json:"table,omitempty"`
 	Action     Action    `db:"action" json:"action,omitempty"`
@@ -38,15 +38,18 @@ func Audit(next http.Handler) http.Handler {
 			UserAgent:  r.UserAgent(),
 		}
 
-		ctx := context.WithValue(r.Context(), AuditID, ev)
+		ctx := context.WithValue(r.Context(), KeyAuditID, ev)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
-func getUserID(r *http.Request) int {
-	val, _ := r.Context().Value(UserID).(int)
-	return val
+func getUserID(r *http.Request) uint64 {
+	userID, ok := r.Context().Value(KeySession).(uint64)
+	if !ok {
+		return 0
+	}
+	return userID
 }
 
 func readUserIP(r *http.Request) string {

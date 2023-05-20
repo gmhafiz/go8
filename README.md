@@ -17,7 +17,7 @@ However, I wanted to use [chi router](https://github.com/go-chi/chi) which is mo
 
 It is still in early stages, and I do not consider it is completed until all integration tests are completed.
 
-In short, this kit is a Go + Postgres + Chi Router + sqlx + ent + unit testing starter kit for API development.
+In short, this kit is a Go + Postgres + Chi Router + sqlx + ent + authentication + unit testing starter kit for API development.
 
 # Motivation
 
@@ -43,6 +43,7 @@ This kit is composed of standard Go library together with some well-known librar
   - [x] Custom model JSON output
   - [x] Filters (input DTO), Resource (output DTO) for pagination parsing and custom response respectively.
   - [x] Cache layer
+  - [x] Authentication using cookie-based session
   - [x] Uses [Task](https://taskfile.dev) to simplify various tasks like mocking, linting, test coverage, hot reload etc
   - [x] Unit testing of repository, use case, and handler using mocks and [dockertest](https://github.com/ory/dockertest)
   - [ ] End-to-end test using ephemeral docker containers
@@ -86,10 +87,11 @@ docker-compose up -d postgres
 docker-compose up -d postgres redis
 ```
 
-Once the database is up you may run the migration with the following command:
+Once the database is up you may run the migration with the following command. Also, the seeder as well because it will be needed for authentication later.
 
 ```shell
 go run cmd/migrate/main.go
+go run cmd/seed/main.go
 ```
 
 You will see a bunch of dependencies download for a first time run followed by the sql migration files
@@ -100,7 +102,9 @@ You will see a bunch of dependencies download for a first time run followed by t
 2023/02/05 19:23:48 OK    20221213140051_create_books.sql
 2023/02/05 19:23:48 OK    20221213140144_create_authors.sql
 2023/02/05 19:23:48 OK    20221213140219_create_book_authors.sql
-2023/02/05 19:23:48 goose: no migrations to run. current version: 20221213140219
+2023/05/13 11:12:37 OK    20230409004013_create_users.sql
+2023/05/13 11:12:37 OK    20230409004420_create_sessions.sql
+2023/02/05 11:12:37 goose: no migrations to run. current version: 20230409004420
 ```
 
 Run the API with the following command.
@@ -192,23 +196,6 @@ go test ./...
       + [Test Coverage](#test-coverage)
       + [Build](#build)
       + [Clean](#clean)
-- [Migration](#migration)
-   * [Using Task](#using-task)
-      + [Create Migration](#create-migration)
-      + [Migrate up](#migrate-up)
-      + [Rollback](#rollback)
-   * [Without Task](#without-task)
-      + [Create Migration](#create-migration-1)
-      + [Migrate Up](#migrate-up)
-      + [Rollback](#rollback-1)
-- [Run](#run)
-   * [Local](#local)
-   * [Docker](#docker)
-      + [docker-compose](#docker-compose)
-- [Build](#build-1)
-   * [With Task](#with-task)
-   * [Without Task](#without-task-1)
-- [Swagger docs](#swagger-docs)
 - [Structure](#structure)
    * [Starting Point](#starting-point)
    * [Configurations](#configurations)
@@ -221,18 +208,43 @@ go test ./...
       + [Handler](#handler)
       + [Initialize Domain](#initialize-domain)
    * [Middleware](#middleware)
+      + [Middleware External Dependency](#middleware-external-dependency)
    * [Dependency Injection](#dependency-injection)
    * [Libraries](#libraries)
+- [Migration](#migration)
+    * [Using Task](#using-task)
+        + [Create Migration](#create-migration)
+        + [Migrate up](#migrate-up)
+        + [Rollback](#rollback)
+    * [Without Task](#without-task)
+        + [Create Migration](#create-migration-1)
+        + [Migrate Up](#migrate-up)
+        + [Rollback](#rollback-1)
+- [Run](#run)
+    * [Local](#local)
+    * [Docker](#docker)
+        + [docker-compose](#docker-compose)
+- [Build](#build-1)
+    * [With Task](#with-task)
+    * [Without Task](#without-task-1)
+- [Authentication](#authentication)
+    * [How It Works](#how-it-works)
+    * [Expiry](#expiry)
+    * [Logging Out](#logging-out)
+    * [Security](#security)
+    * [Performance](#performance)
+    * [Integration testing](#integration-testing)
 - [Cache](#cache)
-   * [LRU](#lru)
-   * [Redis](#redis)
+    * [LRU](#lru)
+    * [Redis](#redis)
+- [Swagger docs](#swagger-docs)
 - [Utility](#utility)
 - [Testing](#testing)
    * [Unit Testing](#unit-testing)
       - [Handler](#handler-1)
       - [Use Case](#use-case-1)
       - [Repository](#repository-1)
-   * [End to End Test](#end-to-end-test)
+   * [End-to-End Test](#end-to-end-test)
 - [TODO](#todo)
 - [Acknowledgements](#acknowledgements)
 - [Appendix](#appendix)
@@ -645,6 +657,273 @@ Initialization of external libraries are located in `third_party/`
 
 Since `sqlx` is a third party library, it is initialized in `/third_party/database/sqlx.go`
 
+# Migration
+
+Migration is a good step towards having a versioned database and makes publishing to a production server a safe process.
+
+All migration files are stored in `database/migrations` folder.
+
+## Using Task
+
+### Create Migration
+
+Using `Task`, creating a migration file is done by the following command. Name the file after `NAME=`.
+
+    task migrate:create NAME=create_a_tablename
+
+Write your schema in pure sql in the 'up' section and any reversal in the 'down' section of the file.
+ 
+### Migrate up
+
+After you are satisfied with your `.sql` files, run the following command to migrate your database.
+
+    task migrate
+
+To migrate one step
+
+    task migrate:step
+      
+### Rollback
+    
+To roll back migration by one step
+
+    task migrate:rollback
+
+Further `goose` commands are available in its [page](https://github.com/pressly/goose)
+
+
+## Without Task
+
+### Create Migration
+
+Once `goose` tool is [installed](https://github.com/pressly/goose), create a migration with
+
+    migrate create -ext sql -dir database/migrations -format unix "{{.NAME}}"
+
+### Migrate Up
+
+You will need to create a data source name string beforehand. e.g.:
+
+    postgres://postgres_user:$password@$localhost:5432/db?sslmode=false
+
+Note: You can save the above string into an environment variable for reuse e.g.
+
+    export DSN=postgres://postgres_user:$password@$localhost:5432/db?sslmode=false
+
+Then migrate with the following command, specifying the path to migration files, data source name and action.
+
+    migrate -path database/migrations -database $DSN up
+
+To migrate 1 step,
+
+    migrate -path database/migrations -database $DSN up-by-one
+
+### Rollback
+
+Rollback migration by using `down` action and the number of steps
+
+    migrate -path database/migrations -database $DSN down
+
+# Run
+
+## Local
+
+Conventionally, all apps are placed inside the `cmd` folder.
+
+If you have `Task` installed, the server can be run with:
+
+    task run
+
+or without `Task`, just like in quick start section:
+
+    go run cmd/go8/main.go
+
+## Docker
+
+You can build a docker image with the app with its config files. Docker needs to be installed beforehand.
+
+     task docker:build
+
+This task also makes a copy of `.env`. Since Docker doesn't copy hidden file, we make a copy of it on our `src` stage before transferring it to our final `scratch` stage. It also inserts formats git tag and git hash as the API version which runs at compile time.
+
+Note that this is a multistage Dockerfile. Since we statically compile this API, we can use a minimal images like a `distroless` that includes both timezones and CA certificates.
+
+Run the following command to build a container from this image. `--net=host` tells the container to use local's network so that it can access host database.
+
+    docker-compose up -d postgres # If you haven't run this from quick start 
+    task docker:run
+
+### docker-compose
+
+If you prefer to use docker-compose instead, both server and the database can be run with:
+
+    task docker-compose:start
+
+# Build
+
+## With Task
+
+If you have task installed, simply run
+
+    task build
+
+It does a task check prior to the build and puts both the binary and `.env` files into `./bin` folder
+
+## Without Task
+
+    go mod download
+    CGO_ENABLED=0 GOOS=linux
+    go build -ldflags="-X main.Version=$(git describe --abbrev=0 --tags)-$(git rev-list -1 HEAD) -w -s" -o ./server ./cmd/go8/main.go;
+
+
+
+# Authentication
+
+Authentication is proving who or identity of a person as opposed to Authorization where it tells what this person can do. The most popular way is by using JWT which is a stateless solution by using signed token generated from the server and then stored client-side. This token contains an algorithm, date and time it expires, and may store arbitrary data. This token is attached to each subsequent requests by client-side where the server verifies its validity by checking if the token has not been tampered and then see if it is not past expiry date.
+
+This repository on the other hand demonstrates an age-old method of authentication &mdash; sessions. It generates a session containing random characters and set in a cookie. This session is also stored in a database, and this makes it a stateful solution. Arbitrary data can be saved inside the session by saving it in the database but client-side only receives the random token.
+
+Advantage of this approach is invalidating or logging out a user can be done by simply deleting the associated session record in the database. With `HttpOnly` flag set to true, this ensures the cookie can only be read by the browser, not client-side javascript. Thus, this prevents cross-site scripting (XSS) attack. `SameSite=lax` and setting the `Domain` minimises the risk of cross-site request forgery (CSRF). However, this approach incurs additional cost of database querying in every request.
+
+Why not JWT in cookie? This prevents XSS with correct cookie flags. However, session invalidation is not possible without storing the sessions in a persistent store.
+
+## How It Works
+
+Session management is done using [alexedwards/scs](https://github.com/alexedwards/scs) library. All routes go through a custom middleware based on `LoadAndSave` middleware. On top of storing data in a database and setting the cookie in a response header before going into any handler, it also saves user ID as a foreign key to `users` table.
+
+At first time login, no cookie is present. Upon successful login, we call `RenewToken()` method that creates a new random string token, and after it exits the handler, it re-enters the `LoadAndSave` middleware to save the token into the database. If any action to add data were done, it will be saved in the database, not in the cookie. The response will contain the cookie in the header.
+
+## Usage
+
+It is recommended to both migrate (if you have not) and seed `users` table with a super admin account. Run with
+
+```sh
+go run cmd/migrate/main.go
+go run cmd/seed/main.go
+```
+
+This generates a super admin user with a randomly generated password. This password is automatically saved in `.env` file.
+
+Let us register a new user:
+
+```sh
+curl -vX POST  -H 'content-type: application/json' 'http://localhost:3080/api/v1/register' -d '{
+  "first_name": "Hafiz",
+  "last_name": "Shafruddin",
+  "email": "gmhafiz@gmail.com",
+  "password": "highEntropyPassword"
+}'
+```
+
+You should get a 201 Created HTTP status response. Now you can login
+
+```sh
+curl -vX POST -H 'content-type: application/json' \ 
+'http://localhost:3080/api/v1/login' \
+-d '{
+  "email": "gmhafiz@gmail.com",
+  "password": "highEntropyPassword"
+}
+'
+```
+
+You will get a 200 OK HTTP status response along with a cookie in the header. By default, our token is stored from `session` key in the `Set-Cookie` header. In this example, it is `gedFYqAUXejpgmBhnCkKLip7dOjecbBC1HzSHCX7KGI`.
+
+```
+< HTTP/1.1 200 OK
+< Cache-Control: no-cache="Set-Cookie"
+< Content-Type: application/json
+< Set-Cookie: session=gedFYqAUXejpgmBhnCkKLip7dOjecbBC1HzSHCX7KGI; Path=/; Expires=Wed, 03 May 2023 13:45:59 GMT; Max-Age=86365; SameSite=Lax
+< Vary: Origin
+< Vary: Cookie
+< Date: Tue, 02 May 2023 13:46:34 GMT
+< Content-Length: 147
+```
+
+At this point, you will also see that a new record is stored into `sessions` table.
+
+```sql
+SELECT * FROM sessions;
+```
+
+You can see the token is stored along with our user ID. `data` column stores arbitrary payload in the session as supported by [alexedwards/scs](https://github.com/alexedwards/scs) library.
+
+| token                                       | user\_id | data                        | expiry                            |
+|:--------------------------------------------|:---------|:----------------------------|:----------------------------------|
+| gedFYqAUXejpgmBhnCkKLip7dOjecbBC1HzSHCX7KGI | 2        | 0x26FF810301...truncated... | 2023-05-11 13:17:38.062590 +00:00 |
+
+
+
+For making subsequent requests on protected routes, we need to attach the cookie in the header. If you are using browser's native `fetch` function, simply use `credentials: include` or if using axios, switch on the `withCredentials` setting:
+
+fetch
+```js
+login() {
+  $fetch(`${this.baseURL}/login`, {
+    headers: { 'Access-Control-Allow-Origin': true },
+    credentials: 'include',
+    method: 'POST',
+    body: {
+      email: 'gmhafiz@gmail.com',
+      password: 'password',
+    },
+  })
+```
+
+axios
+```
+axios.defaults.withCredentials = true
+```
+
+For now, let us make a curl request.
+
+```sh
+curl -v 'http://localhost:3080/api/v1/restricted/me' --cookie "session=gedFYqAUXejpgmBhnCkKLip7dOjecbBC1HzSHCX7KGI"
+```
+
+And you will get a 200 HTTP response along with user ID payload `{"user_id":2}`.
+
+## Expiry
+
+By default, the session stays for 24 hours but this can be changed by editing `SESSION_DURATION` key. A background job regularly checks the table for expired sessions and remove them from the table.
+
+## Logging Out
+
+A logged in user can simply call `/v1/logout` to log out. The cookie need to be present for the api to know which token to delete.
+
+A super admin can log out any user provided that the super admin's `users` ID is equal to `1`. Obviously a proper authorization is needed in real-world application.
+
+## Security Consideration
+
+These are the important cookie flags that needs to be reviewed.
+
+1. Secure: Ensures cookie are only used in secure TLS (https)
+2. HttpOnly: Ensure no client-side javascript can read the values in cookie, only browser can. This prevents XSS
+3. Domain: Where cookie is expected to work
+4. SameSite: Using  either `Lax` or `Strict` ensures cookies only work on your domain
+
+Thanks to `HttpOnly` flag, no client-side can access this token thus preventing XSS attack. Both setting a domain
+and `SameSite` flag value set to at least `Lax` helps with preventing CSRF attack &mdash; although it does not prevent CSRF entirely. For example `SameSite` attribute was not supported in [old browsers](https://caniuse.com/?search=samesite). For this, we can request a new token called CSRF Token. For every modifying requests, we attach this new token alongside and check its existence in the database.
+
+Also set allowed domains if possible in either `.env` or environment variable.
+
+```
+SESSION_DOMAIN=https://mySite.com
+```
+
+## Performance
+
+Since database is called for every protected endpoints, both throughput and latency can be an issue. However, token column is indexed which makes record retrieval near instant &mdash; typically sub-millisecond.
+
+The authentication [library](https://github.com/alexedwards/scs) also includes a redis implementation but a custom implementation is needed to also store user ID against a session token when committing a token to Redis.
+
+
+## Integration Testing
+
+The `authentication` domain is tested using integration tests (in `integration_test.go`) which covers the handler and the database. We use a table-driven driven tests where a set of scenarios are stored as a slice (array) containing what we supply in the parameters, what result we expect from those parameters, and we gave a name to identify each test. The slice is then looped and calls appropriate functions. The tests are tested against real database by spinning them up as docker containers. With testing, implementations can be changed and improved without affecting correctness and desired outcome.
+
+Note: This repository also details regarding unit tests which are explained in the [Testing](#testing) section.
+
 # Cache
 
 The three most significant bottlenecks are
@@ -777,124 +1056,6 @@ Running 1m test @ http://localhost:3080/api/v1/author?page=1&size=3
 Requests/sec:  50638.73
 Transfer/sec:     15.84MB
 ```
-
-# Migration
-
-Migration is a good step towards having a versioned database and makes publishing to a production server a safe process.
-
-All migration files are stored in `database/migrations` folder.
-
-## Using Task
-
-### Create Migration
-
-Using `Task`, creating a migration file is done by the following command. Name the file after `NAME=`.
-
-    task migrate:create NAME=create_a_tablename
-
-Write your schema in pure sql in the 'up' section and any reversal in the 'down' section of the file.
- 
-### Migrate up
-
-After you are satisfied with your `.sql` files, run the following command to migrate your database.
-
-    task migrate
-
-To migrate one step
-
-    task migrate:step
-      
-### Rollback
-    
-To roll back migration by one step
-
-    task migrate:rollback
-
-Further `goose` commands are available in its [page](https://github.com/pressly/goose)
-
-
-## Without Task
-
-### Create Migration
-
-Once `goose` tool is [installed](https://github.com/pressly/goose), create a migration with
-
-    migrate create -ext sql -dir database/migrations -format unix "{{.NAME}}"
-
-### Migrate Up
-
-You will need to create a data source name string beforehand. e.g.:
-
-    postgres://postgres_user:$password@$localhost:5432/db?sslmode=false
-
-Note: You can save the above string into an environment variable for reuse e.g.
-
-    export DSN=postgres://postgres_user:$password@$localhost:5432/db?sslmode=false
-
-Then migrate with the following command, specifying the path to migration files, data source name and action.
-
-    migrate -path database/migrations -database $DSN up
-
-To migrate 1 step,
-
-    migrate -path database/migrations -database $DSN up-by-one
-
-### Rollback
-
-Rollback migration by using `down` action and the number of steps
-
-    migrate -path database/migrations -database $DSN down
-
-# Run
-
-## Local
-
-Conventionally, all apps are placed inside the `cmd` folder.
-
-If you have `Task` installed, the server can be run with:
-
-    task run
-
-or without `Task`, just like in quick start section:
-
-    go run cmd/go8/main.go
-
-## Docker
-
-You can build a docker image with the app with its config files. Docker needs to be installed beforehand.
-
-     task docker:build
-
-This task also makes a copy of `.env`. Since Docker doesn't copy hidden file, we make a copy of it on our `src` stage before transferring it to our final `scratch` stage. It also inserts formats git tag and git hash as the API version which runs at compile time.
-
-Note that this is a multistage Dockerfile. Since we statically compile this API, we can use a minimal images like a `distroless` that includes both timezones and CA certificates.
-
-Run the following command to build a container from this image. `--net=host` tells the container to use local's network so that it can access host database.
-
-    docker-compose up -d postgres # If you haven't run this from quick start 
-    task docker:run
-
-### docker-compose
-
-If you prefer to use docker-compose instead, both server and the database can be run with:
-
-    task docker-compose:start
-
-# Build
-
-## With Task
-
-If you have task installed, simply run
-
-    task build
-
-It does a task check prior to the build and puts both the binary and `.env` files into `./bin` folder
-
-## Without Task
-
-    go mod download
-    CGO_ENABLED=0 GOOS=linux
-    go build -ldflags="-X main.Version=$(git describe --abbrev=0 --tags)-$(git rev-list -1 HEAD) -w -s" -o ./server ./cmd/go8/main.go;
 
 
 # Swagger docs

@@ -7,11 +7,14 @@ import (
 )
 
 type Config struct {
-	Api           Api
-	Cors          Cors
+	Api  Api
+	Cors Cors
+
 	Database      Database
 	Cache         Cache
 	Elasticsearch Elasticsearch
+
+	Session Session
 }
 
 func New() *Config {
@@ -26,5 +29,6 @@ func New() *Config {
 		Database:      DataStore(),
 		Cache:         NewCache(),
 		Elasticsearch: ElasticSearch(),
+		Session:       NewSession(),
 	}
 }

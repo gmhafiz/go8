@@ -21,13 +21,14 @@ services:
     environment:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASS}
-      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_MULTIPLE_DATABASES=${DB_NAME},${DB_TEST_NAME}
     ports:
       - ${DB_PORT}:5432
     expose:
       - "5432"
     volumes:
       - postgres:/var/lib/postgresql/data
+      - ./scripts/create-db.sh:/docker-entrypoint-initdb.d
 
   redis:
     image: 'redis:7.0'

@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 	"github.com/vmihailenco/msgpack"
 
 	"github.com/gmhafiz/go8/internal/domain/author"
@@ -21,7 +21,7 @@ type Cache struct {
 type AuthorRedisService interface {
 	List(ctx context.Context, f *author.Filter) ([]*author.Schema, int, error)
 	Update(ctx context.Context, toAuthor *author.UpdateRequest) (*author.Schema, error)
-	Delete(ctx context.Context, id uint) error
+	Delete(ctx context.Context, id uint64) error
 }
 
 func NewRedisCache(service Author, cache *redis.Client) *Cache {
@@ -81,7 +81,7 @@ func (c *Cache) Update(ctx context.Context, toAuthor *author.UpdateRequest) (*au
 	return c.service.Update(ctx, toAuthor)
 }
 
-func (c *Cache) Delete(ctx context.Context, id uint) error {
+func (c *Cache) Delete(ctx context.Context, id uint64) error {
 	c.invalidate(ctx)
 
 	return c.service.Delete(ctx, id)

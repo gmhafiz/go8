@@ -122,14 +122,14 @@ func (au *AuthorUpdate) ClearDeletedAt() *AuthorUpdate {
 }
 
 // AddBookIDs adds the "books" edge to the Book entity by IDs.
-func (au *AuthorUpdate) AddBookIDs(ids ...uint) *AuthorUpdate {
+func (au *AuthorUpdate) AddBookIDs(ids ...uint64) *AuthorUpdate {
 	au.mutation.AddBookIDs(ids...)
 	return au
 }
 
 // AddBooks adds the "books" edges to the Book entity.
 func (au *AuthorUpdate) AddBooks(b ...*Book) *AuthorUpdate {
-	ids := make([]uint, len(b))
+	ids := make([]uint64, len(b))
 	for i := range b {
 		ids[i] = b[i].ID
 	}
@@ -148,14 +148,14 @@ func (au *AuthorUpdate) ClearBooks() *AuthorUpdate {
 }
 
 // RemoveBookIDs removes the "books" edge to Book entities by IDs.
-func (au *AuthorUpdate) RemoveBookIDs(ids ...uint) *AuthorUpdate {
+func (au *AuthorUpdate) RemoveBookIDs(ids ...uint64) *AuthorUpdate {
 	au.mutation.RemoveBookIDs(ids...)
 	return au
 }
 
 // RemoveBooks removes "books" edges to Book entities.
 func (au *AuthorUpdate) RemoveBooks(b ...*Book) *AuthorUpdate {
-	ids := make([]uint, len(b))
+	ids := make([]uint64, len(b))
 	for i := range b {
 		ids[i] = b[i].ID
 	}
@@ -190,7 +190,7 @@ func (au *AuthorUpdate) ExecX(ctx context.Context) {
 }
 
 func (au *AuthorUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	_spec := sqlgraph.NewUpdateSpec(author.Table, author.Columns, sqlgraph.NewFieldSpec(author.FieldID, field.TypeUint))
+	_spec := sqlgraph.NewUpdateSpec(author.Table, author.Columns, sqlgraph.NewFieldSpec(author.FieldID, field.TypeUint64))
 	if ps := au.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -236,7 +236,7 @@ func (au *AuthorUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: author.BooksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(book.FieldID, field.TypeUint),
+				IDSpec: sqlgraph.NewFieldSpec(book.FieldID, field.TypeUint64),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -249,7 +249,7 @@ func (au *AuthorUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: author.BooksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(book.FieldID, field.TypeUint),
+				IDSpec: sqlgraph.NewFieldSpec(book.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {
@@ -265,7 +265,7 @@ func (au *AuthorUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: author.BooksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(book.FieldID, field.TypeUint),
+				IDSpec: sqlgraph.NewFieldSpec(book.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {
@@ -386,14 +386,14 @@ func (auo *AuthorUpdateOne) ClearDeletedAt() *AuthorUpdateOne {
 }
 
 // AddBookIDs adds the "books" edge to the Book entity by IDs.
-func (auo *AuthorUpdateOne) AddBookIDs(ids ...uint) *AuthorUpdateOne {
+func (auo *AuthorUpdateOne) AddBookIDs(ids ...uint64) *AuthorUpdateOne {
 	auo.mutation.AddBookIDs(ids...)
 	return auo
 }
 
 // AddBooks adds the "books" edges to the Book entity.
 func (auo *AuthorUpdateOne) AddBooks(b ...*Book) *AuthorUpdateOne {
-	ids := make([]uint, len(b))
+	ids := make([]uint64, len(b))
 	for i := range b {
 		ids[i] = b[i].ID
 	}
@@ -412,14 +412,14 @@ func (auo *AuthorUpdateOne) ClearBooks() *AuthorUpdateOne {
 }
 
 // RemoveBookIDs removes the "books" edge to Book entities by IDs.
-func (auo *AuthorUpdateOne) RemoveBookIDs(ids ...uint) *AuthorUpdateOne {
+func (auo *AuthorUpdateOne) RemoveBookIDs(ids ...uint64) *AuthorUpdateOne {
 	auo.mutation.RemoveBookIDs(ids...)
 	return auo
 }
 
 // RemoveBooks removes "books" edges to Book entities.
 func (auo *AuthorUpdateOne) RemoveBooks(b ...*Book) *AuthorUpdateOne {
-	ids := make([]uint, len(b))
+	ids := make([]uint64, len(b))
 	for i := range b {
 		ids[i] = b[i].ID
 	}
@@ -467,7 +467,7 @@ func (auo *AuthorUpdateOne) ExecX(ctx context.Context) {
 }
 
 func (auo *AuthorUpdateOne) sqlSave(ctx context.Context) (_node *Author, err error) {
-	_spec := sqlgraph.NewUpdateSpec(author.Table, author.Columns, sqlgraph.NewFieldSpec(author.FieldID, field.TypeUint))
+	_spec := sqlgraph.NewUpdateSpec(author.Table, author.Columns, sqlgraph.NewFieldSpec(author.FieldID, field.TypeUint64))
 	id, ok := auo.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`gen: missing "Author.id" for update`)}
@@ -530,7 +530,7 @@ func (auo *AuthorUpdateOne) sqlSave(ctx context.Context) (_node *Author, err err
 			Columns: author.BooksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(book.FieldID, field.TypeUint),
+				IDSpec: sqlgraph.NewFieldSpec(book.FieldID, field.TypeUint64),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -543,7 +543,7 @@ func (auo *AuthorUpdateOne) sqlSave(ctx context.Context) (_node *Author, err err
 			Columns: author.BooksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(book.FieldID, field.TypeUint),
+				IDSpec: sqlgraph.NewFieldSpec(book.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {
@@ -559,7 +559,7 @@ func (auo *AuthorUpdateOne) sqlSave(ctx context.Context) (_node *Author, err err
 			Columns: author.BooksPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(book.FieldID, field.TypeUint),
+				IDSpec: sqlgraph.NewFieldSpec(book.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {

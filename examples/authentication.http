@@ -1,0 +1,47 @@
+### register
+POST http://localhost:3080/api/v1/register
+Content-Type: application/json
+
+{
+  "email": "gmhafiz@gmail.com",
+  "password": "password"
+}
+
+### login
+POST http://localhost:3080/api/v1/login
+Content-Type: application/json
+
+{
+  "email": "gmhafiz@gmail.com",
+  "password": "password"
+}
+
+### protected route
+GET http://localhost:3080/api/v1/restricted
+Cookie: session=L-0ULBXxkJC-2DZ1Peu8dMSG3EiLz57PpQdqJSEeTSo;
+
+### own ID
+GET http://localhost:3080/api/v1/restricted/me
+Cookie: session=L-0ULBXxkJC-2DZ1Peu8dMSG3EiLz57PpQdqJSEeTSo;
+
+### Get new CSRF token
+GET http://localhost:3080/api/v1/restricted/csrf
+Cookie: session=L-0ULBXxkJC-2DZ1Peu8dMSG3EiLz57PpQdqJSEeTSo;
+
+### logout
+POST http://localhost:3080/api/v1/logout
+Cookie: session=L-0ULBXxkJC-2DZ1Peu8dMSG3EiLz57PpQdqJSEeTSo;
+
+
+### login admin
+POST http://localhost:3080/api/v1/login
+Content-Type: application/json
+
+{
+  "email": "admin@gmhafiz.com",
+  "password": "<enter your generated password from seeder>"
+}
+
+### force logout
+POST http://localhost:3080/api/v1/restricted/logout/3
+Cookie: session=I9nV5AWyeBbImf7MCbZNb1MEQ1PlSaDDeZtG-x_6oo4

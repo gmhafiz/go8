@@ -24,9 +24,9 @@ type repository struct {
 type Author interface {
 	Create(ctx context.Context, a *author.CreateRequest) (*author.Schema, error)
 	List(ctx context.Context, f *author.Filter) ([]*author.Schema, int, error)
-	Read(ctx context.Context, id uint) (*author.Schema, error)
+	Read(ctx context.Context, id uint64) (*author.Schema, error)
 	Update(ctx context.Context, toAuthor *author.UpdateRequest) (*author.Schema, error)
-	Delete(ctx context.Context, authorID uint) error
+	Delete(ctx context.Context, authorID uint64) error
 }
 
 type Searcher interface {
@@ -169,7 +169,7 @@ func (r *repository) List(ctx context.Context, f *author.Filter) ([]*author.Sche
 	return resp, total, err
 }
 
-func (r *repository) Read(ctx context.Context, id uint) (*author.Schema, error) {
+func (r *repository) Read(ctx context.Context, id uint64) (*author.Schema, error) {
 	found, err := r.ent.Author.Query().
 		WithBooks().
 		Where(entAuthor.ID(id)).
@@ -206,7 +206,7 @@ func (r *repository) Read(ctx context.Context, id uint) (*author.Schema, error) 
 }
 
 func (r *repository) Update(ctx context.Context, a *author.UpdateRequest) (*author.Schema, error) {
-	updated, err := r.ent.Author.UpdateOneID(uint(a.ID)).
+	updated, err := r.ent.Author.UpdateOneID(uint64(a.ID)).
 		SetFirstName(a.FirstName).
 		SetMiddleName(a.MiddleName).
 		SetLastName(a.LastName).
@@ -240,7 +240,7 @@ func (r *repository) Update(ctx context.Context, a *author.UpdateRequest) (*auth
 	}, nil
 }
 
-func (r *repository) Delete(ctx context.Context, authorID uint) error {
+func (r *repository) Delete(ctx context.Context, authorID uint64) error {
 	_, err := r.ent.Author.UpdateOneID(authorID).
 		SetDeletedAt(time.Now()).
 		Save(ctx)

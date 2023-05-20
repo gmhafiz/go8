@@ -96,20 +96,20 @@ func (bc *BookCreate) SetNillableDeletedAt(t *time.Time) *BookCreate {
 }
 
 // SetID sets the "id" field.
-func (bc *BookCreate) SetID(u uint) *BookCreate {
+func (bc *BookCreate) SetID(u uint64) *BookCreate {
 	bc.mutation.SetID(u)
 	return bc
 }
 
 // AddAuthorIDs adds the "authors" edge to the Author entity by IDs.
-func (bc *BookCreate) AddAuthorIDs(ids ...uint) *BookCreate {
+func (bc *BookCreate) AddAuthorIDs(ids ...uint64) *BookCreate {
 	bc.mutation.AddAuthorIDs(ids...)
 	return bc
 }
 
 // AddAuthors adds the "authors" edges to the Author entity.
 func (bc *BookCreate) AddAuthors(a ...*Author) *BookCreate {
-	ids := make([]uint, len(a))
+	ids := make([]uint64, len(a))
 	for i := range a {
 		ids[i] = a[i].ID
 	}
@@ -175,7 +175,7 @@ func (bc *BookCreate) sqlSave(ctx context.Context) (*Book, error) {
 	}
 	if _spec.ID.Value != _node.ID {
 		id := _spec.ID.Value.(int64)
-		_node.ID = uint(id)
+		_node.ID = uint64(id)
 	}
 	bc.mutation.id = &_node.ID
 	bc.mutation.done = true
@@ -185,7 +185,7 @@ func (bc *BookCreate) sqlSave(ctx context.Context) (*Book, error) {
 func (bc *BookCreate) createSpec() (*Book, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Book{config: bc.config}
-		_spec = sqlgraph.NewCreateSpec(book.Table, sqlgraph.NewFieldSpec(book.FieldID, field.TypeUint))
+		_spec = sqlgraph.NewCreateSpec(book.Table, sqlgraph.NewFieldSpec(book.FieldID, field.TypeUint64))
 	)
 	if id, ok := bc.mutation.ID(); ok {
 		_node.ID = id
@@ -227,7 +227,7 @@ func (bc *BookCreate) createSpec() (*Book, *sqlgraph.CreateSpec) {
 			Columns: book.AuthorsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(author.FieldID, field.TypeUint),
+				IDSpec: sqlgraph.NewFieldSpec(author.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {
@@ -280,7 +280,7 @@ func (bcb *BookCreateBulk) Save(ctx context.Context) ([]*Book, error) {
 				mutation.id = &nodes[i].ID
 				if specs[i].ID.Value != nil && nodes[i].ID == 0 {
 					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = uint(id)
+					nodes[i].ID = uint64(id)
 				}
 				mutation.done = true
 				return nodes[i], nil

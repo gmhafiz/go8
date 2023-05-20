@@ -10,12 +10,12 @@ import (
 
 // AuthorRedisServiceMock is a mock implementation of AuthorRedisService.
 type AuthorRedisServiceMock struct {
-	DeleteFunc func(ctx context.Context, id uint) error
+	DeleteFunc func(ctx context.Context, id uint64) error
 	ListFunc   func(ctx context.Context, f *author.Filter) ([]*author.Schema, int, error)
 	UpdateFunc func(ctx context.Context, toAuthor *author.UpdateRequest) (*author.Schema, error)
 }
 
-func (m *AuthorRedisServiceMock) Delete(ctx context.Context, id uint) error {
+func (m *AuthorRedisServiceMock) Delete(ctx context.Context, id uint64) error {
 	return m.DeleteFunc(ctx, id)
 }
 

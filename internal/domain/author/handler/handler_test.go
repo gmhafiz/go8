@@ -490,7 +490,7 @@ func TestHandler_Read(t *testing.T) {
 			val := validator.New()
 
 			uc := &usecase.AuthorMock{
-				ReadFunc: func(ctx context.Context, authorID uint) (*author.Schema, error) {
+				ReadFunc: func(ctx context.Context, authorID uint64) (*author.Schema, error) {
 					return test.want.usecase, test.want.err
 				},
 			}
@@ -740,7 +740,7 @@ func TestHandler_Delete(t *testing.T) {
 			val := validator.New()
 
 			uc := &usecase.AuthorMock{
-				DeleteFunc: func(ctx context.Context, authorID uint) error {
+				DeleteFunc: func(ctx context.Context, authorID uint64) error {
 					return test.want.error
 				},
 			}

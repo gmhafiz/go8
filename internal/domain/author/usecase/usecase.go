@@ -23,9 +23,9 @@ type AuthorUseCase struct {
 type Author interface {
 	Create(ctx context.Context, a *author.CreateRequest) (*author.Schema, error)
 	List(ctx context.Context, f *author.Filter) ([]*author.Schema, int, error)
-	Read(ctx context.Context, authorID uint) (*author.Schema, error)
+	Read(ctx context.Context, authorID uint64) (*author.Schema, error)
 	Update(ctx context.Context, author *author.UpdateRequest) (*author.Schema, error)
-	Delete(ctx context.Context, authorID uint) error
+	Delete(ctx context.Context, authorID uint64) error
 }
 
 func New(c config.Cache, repo repository.Author, searcher repository.Searcher, cache repository.AuthorLRUService, redisCache repository.AuthorRedisService) *AuthorUseCase {
@@ -57,7 +57,7 @@ func (u *AuthorUseCase) List(ctx context.Context, f *author.Filter) ([]*author.S
 	return u.repo.List(ctx, f)
 }
 
-func (u *AuthorUseCase) Read(ctx context.Context, authorID uint) (*author.Schema, error) {
+func (u *AuthorUseCase) Read(ctx context.Context, authorID uint64) (*author.Schema, error) {
 	if authorID == 0 {
 		return nil, errors.New("ID cannot be 0")
 	}
@@ -73,7 +73,7 @@ func (u *AuthorUseCase) Update(ctx context.Context, author *author.UpdateRequest
 	return u.repo.Update(ctx, author)
 }
 
-func (u *AuthorUseCase) Delete(ctx context.Context, authorID uint) error {
+func (u *AuthorUseCase) Delete(ctx context.Context, authorID uint64) error {
 	if authorID <= 0 {
 		return errors.New("ID cannot be 0 or less")
 	}

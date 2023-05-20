@@ -7,13 +7,13 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func UInt(r *http.Request, param string) (uint, error) {
+func UInt64(r *http.Request, param string) (uint64, error) {
 	val, err := strconv.ParseInt(chi.URLParam(r, param), 10, 64)
 	if err != nil {
 		return 0, err
 	}
 
-	return uint(val), nil
+	return uint64(val), nil
 }
 
 func Int(r *http.Request, param string) (int, error) {

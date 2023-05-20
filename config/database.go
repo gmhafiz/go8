@@ -11,6 +11,7 @@ type Database struct {
 	Host                   string        `default:"localhost"`
 	Port                   uint16        `default:"5432"`
 	Name                   string        `default:"postgres"`
+	TestName               string        `split_words:"true" default:"test"`
 	User                   string        `default:"postgres"`
 	Pass                   string        `default:"password"`
 	SslMode                string        `split_words:"true" default:"disable"`
@@ -21,7 +22,7 @@ type Database struct {
 
 func DataStore() Database {
 	var db Database
-	envconfig.MustProcess("DB", &db)
+	envconfig.MustProcess("db", &db)
 
 	return db
 }

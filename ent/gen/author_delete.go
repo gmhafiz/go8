@@ -27,7 +27,7 @@ func (ad *AuthorDelete) Where(ps ...predicate.Author) *AuthorDelete {
 
 // Exec executes the deletion query and returns how many vertices were deleted.
 func (ad *AuthorDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks[int, AuthorMutation](ctx, ad.sqlExec, ad.mutation, ad.hooks)
+	return withHooks(ctx, ad.sqlExec, ad.mutation, ad.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
@@ -40,15 +40,7 @@ func (ad *AuthorDelete) ExecX(ctx context.Context) int {
 }
 
 func (ad *AuthorDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := &sqlgraph.DeleteSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table: author.Table,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUint,
-				Column: author.FieldID,
-			},
-		},
-	}
+	_spec := sqlgraph.NewDeleteSpec(author.Table, sqlgraph.NewFieldSpec(author.FieldID, field.TypeUint64))
 	if ps := ad.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

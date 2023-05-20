@@ -14,7 +14,7 @@ type Author struct {
 // Fields of the Author.
 func (Author) Fields() []ent.Field {
 	return []ent.Field{
-		field.Uint("id"),
+		field.Uint64("id"),
 		field.String("first_name"),
 		field.String("middle_name").Optional(),
 		field.String("last_name"),

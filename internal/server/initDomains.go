@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	"github.com/gmhafiz/go8/internal/domain/authentication"
 	authorHandler "github.com/gmhafiz/go8/internal/domain/author/handler"
 	authorRepo "github.com/gmhafiz/go8/internal/domain/author/repository"
 	authorUseCase "github.com/gmhafiz/go8/internal/domain/author/usecase"
@@ -16,15 +17,10 @@ import (
 	"github.com/gmhafiz/go8/internal/utility/respond"
 )
 
-type Domain struct {
-	Health *health.Handler
-	Book   *bookHandler.Handler
-	Author *authorHandler.Handler
-}
-
 func (s *Server) InitDomains() {
 	s.initVersion()
 	s.initSwagger()
+	s.initAuthentication()
 	s.initAuthor()
 	s.initHealth()
 	s.initBook()
@@ -43,7 +39,7 @@ func (s *Server) initVersion() {
 func (s *Server) initHealth() {
 	newHealthRepo := health.NewRepo(s.DB)
 	newHealthUseCase := health.New(newHealthRepo)
-	s.Domain.Health = health.RegisterHTTPEndPoints(s.router, newHealthUseCase)
+	health.RegisterHTTPEndPoints(s.router, newHealthUseCase)
 }
 
 func (s *Server) initSwagger() {
@@ -61,7 +57,7 @@ func (s *Server) initSwagger() {
 func (s *Server) initBook() {
 	newBookRepo := bookRepo.New(s.DB)
 	newBookUseCase := bookUseCase.New(newBookRepo)
-	s.Domain.Book = bookHandler.RegisterHTTPEndPoints(s.router, s.validator, newBookUseCase)
+	bookHandler.RegisterHTTPEndPoints(s.router, s.validator, newBookUseCase)
 }
 
 func (s *Server) initAuthor() {
@@ -77,5 +73,10 @@ func (s *Server) initAuthor() {
 		newLRUCache,
 		newRedisCache,
 	)
-	s.Domain.Author = authorHandler.RegisterHTTPEndPoints(s.router, s.validator, newAuthorUseCase)
+	authorHandler.RegisterHTTPEndPoints(s.router, s.validator, newAuthorUseCase)
+}
+
+func (s *Server) initAuthentication() {
+	repo := authentication.NewRepo(s.ent, s.DB.DB, s.session)
+	authentication.RegisterHTTPEndPoints(s.router, s.session, repo)
 }

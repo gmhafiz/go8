@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/gmhafiz/go8/ent/gen/author"
 )
@@ -15,7 +16,7 @@ import (
 type Author struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID uint `json:"id,omitempty"`
+	ID uint64 `json:"id,omitempty"`
 	// FirstName holds the value of the "first_name" field.
 	FirstName string `json:"first_name,omitempty"`
 	// MiddleName holds the value of the "middle_name" field.
@@ -30,7 +31,8 @@ type Author struct {
 	DeletedAt *time.Time `json:"-"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AuthorQuery when eager-loading is set.
-	Edges AuthorEdges `json:"edges"`
+	Edges        AuthorEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // AuthorEdges holds the relations/edges for other nodes in the graph.
@@ -63,7 +65,7 @@ func (*Author) scanValues(columns []string) ([]any, error) {
 		case author.FieldCreatedAt, author.FieldUpdatedAt, author.FieldDeletedAt:
 			values[i] = new(sql.NullTime)
 		default:
-			return nil, fmt.Errorf("unexpected column %q for type Author", columns[i])
+			values[i] = new(sql.UnknownType)
 		}
 	}
 	return values, nil
@@ -82,7 +84,7 @@ func (a *Author) assignValues(columns []string, values []any) error {
 			if !ok {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
-			a.ID = uint(value.Int64)
+			a.ID = uint64(value.Int64)
 		case author.FieldFirstName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field first_name", values[i])
@@ -120,9 +122,17 @@ func (a *Author) assignValues(columns []string, values []any) error {
 				a.DeletedAt = new(time.Time)
 				*a.DeletedAt = value.Time
 			}
+		default:
+			a.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
+}
+
+// Value returns the ent.Value that was dynamically selected and assigned to the Author.
+// This includes values selected through modifiers, order, etc.
+func (a *Author) Value(name string) (ent.Value, error) {
+	return a.selectValues.Get(name)
 }
 
 // QueryBooks queries the "books" edge of the Author entity.
@@ -178,9 +188,3 @@ func (a *Author) String() string {
 
 // Authors is a parsable slice of Author.
 type Authors []*Author
-
-func (a Authors) config(cfg config) {
-	for _i := range a {
-		a[_i].config = cfg
-	}
-}

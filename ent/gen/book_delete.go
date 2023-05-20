@@ -27,7 +27,7 @@ func (bd *BookDelete) Where(ps ...predicate.Book) *BookDelete {
 
 // Exec executes the deletion query and returns how many vertices were deleted.
 func (bd *BookDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks[int, BookMutation](ctx, bd.sqlExec, bd.mutation, bd.hooks)
+	return withHooks(ctx, bd.sqlExec, bd.mutation, bd.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
@@ -40,15 +40,7 @@ func (bd *BookDelete) ExecX(ctx context.Context) int {
 }
 
 func (bd *BookDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := &sqlgraph.DeleteSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table: book.Table,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUint,
-				Column: book.FieldID,
-			},
-		},
-	}
+	_spec := sqlgraph.NewDeleteSpec(book.Table, sqlgraph.NewFieldSpec(book.FieldID, field.TypeUint64))
 	if ps := bd.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

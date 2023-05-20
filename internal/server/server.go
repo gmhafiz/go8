@@ -18,14 +18,16 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
+	"github.com/gmhafiz/scs/v2"
 	chiMiddleware "github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
-	"github.com/go-redis/redis/v8"
 	_ "github.com/jackc/pgx/stdlib"
 	"github.com/jmoiron/sqlx"
 	"github.com/jwalton/gchalk"
 	_ "github.com/lib/pq"
+	"github.com/redis/go-redis/v9"
+	"github.com/rs/cors"
 	"golang.org/x/mod/modfile"
 
 	"github.com/gmhafiz/go8/config"
@@ -34,6 +36,7 @@ import (
 	"github.com/gmhafiz/go8/ent/gen"
 	"github.com/gmhafiz/go8/internal/middleware"
 	db "github.com/gmhafiz/go8/third_party/database"
+	"github.com/gmhafiz/go8/third_party/postgresstore"
 	redisLib "github.com/gmhafiz/go8/third_party/redis"
 	"github.com/gmhafiz/go8/third_party/validate"
 )
@@ -52,11 +55,14 @@ type Server struct {
 	cache   *redis.Client
 	cluster *redis.ClusterClient
 
+	session       *scs.SessionManager
+	sessionCloser *postgresstore.PostgresStore
+
 	validator *validator.Validate
+	cors      *cors.Cors
 	router    *chi.Mux
 
 	httpServer *http.Server
-	Domain
 }
 
 type Options func(opts *Server) error
@@ -82,9 +88,11 @@ func defaultServer() *Server {
 
 func (s *Server) Init(version string) {
 	s.Version = version
+	s.setCors()
 	s.newRedis()
-	s.newDatabase()
+	s.NewDatabase()
 	s.newValidator()
+	s.newAuthentication()
 	s.newRouter()
 	s.setGlobalMiddleware()
 	s.InitDomains()
@@ -101,7 +109,7 @@ func (s *Server) newRedis() {
 	}
 }
 
-func (s *Server) newDatabase() {
+func (s *Server) NewDatabase() {
 	if s.cfg.Database.Driver == "" {
 		log.Fatal("please fill in database credentials in .env file or set in environment variable")
 	}
@@ -126,6 +134,24 @@ func (s *Server) newValidator() {
 	s.validator = validate.New()
 }
 
+func (s *Server) newAuthentication() {
+	manager := scs.New()
+	manager.Store = postgresstore.New(s.DB.DB)
+	manager.CtxStore = postgresstore.New(s.DB.DB)
+	manager.Lifetime = s.cfg.Session.Duration
+	manager.Cookie.Name = s.cfg.Session.Name
+	manager.Cookie.Domain = s.cfg.Session.Domain
+	manager.Cookie.HttpOnly = s.cfg.Session.HttpOnly
+	manager.Cookie.Path = s.cfg.Session.Path
+	manager.Cookie.Persist = true
+	manager.Cookie.SameSite = http.SameSite(s.cfg.Session.SameSite)
+	manager.Cookie.Secure = s.cfg.Session.Secure
+
+	s.sessionCloser = postgresstore.NewWithCleanupInterval(s.DB.DB, 30*time.Minute)
+
+	s.session = manager
+}
+
 func (s *Server) newRouter() {
 	s.router = chi.NewRouter()
 }
@@ -136,10 +162,10 @@ func (s *Server) setGlobalMiddleware() {
 		w.WriteHeader(http.StatusNotFound)
 		_, _ = w.Write([]byte(`{"message": "endpoint not found"}`))
 	})
+	s.router.Use(s.cors.Handler)
 	s.router.Use(middleware.Json)
-	s.router.Use(middleware.AuthN())
+	s.router.Use(middleware.LoadAndSave(s.session))
 	s.router.Use(middleware.Audit)
-	s.router.Use(middleware.CORS)
 	if s.cfg.Api.RequestLog {
 		s.router.Use(chiMiddleware.Logger)
 	}
@@ -255,7 +281,7 @@ func (s *Server) newEnt(dsn string) {
 
 	client.Use(func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, mutation ent.Mutation) (ent.Value, error) {
-			meta, ok := ctx.Value(middleware.AuditID).(middleware.Event)
+			meta, ok := ctx.Value(middleware.KeyAuditID).(middleware.Event)
 			if !ok {
 				return next.Mutate(ctx, mutation)
 			}
@@ -382,4 +408,22 @@ func (s *Server) closeResources(ctx context.Context) {
 	_ = s.ent.Close()
 	s.cluster.Shutdown(ctx)
 	s.cache.Shutdown(ctx)
+	s.sessionCloser.StopCleanup()
+}
+
+func (s *Server) setCors() {
+	s.cors = cors.New(
+		cors.Options{
+			AllowedOrigins: s.cfg.Cors.AllowedOrigins,
+			AllowedMethods: []string{
+				http.MethodHead,
+				http.MethodGet,
+				http.MethodPost,
+				http.MethodPut,
+				http.MethodPatch,
+				http.MethodDelete,
+			},
+			AllowedHeaders:   []string{"*"},
+			AllowCredentials: true,
+		})
 }

@@ -20,7 +20,7 @@ import (
 type BookQuery struct {
 	config
 	ctx         *QueryContext
-	order       []OrderFunc
+	order       []book.OrderOption
 	inters      []Interceptor
 	predicates  []predicate.Book
 	withAuthors *AuthorQuery
@@ -55,7 +55,7 @@ func (bq *BookQuery) Unique(unique bool) *BookQuery {
 }
 
 // Order specifies how the records should be ordered.
-func (bq *BookQuery) Order(o ...OrderFunc) *BookQuery {
+func (bq *BookQuery) Order(o ...book.OrderOption) *BookQuery {
 	bq.order = append(bq.order, o...)
 	return bq
 }
@@ -106,8 +106,8 @@ func (bq *BookQuery) FirstX(ctx context.Context) *Book {
 
 // FirstID returns the first Book ID from the query.
 // Returns a *NotFoundError when no Book ID was found.
-func (bq *BookQuery) FirstID(ctx context.Context) (id uint, err error) {
-	var ids []uint
+func (bq *BookQuery) FirstID(ctx context.Context) (id uint64, err error) {
+	var ids []uint64
 	if ids, err = bq.Limit(1).IDs(setContextOp(ctx, bq.ctx, "FirstID")); err != nil {
 		return
 	}
@@ -119,7 +119,7 @@ func (bq *BookQuery) FirstID(ctx context.Context) (id uint, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (bq *BookQuery) FirstIDX(ctx context.Context) uint {
+func (bq *BookQuery) FirstIDX(ctx context.Context) uint64 {
 	id, err := bq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -157,8 +157,8 @@ func (bq *BookQuery) OnlyX(ctx context.Context) *Book {
 // OnlyID is like Only, but returns the only Book ID in the query.
 // Returns a *NotSingularError when more than one Book ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (bq *BookQuery) OnlyID(ctx context.Context) (id uint, err error) {
-	var ids []uint
+func (bq *BookQuery) OnlyID(ctx context.Context) (id uint64, err error) {
+	var ids []uint64
 	if ids, err = bq.Limit(2).IDs(setContextOp(ctx, bq.ctx, "OnlyID")); err != nil {
 		return
 	}
@@ -174,7 +174,7 @@ func (bq *BookQuery) OnlyID(ctx context.Context) (id uint, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (bq *BookQuery) OnlyIDX(ctx context.Context) uint {
+func (bq *BookQuery) OnlyIDX(ctx context.Context) uint64 {
 	id, err := bq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -202,17 +202,19 @@ func (bq *BookQuery) AllX(ctx context.Context) []*Book {
 }
 
 // IDs executes the query and returns a list of Book IDs.
-func (bq *BookQuery) IDs(ctx context.Context) ([]uint, error) {
-	var ids []uint
+func (bq *BookQuery) IDs(ctx context.Context) (ids []uint64, err error) {
+	if bq.ctx.Unique == nil && bq.path != nil {
+		bq.Unique(true)
+	}
 	ctx = setContextOp(ctx, bq.ctx, "IDs")
-	if err := bq.Select(book.FieldID).Scan(ctx, &ids); err != nil {
+	if err = bq.Select(book.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (bq *BookQuery) IDsX(ctx context.Context) []uint {
+func (bq *BookQuery) IDsX(ctx context.Context) []uint64 {
 	ids, err := bq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -269,7 +271,7 @@ func (bq *BookQuery) Clone() *BookQuery {
 	return &BookQuery{
 		config:      bq.config,
 		ctx:         bq.ctx.Clone(),
-		order:       append([]OrderFunc{}, bq.order...),
+		order:       append([]book.OrderOption{}, bq.order...),
 		inters:      append([]Interceptor{}, bq.inters...),
 		predicates:  append([]predicate.Book{}, bq.predicates...),
 		withAuthors: bq.withAuthors.Clone(),
@@ -402,8 +404,8 @@ func (bq *BookQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Book, e
 
 func (bq *BookQuery) loadAuthors(ctx context.Context, query *AuthorQuery, nodes []*Book, init func(*Book), assign func(*Book, *Author)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[uint]*Book)
-	nids := make(map[uint]map[*Book]struct{})
+	byID := make(map[uint64]*Book)
+	nids := make(map[uint64]map[*Book]struct{})
 	for i, node := range nodes {
 		edgeIDs[i] = node.ID
 		byID[node.ID] = node
@@ -435,8 +437,8 @@ func (bq *BookQuery) loadAuthors(ctx context.Context, query *AuthorQuery, nodes 
 				return append([]any{new(sql.NullInt64)}, values...), nil
 			}
 			spec.Assign = func(columns []string, values []any) error {
-				outValue := uint(values[0].(*sql.NullInt64).Int64)
-				inValue := uint(values[1].(*sql.NullInt64).Int64)
+				outValue := uint64(values[0].(*sql.NullInt64).Int64)
+				inValue := uint64(values[1].(*sql.NullInt64).Int64)
 				if nids[inValue] == nil {
 					nids[inValue] = map[*Book]struct{}{byID[outValue]: {}}
 					return assign(columns[1:], values[1:])
@@ -472,20 +474,12 @@ func (bq *BookQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (bq *BookQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := &sqlgraph.QuerySpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   book.Table,
-			Columns: book.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUint,
-				Column: book.FieldID,
-			},
-		},
-		From:   bq.sql,
-		Unique: true,
-	}
+	_spec := sqlgraph.NewQuerySpec(book.Table, book.Columns, sqlgraph.NewFieldSpec(book.FieldID, field.TypeUint64))
+	_spec.From = bq.sql
 	if unique := bq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
+	} else if bq.path != nil {
+		_spec.Unique = true
 	}
 	if fields := bq.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))

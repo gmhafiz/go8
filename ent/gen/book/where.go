@@ -11,47 +11,47 @@ import (
 )
 
 // ID filters vertices based on their ID field.
-func ID(id uint) predicate.Book {
+func ID(id uint64) predicate.Book {
 	return predicate.Book(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id uint) predicate.Book {
+func IDEQ(id uint64) predicate.Book {
 	return predicate.Book(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id uint) predicate.Book {
+func IDNEQ(id uint64) predicate.Book {
 	return predicate.Book(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...uint) predicate.Book {
+func IDIn(ids ...uint64) predicate.Book {
 	return predicate.Book(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...uint) predicate.Book {
+func IDNotIn(ids ...uint64) predicate.Book {
 	return predicate.Book(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id uint) predicate.Book {
+func IDGT(id uint64) predicate.Book {
 	return predicate.Book(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id uint) predicate.Book {
+func IDGTE(id uint64) predicate.Book {
 	return predicate.Book(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id uint) predicate.Book {
+func IDLT(id uint64) predicate.Book {
 	return predicate.Book(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id uint) predicate.Book {
+func IDLTE(id uint64) predicate.Book {
 	return predicate.Book(sql.FieldLTE(FieldID, id))
 }
 
@@ -499,11 +499,7 @@ func HasAuthors() predicate.Book {
 // HasAuthorsWith applies the HasEdge predicate on the "authors" edge with a given conditions (other predicates).
 func HasAuthorsWith(preds ...predicate.Author) predicate.Book {
 	return predicate.Book(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(AuthorsInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, AuthorsTable, AuthorsPrimaryKey...),
-		)
+		step := newAuthorsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

@@ -10,7 +10,7 @@ import (
 var (
 	// AuthorsColumns holds the columns for the "authors" table.
 	AuthorsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUint, Increment: true},
+		{Name: "id", Type: field.TypeUint64, Increment: true},
 		{Name: "first_name", Type: field.TypeString},
 		{Name: "middle_name", Type: field.TypeString, Nullable: true},
 		{Name: "last_name", Type: field.TypeString},
@@ -26,7 +26,7 @@ var (
 	}
 	// BooksColumns holds the columns for the "books" table.
 	BooksColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUint, Increment: true},
+		{Name: "id", Type: field.TypeUint64, Increment: true},
 		{Name: "title", Type: field.TypeString},
 		{Name: "published_date", Type: field.TypeTime},
 		{Name: "image_url", Type: field.TypeString, Nullable: true},
@@ -41,10 +41,39 @@ var (
 		Columns:    BooksColumns,
 		PrimaryKey: []*schema.Column{BooksColumns[0]},
 	}
+	// SessionsColumns holds the columns for the "sessions" table.
+	SessionsColumns = []*schema.Column{
+		{Name: "token", Type: field.TypeString},
+		{Name: "user_id", Type: field.TypeUint64, Nullable: true},
+		{Name: "data", Type: field.TypeBytes},
+		{Name: "expiry", Type: field.TypeTime},
+	}
+	// SessionsTable holds the schema information for the "sessions" table.
+	SessionsTable = &schema.Table{
+		Name:       "sessions",
+		Columns:    SessionsColumns,
+		PrimaryKey: []*schema.Column{SessionsColumns[0]},
+	}
+	// UsersColumns holds the columns for the "users" table.
+	UsersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "first_name", Type: field.TypeString, Nullable: true},
+		{Name: "middle_name", Type: field.TypeString, Nullable: true},
+		{Name: "last_name", Type: field.TypeString, Nullable: true},
+		{Name: "email", Type: field.TypeString},
+		{Name: "password", Type: field.TypeString},
+		{Name: "verified_at", Type: field.TypeTime, Nullable: true},
+	}
+	// UsersTable holds the schema information for the "users" table.
+	UsersTable = &schema.Table{
+		Name:       "users",
+		Columns:    UsersColumns,
+		PrimaryKey: []*schema.Column{UsersColumns[0]},
+	}
 	// BookAuthorsColumns holds the columns for the "book_authors" table.
 	BookAuthorsColumns = []*schema.Column{
-		{Name: "book_id", Type: field.TypeUint},
-		{Name: "author_id", Type: field.TypeUint},
+		{Name: "book_id", Type: field.TypeUint64},
+		{Name: "author_id", Type: field.TypeUint64},
 	}
 	// BookAuthorsTable holds the schema information for the "book_authors" table.
 	BookAuthorsTable = &schema.Table{
@@ -70,6 +99,8 @@ var (
 	Tables = []*schema.Table{
 		AuthorsTable,
 		BooksTable,
+		SessionsTable,
+		UsersTable,
 		BookAuthorsTable,
 	}
 )

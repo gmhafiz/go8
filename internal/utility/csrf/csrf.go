@@ -27,7 +27,7 @@ func ValidToken(ctx context.Context, db *sql.DB, token string) bool {
 	if err != nil {
 		return false
 	}
-	return exists == true
+	return exists
 }
 
 // ValidAndDeleteToken deletes the token from the store if and only if token is valid.

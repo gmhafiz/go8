@@ -28,7 +28,7 @@ func (r *repository) Search(ctx context.Context, f *author.Filter) ([]*author.Sc
 	}
 
 	// sort by field
-	var orderFunc []gen.OrderFunc
+	var orderFunc []entAuthor.OrderOption
 	for col, ord := range f.Base.Sort {
 		if ord == "ASC" {
 			orderFunc = append(orderFunc, gen.Asc(col))

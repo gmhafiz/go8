@@ -264,7 +264,7 @@ func TestAuthorRepository_Create(t *testing.T) {
 func TestRepository_Read(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		id  uint
+		id  uint64
 	}
 	tests := []struct {
 		name    string

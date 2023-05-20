@@ -16,9 +16,9 @@ type AuthorLRU struct {
 }
 
 type AuthorLRUService interface {
-	Read(ctx context.Context, id uint) (*author.Schema, error)
+	Read(ctx context.Context, id uint64) (*author.Schema, error)
 	Update(ctx context.Context, toAuthor *author.UpdateRequest) (*author.Schema, error)
-	Delete(ctx context.Context, id uint) error
+	Delete(ctx context.Context, id uint64) error
 }
 
 func NewLRUCache(service Author) *AuthorLRU {
@@ -33,7 +33,7 @@ func NewLRUCache(service Author) *AuthorLRU {
 	}
 }
 
-func (c *AuthorLRU) Read(ctx context.Context, id uint) (*author.Schema, error) {
+func (c *AuthorLRU) Read(ctx context.Context, id uint64) (*author.Schema, error) {
 	// (1) Picks up the key from context which is added in the handler layer.
 	url, ok := ctx.Value(middleware.CacheURL).(string)
 	if !ok {
@@ -63,7 +63,7 @@ func (c *AuthorLRU) Update(ctx context.Context, toAuthor *author.UpdateRequest) 
 	return c.service.Update(ctx, toAuthor)
 }
 
-func (c *AuthorLRU) Delete(ctx context.Context, id uint) error {
+func (c *AuthorLRU) Delete(ctx context.Context, id uint64) error {
 	c.invalidate(ctx)
 
 	return c.service.Delete(ctx, id)

@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/cespare/xxhash"
+	"github.com/cespare/xxhash/v2"
 )
 
 type cacheKey string

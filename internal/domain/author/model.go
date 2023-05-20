@@ -7,7 +7,7 @@ import (
 )
 
 type Schema struct {
-	ID         uint
+	ID         uint64
 	FirstName  string
 	MiddleName string
 	LastName   string

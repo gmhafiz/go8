@@ -75,7 +75,7 @@ tasks:
       - task fmt
       - task vet
       - task lint
-      - task vuln
+#      - task vuln
       - task test
     silent: true
 

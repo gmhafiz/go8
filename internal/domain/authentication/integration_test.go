@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/gmhafiz/go8/internal/utility/csrf"
 	"io"
 	"log"
 	"net/http"
@@ -19,6 +18,7 @@ import (
 
 	entsql "entgo.io/ent/dialect/sql"
 	"github.com/alexedwards/argon2id"
+	"github.com/gmhafiz/go8/internal/utility/csrf"
 	"github.com/gmhafiz/scs/v2"
 	"github.com/go-chi/chi/v5"
 	_ "github.com/lib/pq"

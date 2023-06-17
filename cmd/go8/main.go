@@ -1,8 +1,6 @@
 package main
 
 import (
-	"log"
-
 	"github.com/gmhafiz/go8/internal/server"
 )
 
@@ -18,8 +16,7 @@ var Version = "v0.1.0"
 // @host localhost:3080
 // @BasePath /
 func main() {
-	log.Printf("Starting API version: %s\n", Version)
-	s := server.New()
-	s.Init(Version)
+	s := server.New(server.WithVersion(Version))
+	s.Init()
 	s.Run()
 }

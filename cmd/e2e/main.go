@@ -8,46 +8,40 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/gmhafiz/go8/config"
 	"github.com/gmhafiz/go8/internal/domain/book"
-	"github.com/gmhafiz/go8/internal/server"
 )
 
 // Version is injected using ldflags during build time
-const Version = "v0.7.0-test"
+const Version = "v0.1.0"
+
+var url = ""
 
 func main() {
-	log.Printf("Starting API version: %s\n", Version)
-	s := server.New()
-	s.Init(Version)
-	s.Migrate()
+	log.Printf("Starting e2e API version: %s\n", Version)
+	cfg := config.New()
 
-	t := NewE2eTest(s)
-	t.Run()
+	url = fmt.Sprintf("http://%s:%s", cfg.Api.Host, cfg.Api.Port)
+
+	run()
 }
 
-type E2eTest struct {
-	server *server.Server
+func run() {
+	testBook()
+
+	log.Println("all tests have passed.")
 }
 
-func NewE2eTest(server *server.Server) *E2eTest {
-	return &E2eTest{
-		server: server,
-	}
+func testBook() {
+	testEmptyBook()
+	id := testAddOneBook()
+	id = testGetOneBook(id)
+	testUpdateBook(id)
+	testDeleteOneBook(id)
 }
 
-func (t *E2eTest) Run() {
-	testEmptyBook(t)
-	id := testAddOneBook(t)
-	id = testGetOneBook(t, id)
-	testUpdateBook(t, id)
-	testDeleteOneBook(t, id)
-
-	log.Println("all tests passed.")
-}
-
-func testEmptyBook(t *E2eTest) {
-	resp, err := http.Get(fmt.Sprintf("http://localhost:%s/api/v1/books",
-		t.server.Config().Api.Port))
+func testEmptyBook() {
+	resp, err := http.Get(fmt.Sprintf("%s/api/v1/book", url))
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -72,7 +66,7 @@ func testEmptyBook(t *E2eTest) {
 	log.Println("testEmptyBook passes")
 }
 
-func testAddOneBook(t *E2eTest) int {
+func testAddOneBook() int {
 	want := &book.CreateRequest{
 		Title:         "test01",
 		PublishedDate: "2020-02-02",
@@ -83,8 +77,7 @@ func testAddOneBook(t *E2eTest) int {
 	bR, _ := json.Marshal(want)
 
 	resp, err := http.Post(
-		fmt.Sprintf("http://localhost:%s/api/v1/books",
-			t.server.Config().Api.Port),
+		fmt.Sprintf("%s/api/v1/book", url),
 		"Content-Type: application/json",
 		bytes.NewBuffer(bR),
 	)
@@ -117,10 +110,10 @@ func testAddOneBook(t *E2eTest) int {
 	return got.ID
 }
 
-func testGetOneBook(t *E2eTest, id int) int {
+func testGetOneBook(id int) int {
 	client := &http.Client{}
 
-	url := fmt.Sprintf("http://localhost:%s/api/v1/books/%d", t.server.Config().Api.Port, id)
+	url := fmt.Sprintf("%s/api/v1/book/%d", url, id)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		log.Fatalln(err)
@@ -152,7 +145,7 @@ func testGetOneBook(t *E2eTest, id int) int {
 	return got.ID
 }
 
-func testUpdateBook(t *E2eTest, bookID int) {
+func testUpdateBook(bookID int) {
 	newBook := book.CreateRequest{
 		Title:         "updated title",
 		PublishedDate: "2020-07-31T15:04:05.123499999Z",
@@ -167,7 +160,7 @@ func testUpdateBook(t *E2eTest, bookID int) {
 		log.Fatal(err)
 	}
 
-	url := fmt.Sprintf("http://localhost:%s/api/v1/books/%d", t.server.Config().Api.Port, bookID)
+	url := fmt.Sprintf("%s/api/v1/book/%d", url, bookID)
 
 	req, err := http.NewRequest(http.MethodPut, url, bytes.NewBuffer(bR))
 	if err != nil {
@@ -204,11 +197,11 @@ func testUpdateBook(t *E2eTest, bookID int) {
 	log.Println("testUpdateBook passes")
 }
 
-func testDeleteOneBook(t *E2eTest, id int) {
+func testDeleteOneBook(id int) {
 	client := &http.Client{}
 
 	req, err := http.NewRequest(
-		http.MethodDelete, fmt.Sprintf("http://localhost:%s/api/v1/books/%d", t.server.Config().Api.Port, id),
+		http.MethodDelete, fmt.Sprintf("%s/api/v1/book/%d", url, id),
 		nil,
 	)
 	if err != nil {

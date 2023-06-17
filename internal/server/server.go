@@ -81,6 +81,14 @@ func New(opts ...Options) *Server {
 	return s
 }
 
+func WithVersion(version string) Options {
+	return func(opts *Server) error {
+		log.Printf("Starting API version: %s\n", version)
+		opts.Version = version
+		return nil
+	}
+}
+
 func defaultServer() *Server {
 	return &Server{
 		cfg:    config.New(),
@@ -88,8 +96,7 @@ func defaultServer() *Server {
 	}
 }
 
-func (s *Server) Init(version string) {
-	s.Version = version
+func (s *Server) Init() {
 	s.setCors()
 	s.newRedis()
 	s.NewDatabase()

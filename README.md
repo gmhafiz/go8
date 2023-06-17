@@ -13,11 +13,11 @@
               .........                ......                .......
 A starter kit for Go API development. Inspired by [How I write HTTP services after eight years](https://pace.dev/blog/2018/05/09/how-I-write-http-services-after-eight-years.html).
 
-However, I wanted to use [chi router](https://github.com/go-chi/chi) which is more common in the community, [sqlx](https://github.com/jmoiron/sqlx) for database operations and design towards layered architecture (handler -> business logic -> repository).
+However, I wanted to use [chi router](https://github.com/go-chi/chi) which is more common in the community, [sqlx](https://github.com/jmoiron/sqlx) for database operations and design towards layered architecture (handler -> business logic -> database).
 
 It is still in early stages, and I do not consider it is completed until all integration tests are completed.
 
-In short, this kit is a Go + Postgres + Chi Router + sqlx + ent + authentication + unit testing starter kit for API development.
+In short, this kit is a Go + Postgres + Chi Router + sqlx + ent + authentication + testing starter kit for API development.
 
 # Motivation
 
@@ -29,7 +29,7 @@ However, the second option isn't that straightforward. you will want to structur
 
 This kit is composed of standard Go library together with some well-known libraries to manage things like router, database query and migration support.
 
-  - [x] Framework-less and net/http compatible handler
+  - [x] Framework-less and net/http compatible handlers
   - [x] Router/Mux with [Chi Router](https://github.com/go-chi/chi)
   - [x] Database Operations with [sqlx](https://github.com/jmoiron/sqlx)
   - [x] Database Operations with [ent](https://entgo.io/docs/getting-started)
@@ -46,11 +46,12 @@ This kit is composed of standard Go library together with some well-known librar
   - [x] Authentication using cookie-based session
   - [x] Uses [Task](https://taskfile.dev) to simplify various tasks like mocking, linting, test coverage, hot reload etc
   - [x] Unit testing of repository, use case, and handler using mocks and [dockertest](https://github.com/ory/dockertest)
-  - [ ] End-to-end test using ephemeral docker containers
+  - [x] Integration testing
+  - [x] End-to-end test using ephemeral docker containers
 
 # Quick Start
 
-It is advisable to use the latest supported [Go version](https://go.dev/dl/go1.20.linux-amd64.tar.gz) (>= v1.19). Optionally `docker` and `docker-compose` for easier start up. There is a quick guide for Ubuntu in the [appendix](#appendix).
+It is advisable to use the latest supported [Go version](https://go.dev/dl/go1.20.5.linux-amd64.tar.gz) (>= v1.19). Optionally `docker` and `docker-compose` for easier start up. There is a quick guide for Debian in the [appendix](#appendix).
 
 Get it
 
@@ -77,6 +78,7 @@ It is also possible to set them in `env` file. Just make sure this file is ignor
 2. Fill in your database credentials in `.env` by making a copy of `env.example` first.
 ```shell
 cp env.example .env
+vim .env
 ```
 
 Have a database ready either by installing them yourself or the following command. The `docker-compose.yml` will use database credentials set in either `.env` file or environment variables which is initialized in the previous step. Optionally, you may want redis as well.
@@ -147,14 +149,13 @@ curl -v --location --request POST 'http://localhost:3080/api/v1/book' \
     "published_date": "2020-07-31T15:04:05.123499999Z",
     "description": 
     "test description"
-  }' \
- | jq
+  }'
 ```
 
 Retrieve all books:
 
 ```shell
-curl --location --request GET 'http://localhost:3080/api/v1/book' | jq
+curl --location --request GET 'http://localhost:3080/api/v1/book'
 ```
 
 To see all available routes, run
@@ -244,6 +245,7 @@ go test ./...
       - [Handler](#handler-1)
       - [Use Case](#use-case-1)
       - [Repository](#repository-1)
+   * [Integration Testing](#integration-testing-1)
    * [End-to-End Test](#end-to-end-test)
 - [TODO](#todo)
 - [Acknowledgements](#acknowledgements)
@@ -1732,56 +1734,82 @@ third party library. However, the structure is still similar, with the addition
 of setting up the database. Another advantage is you can inspect the values
 inside the database by looking at the `databaseUrl` variable inside `TestMain()`.
 
+## Integration Testing
+
+An integration testing tests if different modules at different layers work with each other. For example, we can start testing from handler layer by supplying simple inputs, and compare if the result is what is expected. This integration test go through use case and repository layer thus making sure all layers play well with each other.
+
+Integration testing has been demonstration in the Authentication's [integration testing](#integration-testing) section.
+
 ## End-to-End Test
 
-TODO: E2E tests are still in progress.
+End-to-end tests is a way to make sure that the api behaves as intended for most commonly performed user interactions. It tries to simulate real-world scenario and thus our setup must also be as close as possible to a production setup. This kind of test is typically done after both unit and integration tests are completed. 
 
-Technically End-to-End test (e2e test) can be done separately in another program and language. Having e2e binary integrated in the project has the advantage of reusing structs and migration which will be explained down below. 
+In this approach, and you only need to write Go code for the tests. We run both api and database as Docker containers, then run database migrations on the api. Once that is done, we run another container that calls each HTTP endpoint. All of these operations are cobbled together with a docker-compose file and can be run in a single command. Since this approach is self-contained, it is quick to run, no port forwarding is needed, and can be shut down just as quick. This approach sounds similar to integration testing but the difference is we hit HTTP endpoints instead of initialising any modules in any layers. Note that there are [alternative approaches](#other-approaches) to doing this but the one demonstrated here is I believe the simplest to set up because it takes advantage of containers for isolation and it takes a single command to run.
 
-The idea here is to run our application isolated in a container (along with database) and the e2e program calls known API of this program and checks if the output is what is expected.  
+The one thing that differs with production is all containers use distinct environment variables as defined in the `e2e` directory. Critical differences are the hostname for both api and database ad they use a name defined in the service section in the `e2e/docker-compose.yml` file. The reason is that Docker manages the hostnames within the network, so we cannot point to a container using its IP address. For example in our e2e docker compose file:
 
-It creates two docker containers, one for the API, and second for postgres. Once the containers have started. It runs the app, and then the e2e binary.
+```yaml
+version: '3.4'
+services:
+  postgres: # database container is named postgres 
+    image: "postgres:15.1"
+    container_name: "go8_postgres_e2e"
+    restart: "no"
+    etc...
 
-Remember the `Server` struct in `internal/server/server.go` file? The `New()` function is called both by our API and e2e binary. We can also call `Migrate()` function because the e2e test uses the same `Server` struct as our API.
-
-In our actual e2e implementation use cases, we can perform various CRUD operations.
-
-For example, in an empty database, we expect no books should be returned.
-
-```go
-func testEmptyBook(t *E2eTest) {
-	// call our API endpoint
-	resp, err := http.Get(fmt.Sprintf("http://localhost:%s/api/v1/books", t.server.Config().Api.Port))
-	
-	// The return should be an empty array
-    if !bytes.Equal(expected, got) {
-        log.Printf("handler returned unexpected body: got %v want %v", string(got), expected)
-    }
-}
+  server: # our api is named server
+    image: "go8/server_test"
+    etc...
 ```
 
-### Run e2e test
+Thus, we change environment variable from pointing to an IP addresses to hostnames: 
 
-Start
+| Main .env         | e2e .env         |
+|:------------------|:-----------------|
+| API_HOST=0.0.0.0  | API_HOST=server  |
+| DB_HOST=localhost | DB_HOST=postgres |
 
-    task dockertest
+This means after api container is run, our e2e test is not calling `http://localhost:3080`, but instead, it calls the address with `http://server:3090` where `server` is the api address as defined in the docker-compose.yml file and the port number as defined in `e2e/.env` file.
 
-or
+### Run 
 
-```shell
- cd docker-test && docker-compose down -v --build && docker-compose up -d
- docker exec -t go8_container_test "/home/appuser/app/e2e"
+To run e2e test,
+
+```sh
+docker-compose -f e2e/docker-compose.yml up --build
 ```
+
+This (re)builds all containers (database, api, migration, e2e test) in correct order and run them. We purposely not run it daemon mode with `-d` option so that we can see log output. Once all tests have been run, press Ctrl+C to end. This will stop and subsequently remove all containers.
+
+![end to end test](assets/run-end-to-end-tests.png)
+
+### Limitations
+
+Since a single database is used, each test can modify underlying data and interfere with expected output of other e2e tests. E2e tests tend to not change frequently as opposed to unit tests. 
+
+### Improvements
+
+No data seeding is demonstrated here. To make this e2e as real as possible, you can use real-ish production data (redacted or changed PII) as needed. Seeding can simply be part of migration or a seeder module. 
+
+### Other approaches
+
+1. Run main api as a separate goroutine, then run e2e test against it (run with flag). Fewer binaries, but data might need to be separate.
+2. Run both api and database as containers, expose the ports. Then use a third party tool or framework that helps in defining and running the tests. Since we are only testing against the api's port, this can be done in another language. 
+3. Use a Go framework to simplify calling api endpoints and comparing values being returned.
+4. Instead of writing Go code, write the input and expected output in a [DSL](https://en.wikipedia.org/wiki/Domain-specific_language) like yaml. 
+5. Some would like to do both e2e and UI testing in one go.  
 
 # TODO
 
- - [ ] Fix end-to-end test
- - [ ] Complete HTTP integration test
+ - [x] Fix end-to-end test
+ - [x] Complete HTTP integration test
  - [x] Better return response
  - [x] LRU cache
  - [X] Redis Cache
- - [ ] Tracing
- - [ ] Metric
+ - [ ] Opentelemetry
+   - [ ] Tracing
+   - [ ] Metric
+   - [ ] Logging
 
 # Acknowledgements
 
@@ -1803,8 +1831,8 @@ For Debian:
 
 ```shell
 sudo apt update && sudo apt install git curl build-essential docker docker-compose wget vim jq
-wget https://go.dev/dl/go1.20.4.linux-amd64.tar.gz
-sudo tar -C /usr/local -xzf go1.20.4.linux-amd64.tar.gz
+wget https://go.dev/dl/go1.20.5.linux-amd64.tar.gz
+sudo tar -C /usr/local -xzf go1.20.5.linux-amd64.tar.gz
 export PATH=$PATH:/usr/local/go/bin
 echo 'PATH=$PATH:/usr/local/go/bin' >> ~/.bash_aliases
 echo 'PATH=$PATH:$HOME/go/bin' >> ~/.bash_aliases

@@ -15,8 +15,6 @@ A starter kit for Go API development. Inspired by [How I write HTTP services aft
 
 However, I wanted to use [chi router](https://github.com/go-chi/chi) which is more common in the community, [sqlx](https://github.com/jmoiron/sqlx) for database operations and design towards layered architecture (handler -> business logic -> database).
 
-It is still in early stages, and I do not consider it is completed until all integration tests are completed.
-
 In short, this kit is a Go + Postgres + Chi Router + sqlx + ent + authentication + testing starter kit for API development.
 
 # Motivation
@@ -166,13 +164,11 @@ go run cmd/route/main.go
 
 ![go run cmd/routes/main.go](assets/routes.png)
 
-
 To run all tests,
 
 ```shell
 go test ./...
 ```
-
 
 # Table of Contents
 
@@ -200,6 +196,7 @@ go test ./...
 - [Structure](#structure)
    * [Starting Point](#starting-point)
    * [Configurations](#configurations)
+      - [Environment Variables](#environment-variables)
       - [.env files](#env-files)
    * [Database](#database)
    * [Router](#router)
@@ -263,14 +260,22 @@ This project uses [Task](https://github.com/go-task/task) to handle various task
 
 Install task runner binary bash script:
 
-    sudo ./scripts/install-task.sh
+```sh
+sudo ./scripts/install-task.sh
+```
 
 This installs `task` to `/usr/local/bin/task` so `sudo` is needed.
 
 `Task` tasks are defined inside `Taskfile.yml` file. A list of tasks available can be viewed with:
 
-    task -l   # or
-    task list
+```sh
+task -l
+```
+or
+
+```sh
+task list
+```
 
 ## Tools
 
@@ -293,8 +298,9 @@ Various tooling can be installed automatically by running which includes
 
 Install the tools above with:
 
-    task install:tools
-
+```sh
+task install:tools
+```
 
 ## Tasks
 
@@ -304,27 +310,37 @@ Various tooling are included within the `Task` runner. Configurations are done i
 
 List all registered routes, typically done by `register.go` files by
 
-    go run cmd/route/route.go
+```sh
+go run cmd/route/route.go
+```
 
 or
 
-    task routes
+```sh
+task routes
+```
 
 ### Go generate
 
-    task generate
+```sh
+task generate
+```
 
 Runs `go generate ./...`. It looks for `//go:generate` tags found in .go files. Useful for recreating mock file for unit tests.
 
 ### Generate Swagger Documentation
 
-    task swagger
+```sh
+task swagger
+```
 
 Reads annotations from controller and model file to create a swagger documentation file. Can be accessed from [http://localhost:3080/swagger/](http://localhost:3080/swagger/)
 
 ### Format Code
 
-    task fmt
+```sh
+task fmt
+```
 
 Runs `go fmt ./...` to lint Go code
 
@@ -332,55 +348,74 @@ Runs `go fmt ./...` to lint Go code
 
 ### Compile Check
 
-    task vet
+
+```sh
+task vet
+```
 
 Quickly catches compile error.
 
 ### golangci Linter
 
-    task lint
+```sh
+task lint
+```
 
 Runs [https://golangci-lint.run](https://golangci-lint.run/) linter. Includes [gosec](https://github.com/securego/gosec) via `golangci.yaml`.
 
 ### Unit tests
 
-    task test
+```sh
+task test
+```
 
 Runs unit tests.
 
 ### Check
 
-    task check
+```sh
+task check
+```
 
 Runs all the above tasks (Format Code until Security Checks)
 
 ### Sync Dependencies
 
-    task tidy
+```sh
+task tidy
+```
 
 Runs `go mod tidy` to sync dependencies.
 
 ### Hot reload
 
-    task dev
+```sh
+task dev
+```
 
 Runs `air` which watches for file changes and rebuilds binary. Configure in `.air.toml` file.
 
 ### Test Coverage
 
-    task coverage
+```sh
+task coverage
+```
 
 Runs unit test coverage with `go test -cover ./...`
 
 ### Build
 
-    task build
+```sh
+task build
+```
 
 Create a statically linked executable for linux.
 
 ### Clean
 
-    task clean
+```sh
+task clean
+```
 
 Clears all files inside `bin` directory.
 
@@ -426,24 +461,37 @@ registered and to give a quick glance on what your server needs.
 
 
 ## Configurations
-![configs](assets/configs.png)
 
-All environment variables are read into specific `Configs` struct initialized in `configs/configs.go`. Each of the embedded struct are defined in its own file of the same package where its fields are read from either environment variable or `.env` file.
+The api can be configured by taking values from environment variables or an `.env` file.
+
+These variables are read into specific `Configs` struct initialized in `configs/configs.go`. Each of the embedded struct are defined in its own file of the same package where its fields are read from either environment variable or `.env` file.
+
+![configs](assets/configs.png)
 
 This approach allows code completion when accessing your configurations.
 
 ![config code completion](assets/config-code-completion.png)
 
+#### Environment Variables
+
+Simply set the environment variables by exporting them like so:
+
+```sh
+export DB_DRIVER=postgres
+export DB_HOST=localhost
+export DB_PORT=5432
+etc
+```
 
 #### .env files
 
-The `.env` file defines settings for various parts of the API including the database credentials. If you choose to export the variables into environment variables for example:
+Alternatively, the `.env` file can be used. Just make sure this file is not committed in source control. Make a copy from example env file:
 
-    export DB_DRIVER=postgres
-    export DB_HOST=localhost
-    export DB_PORT=5432
-    etc
+```sh
+cp env.example .env
+```
 
+#### Add new Config Struct
 
 To add a new type of configuration, for example for Elasticsearch
 
@@ -463,6 +511,8 @@ type Elasticsearch struct {
 }
 ```
 
+Various validation and default values among others can also be configured into this struct. Visit https://github.com/kelseyhightower/envconfig for more details.
+
 3. Add a constructor for it
 
 ```go
@@ -474,15 +524,36 @@ func ElasticSearch() Elasticsearch {
 }
 ``` 
 
-A namespace is defined
+4. Register to main Config struct
+ 
+```go
+type Config struct {
+	Api
+	Cors
+	...
+	Elasticsearch // add the constructor
+}
 
-4. Add to `.env` of the new environment variables
+func New() *Config {
+	...
+	return &Config{
+		...
+		Elasticsearch: ElasticSearch(), // Add here
+    }
+}
+```
+
+5. Add to `.env` of the new environment variables
+
+A namespace is defined as `ELASTICSEARCH`.
 
 ```shell
 ELASTICSEARCH_ADDRESS=http://localhost:9200
 ELASTICSEARCH_USER=user
 ELASTICSEARCH_PASS=password
 ```
+
+#### Others
 
 Limiting the number of connection pool avoids ['time-slicing' of the CPU](https://github.com/brettwooldridge/HikariCP/wiki/About-Pool-Sizing). Use the following formula to determine a suitable number
 
@@ -671,7 +742,9 @@ All migration files are stored in `database/migrations` folder.
 
 Using `Task`, creating a migration file is done by the following command. Name the file after `NAME=`.
 
-    task migrate:create NAME=create_a_tablename
+```sh
+task migrate:create NAME=create_a_tablename
+```
 
 Write your schema in pure sql in the 'up' section and any reversal in the 'down' section of the file.
  
@@ -679,17 +752,23 @@ Write your schema in pure sql in the 'up' section and any reversal in the 'down'
 
 After you are satisfied with your `.sql` files, run the following command to migrate your database.
 
-    task migrate
+```sh
+task migrate
+```
 
 To migrate one step
 
-    task migrate:step
+```sh
+task migrate:step
+```
       
 ### Rollback
     
 To roll back migration by one step
 
-    task migrate:rollback
+```sh
+task migrate:rollback
+```
 
 Further `goose` commands are available in its [page](https://github.com/pressly/goose)
 
@@ -700,7 +779,9 @@ Further `goose` commands are available in its [page](https://github.com/pressly/
 
 Once `goose` tool is [installed](https://github.com/pressly/goose), create a migration with
 
-    migrate create -ext sql -dir database/migrations -format unix "{{.NAME}}"
+```sh
+migrate create -ext sql -dir database/migrations -format unix "{{.NAME}}"
+```
 
 ### Migrate Up
 
@@ -710,21 +791,29 @@ You will need to create a data source name string beforehand. e.g.:
 
 Note: You can save the above string into an environment variable for reuse e.g.
 
-    export DSN=postgres://postgres_user:$password@$localhost:5432/db?sslmode=false
+```sh
+export DSN=postgres://postgres_user:$password@$localhost:5432/db?sslmode=false
+```
 
 Then migrate with the following command, specifying the path to migration files, data source name and action.
 
-    migrate -path database/migrations -database $DSN up
+```sh
+migrate -path database/migrations -database $DSN up
+```
 
 To migrate 1 step,
 
-    migrate -path database/migrations -database $DSN up-by-one
+```sh
+migrate -path database/migrations -database $DSN up-by-one
+```
 
 ### Rollback
 
 Rollback migration by using `down` action and the number of steps
 
-    migrate -path database/migrations -database $DSN down
+```sh
+migrate -path database/migrations -database $DSN down
+```
 
 # Run
 
@@ -734,17 +823,24 @@ Conventionally, all apps are placed inside the `cmd` folder.
 
 If you have `Task` installed, the server can be run with:
 
-    task run
+
+```sh
+task run
+```
 
 or without `Task`, just like in quick start section:
 
-    go run cmd/go8/main.go
+```sh
+go run cmd/go8/main.go
+```
 
 ## Docker
 
 You can build a docker image with the app with its config files. Docker needs to be installed beforehand.
 
-     task docker:build
+```sh
+task docker:build
+```
 
 This task also makes a copy of `.env`. Since Docker doesn't copy hidden file, we make a copy of it on our `src` stage before transferring it to our final `scratch` stage. It also inserts formats git tag and git hash as the API version which runs at compile time.
 
@@ -752,14 +848,22 @@ Note that this is a multistage Dockerfile. Since we statically compile this API,
 
 Run the following command to build a container from this image. `--net=host` tells the container to use local's network so that it can access host database.
 
-    docker-compose up -d postgres # If you haven't run this from quick start 
-    task docker:run
+```sh
+docker-compose up -d postgres # If you haven't run this from quick start
+```
+
+Or using Task
+```sh
+task docker:run
+```
 
 ### docker-compose
 
 If you prefer to use docker-compose instead, both server and the database can be run with:
 
-    task docker-compose:start
+```sh
+task docker-compose:start
+```
 
 # Build
 
@@ -767,17 +871,19 @@ If you prefer to use docker-compose instead, both server and the database can be
 
 If you have task installed, simply run
 
-    task build
+```sh
+task build
+```
 
 It does a task check prior to the build and puts both the binary and `.env` files into `./bin` folder
 
 ## Without Task
 
-    go mod download
-    CGO_ENABLED=0 GOOS=linux
-    go build -ldflags="-X main.Version=$(git describe --abbrev=0 --tags)-$(git rev-list -1 HEAD) -w -s" -o ./server ./cmd/go8/main.go;
-
-
+```sh
+go mod download
+CGO_ENABLED=0 GOOS=linux
+go build -ldflags="-X main.Version=$(git describe --abbrev=0 --tags)-$(git rev-list -1 HEAD) -w -s" -o ./server ./cmd/go8/main.go;
+```
 
 # Authentication
 
@@ -909,8 +1015,8 @@ and `SameSite` flag value set to at least `Lax` helps with preventing CSRF attac
 
 Also set allowed domains if possible in either `.env` or environment variable.
 
-```
-SESSION_DOMAIN=https://mySite.com
+```sh
+export SESSION_DOMAIN=https://mySite.com
 ```
 
 ## Performance

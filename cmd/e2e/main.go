@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math/rand"
 	"net/http"
+	"time"
 
 	"github.com/gmhafiz/go8/config"
 	"github.com/gmhafiz/go8/internal/domain/book"
@@ -22,6 +24,8 @@ func main() {
 	cfg := config.New()
 
 	url = fmt.Sprintf("http://%s:%s", cfg.Api.Host, cfg.Api.Port)
+
+	waitForApi(fmt.Sprintf("%s/api/health/readiness", url))
 
 	run()
 }
@@ -223,4 +227,34 @@ func testDeleteOneBook(id int) {
 		log.Fatalf("error code fail, want %d, got %d\n", http.StatusOK, resp.StatusCode)
 	}
 	log.Println("testDeleteOneBook passes")
+}
+
+func waitForApi(readinessURL string) {
+	log.Println("Connecting to api with exponential backoff... ")
+	for {
+		_, err := http.Get(readinessURL)
+		if err == nil {
+			log.Println("api is up")
+			return
+		}
+
+		base, capacity := time.Second, time.Minute
+		for backoff := base; err != nil; backoff <<= 1 {
+			if backoff > capacity {
+				backoff = capacity
+			}
+
+			// A pseudo-random number generator here is fine. No need to be
+			// cryptographically secure. Ignore with the following comment:
+			/* #nosec */
+			jitter := rand.Int63n(int64(backoff * 3))
+			sleep := base + time.Duration(jitter)
+			time.Sleep(sleep)
+			_, err := http.Get(readinessURL)
+			if err == nil {
+				log.Println("api is up")
+				return
+			}
+		}
+	}
 }

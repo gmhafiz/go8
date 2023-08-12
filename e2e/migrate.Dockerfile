@@ -1,4 +1,4 @@
-FROM golang:1.20 AS src
+FROM golang:1.21 AS src_migrate
 
 # Copy dependencies first to take advantage of Docker caching
 WORKDIR /go/src/app/
@@ -19,9 +19,7 @@ LABEL com.gmhafiz.maintainers="User <author@example.com>"
 
 WORKDIR /usr/local/bin
 
-COPY --from=src /go/src/app/migrate .
-COPY ./e2e/.env .env
+COPY --from=src_migrate /go/src/app/migrate .
+COPY e2e/.env .env
 
-
-# Run Go Binary
 CMD /usr/local/bin/migrate

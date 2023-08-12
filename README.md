@@ -49,7 +49,7 @@ This kit is composed of standard Go library together with some well-known librar
 
 # Quick Start
 
-It is advisable to use the latest supported [Go version](https://go.dev/dl/go1.20.5.linux-amd64.tar.gz) (>= v1.19). Optionally `docker` and `docker-compose` for easier start up. There is a quick guide for Debian in the [appendix](#appendix).
+It is advisable to use the latest supported [Go version](https://go.dev/dl/go1.21.0.linux-amd64.tar.gz) (>= v1.20). Optionally `docker` and `docker-compose` for easier start up. There is a quick guide for Debian in the [appendix](#appendix).
 
 Get it
 
@@ -330,11 +330,12 @@ Runs `go generate ./...`. It looks for `//go:generate` tags found in .go files. 
 
 ### Generate Swagger Documentation
 
+Ensure your environment variable is `API_RUN_SWAGGER=true`, then re-run the api. Generates swagger files with the following command. 
 ```sh
 task swagger
 ```
 
-Reads annotations from controller and model file to create a swagger documentation file. Can be accessed from [http://localhost:3080/swagger/](http://localhost:3080/swagger/)
+This reads annotations from controller and model file to create a swagger documentation file. The UI can be accessed from [http://localhost:3080/swagger/](http://localhost:3080/swagger/)
 
 ### Format Code
 
@@ -348,6 +349,7 @@ Runs `go fmt ./...` to lint Go code
 
 ### Compile Check
 
+Runs Go's tooling `go vet ./...`.
 
 ```sh
 task vet
@@ -365,11 +367,21 @@ Runs [https://golangci-lint.run](https://golangci-lint.run/) linter. Includes [g
 
 ### Unit tests
 
+Runs unit tests using `go test ./...`. Other commands are `task test:verbose` for verbose output and `task test:slow` to find top slow-running tests.
+
 ```sh
 task test
 ```
 
-Runs unit tests.
+### Vulnerability Check
+
+Find software supply chain vulnerabilities using https://vuln.go.dev.
+
+```sh
+task vuln
+```
+
+This runs `govulncheck ./...`
 
 ### Check
 
@@ -398,7 +410,7 @@ Runs `air` which watches for file changes and rebuilds binary. Configure in `.ai
 ### Test Coverage
 
 ```sh
-task coverage
+task test:coverage
 ```
 
 Runs unit test coverage with `go test -cover ./...`
@@ -1858,7 +1870,7 @@ The one thing that differs with production is all containers use distinct enviro
 version: '3.4'
 services:
   postgres: # database container is named postgres 
-    image: "postgres:15.1"
+    image: "postgres:15.4"
     container_name: "go8_postgres_e2e"
     restart: "no"
     etc...
@@ -1870,12 +1882,14 @@ services:
 
 Thus, we change environment variable from pointing to an IP addresses to hostnames: 
 
-| Main .env         | e2e .env         |
+| Main .env         | e2e/.env         |
 |:------------------|:-----------------|
 | API_HOST=0.0.0.0  | API_HOST=server  |
 | DB_HOST=localhost | DB_HOST=postgres |
 
 This means after api container is run, our e2e test is not calling `http://localhost:3080`, but instead, it calls the address with `http://server:3090` where `server` is the api address as defined in the docker-compose.yml file and the port number as defined in `e2e/.env` file.
+
+Our end-to-end program also needs to wait until the api server is ready before doing any HTTP calls to it. For that reason, we try calling `/api/health/readiness` endpoint. If the api is not ready, we retry using exponential backoff. 
 
 ### Run 
 
@@ -1885,9 +1899,27 @@ To run e2e test,
 docker-compose -f e2e/docker-compose.yml up --build
 ```
 
-This (re)builds all containers (database, api, migration, e2e test) in correct order and run them. We purposely not run it daemon mode with `-d` option so that we can see log output. Once all tests have been run, press Ctrl+C to end. This will stop and subsequently remove all containers.
+or using `task`.
+
+```sh
+task test:e2e
+```
+
+This (re)builds all containers (database, api, migration, e2e test) in correct order and run them. We purposely not run it daemon mode with `-d` option so that we can see log output. 
 
 ![end to end test](assets/run-end-to-end-tests.png)
+
+Once all tests have been run, press Ctrl+C to end. This will stop the containers but not remove them. To remove the containers, run
+
+```sh
+docker-compose -f e2e/docker-compose.yml down
+```
+
+or using `task`,
+
+```sh
+task test:e2e:down
+```
 
 ### Limitations
 
@@ -1895,11 +1927,11 @@ Since a single database is used, each test can modify underlying data and interf
 
 ### Improvements
 
-No data seeding is demonstrated here. To make this e2e as real as possible, you can use real-ish production data (redacted or changed PII) as needed. Seeding can simply be part of migration or a seeder module. 
+No data seeding is demonstrated here. To make this e2e as real as possible, you can use real-ish production data using redacted or changed Personal Information Identifier (PII) as needed. Seeding can simply be part of migration or you can use a seeder module instead. 
 
 ### Other approaches
 
-1. Run main api as a separate goroutine, then run e2e test against it (run with flag). Fewer binaries, but data might need to be separate.
+1. Run main api as a separate goroutine, then run e2e test against it (run with flag). This results in fewer binaries, but data might need to be separate.
 2. Run both api and database as containers, expose the ports. Then use a third party tool or framework that helps in defining and running the tests. Since we are only testing against the api's port, this can be done in another language. 
 3. Use a Go framework to simplify calling api endpoints and comparing values being returned.
 4. Instead of writing Go code, write the input and expected output in a [DSL](https://en.wikipedia.org/wiki/Domain-specific_language) like yaml. 
@@ -1937,8 +1969,8 @@ For Debian:
 
 ```shell
 sudo apt update && sudo apt install git curl build-essential docker docker-compose wget vim jq
-wget https://go.dev/dl/go1.20.5.linux-amd64.tar.gz
-sudo tar -C /usr/local -xzf go1.20.5.linux-amd64.tar.gz
+wget https://go.dev/dl/go1.21.0.linux-amd64.tar.gz
+sudo tar -C /usr/local -xzf go1.21.0.linux-amd64.tar.gz
 export PATH=$PATH:/usr/local/go/bin
 echo 'PATH=$PATH:/usr/local/go/bin' >> ~/.bash_aliases
 echo 'PATH=$PATH:$HOME/go/bin' >> ~/.bash_aliases

@@ -1,12 +1,7 @@
-# cd <project-root>
-# docker-compose -f e2e/docker-compose.yml up --build -d
-
-version: '3.4'
-
 services:
 
   postgres:
-    image: "postgres:15.1"
+    image: "postgres:15.4"
     container_name: "go8_postgres_e2e"
     restart: "no"
     healthcheck:
@@ -26,15 +21,20 @@ services:
       context: ../
       dockerfile: e2e/server.Dockerfile
     entrypoint: ["/usr/local/bin/server"]
-    healthcheck:
-      test: curl --fail http://localhost:${API_PORT}/api/health/readiness || exit 1
-      interval: 60s
-      retries: 5
-      timeout: 10s
 #    ports:
 #      - ${API_PORT}:${API_PORT} # enable for debugging
     depends_on:
       - postgres
+      - redis
+
+  redis:
+    image: 'redis:7.0'
+    container_name: "go8_redis_e2e"
+    restart: "no"
+    #    ports:
+    #      - "6378:6379"
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
 
   migrate:
     image: "go8/migrate"

@@ -1,6 +1,6 @@
 # docker build -f e2e/e2e.Dockerfile -t go8/e2e .
 # docker run -it go8/e2e
-FROM golang:1.20 AS src
+FROM golang:1.21 AS src_e2e
 
 # Copy dependencies first to take advantage of Docker caching
 WORKDIR /go/src/app/
@@ -22,9 +22,8 @@ LABEL com.gmhafiz.maintainers="User <author@example.com>"
 
 WORKDIR /usr/local/bin
 
-COPY --from=src /go/src/app/end_to_end /usr/local/bin/end_to_end
-COPY ./e2e/.env .env
+COPY --from=src_e2e /go/src/app/end_to_end /usr/local/bin/end_to_end
+COPY e2e/.env .env
 
 
-# Run Go Binary
 ENTRYPOINT ["/usr/local/bin/end_to_end"]

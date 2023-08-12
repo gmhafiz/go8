@@ -75,7 +75,7 @@ tasks:
       - task fmt
       - task vet
       - task lint
-#      - task vuln
+      - task vuln
       - task test
     silent: true
 
@@ -125,7 +125,7 @@ tasks:
     cmds:
       - go test -v ./...
 
-  coverage:
+  test:coverage:
     desc: Perform test coverage
     cmds:
       - go test -cover ./...
@@ -136,6 +136,21 @@ tasks:
     cmds:
       - go clean -testcache
       - go test -v -json ./... | jq -r 'select(.Action == "pass" and .Test != null) | .Test + "," + (.Elapsed | tostring)'  | sort -r -k2 -n -t, | head
+
+  test:e2e:
+    desc: Run e2e test
+    dir: e2e
+    cmds:
+      - task: test:e2e:down # Ensure all containers are shut down for clean data directories
+      - docker-compose -f docker-compose.yml up --build
+    silent: true
+
+  test:e2e:down:
+    desc: Stops e2e test
+    dir: e2e
+    cmds:
+      - docker-compose -f docker-compose.yml down -v
+
 
   generate:
     desc: Runs all //go:generate commands embedded in .go files
@@ -172,23 +187,6 @@ tasks:
     desc: Stops server and database using docker-compose
     cmds:
       - docker-compose -f docker-compose.yml down --volumes
-
-  dockertest:
-    desc: Run e2e test
-    dir: docker-test
-    cmds:
-      - task: dockertest:stop
-      - docker-compose build --no-cache
-      - docker-compose up -d
-      - docker exec -t go8_container_test "/home/appuser/app/e2e"
-      - task: dockertest:stop
-    silent: true
-
-  dockertest:stop:
-    desc: stop docker e2e test
-    dir: docker-test
-    cmds:
-      - docker-compose down -v
 
   k8s:push:
     desc: build and push

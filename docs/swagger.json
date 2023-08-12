@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "Go + Postgres + Chi router + sqlx + ent + Unit Testing starter kit for API development.",
+        "description": "Go + Postgres + Chi router + sqlx + ent + Testing starter kit for API development.",
         "title": "Go8",
         "contact": {
             "name": "User Name",

@@ -196,8 +196,8 @@ info:
     email: email@example.com
     name: User Name
     url: https://github.com/gmhafiz/go8
-  description: Go + Postgres + Chi router + sqlx + ent + Unit Testing starter kit
-    for API development.
+  description: Go + Postgres + Chi router + sqlx + ent + Testing starter kit for API
+    development.
   title: Go8
   version: 0.1.0
 paths:

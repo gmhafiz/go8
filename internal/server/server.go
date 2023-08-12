@@ -23,7 +23,7 @@ import (
 	chiMiddleware "github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
-	_ "github.com/jackc/pgx/stdlib"
+	_ "github.com/jackc/pgx/v5"
 	"github.com/jmoiron/sqlx"
 	"github.com/jwalton/gchalk"
 	_ "github.com/lib/pq"
@@ -225,7 +225,7 @@ func (s *Server) Migrate() {
 		)
 	}
 
-	migrator := database.Migrator(database.WithDSN(databaseUrl))
+	migrator := database.Migrator(s.db, database.WithDSN(databaseUrl))
 	migrator.Up()
 
 	log.Println("done migration.")

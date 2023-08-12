@@ -766,7 +766,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Go8",
-	Description:      "Go + Postgres + Chi router + sqlx + ent + Unit Testing starter kit for API development.",
+	Description:      "Go + Postgres + Chi router + sqlx + ent + Testing starter kit for API development.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

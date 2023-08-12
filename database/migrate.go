@@ -18,9 +18,10 @@ type Migrate struct {
 
 type Options func(opts *Migrate) error
 
-func Migrator(opts ...Options) *Migrate {
-
-	m := &Migrate{}
+func Migrator(db *sql.DB, opts ...Options) *Migrate {
+	m := &Migrate{
+		DB: db,
+	}
 	goose.SetBaseFS(embedMigrations)
 
 	for _, opt := range opts {
@@ -48,13 +49,6 @@ func (m *Migrate) Down() {
 func WithDSN(dsn string) func(opts *Migrate) error {
 	return func(opts *Migrate) error {
 		opts.dsn = dsn
-		return nil
-	}
-}
-
-func WithDB(db *sql.DB) func(opts *Migrate) error {
-	return func(opts *Migrate) error {
-		opts.DB = db
 		return nil
 	}
 }

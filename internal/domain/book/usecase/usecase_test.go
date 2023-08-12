@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	_ "github.com/jackc/pgx/stdlib"
+	_ "github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/gmhafiz/go8/internal/domain/book"

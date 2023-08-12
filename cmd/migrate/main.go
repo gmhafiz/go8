@@ -16,7 +16,7 @@ func main() {
 
 	cfg := config.New()
 	store := db.NewSqlx(cfg.Database)
-	migrator := database.Migrator(database.WithDB(store.DB))
+	migrator := database.Migrator(store.DB)
 
 	// todo: accept cli flag for other operations
 	migrator.Up()

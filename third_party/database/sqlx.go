@@ -5,7 +5,7 @@ import (
 	"log"
 
 	_ "github.com/go-sql-driver/mysql"
-	_ "github.com/jackc/pgx/stdlib"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 
 	"github.com/gmhafiz/go8/config"
@@ -19,6 +19,7 @@ func NewSqlx(cfg config.Database) *sqlx.DB {
 	case "postgres", "pgx":
 		dsn = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 			cfg.Host, cfg.Port, cfg.User, cfg.Pass, cfg.Name)
+		cfg.Driver = "pgx"
 	case "mysql":
 		dsn = fmt.Sprintf("%s:%s@(%s:%d)/%s?parseTime=true",
 			cfg.User,

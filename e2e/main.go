@@ -232,6 +232,7 @@ func testDeleteOneBook(id int) {
 func waitForApi(readinessURL string) {
 	log.Println("Connecting to api with exponential backoff... ")
 	for {
+		//nolint:gosec
 		_, err := http.Get(readinessURL)
 		if err == nil {
 			log.Println("api is up")
@@ -250,6 +251,7 @@ func waitForApi(readinessURL string) {
 			jitter := rand.Int63n(int64(backoff * 3))
 			sleep := base + time.Duration(jitter)
 			time.Sleep(sleep)
+			//nolint:gosec
 			_, err := http.Get(readinessURL)
 			if err == nil {
 				log.Println("api is up")

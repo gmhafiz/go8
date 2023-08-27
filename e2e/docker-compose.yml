@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
 
   postgres:
@@ -28,7 +30,7 @@ services:
       - redis
 
   redis:
-    image: 'redis:7.0'
+    image: 'redis:7.2'
     container_name: "go8_redis_e2e"
     restart: "no"
     #    ports:

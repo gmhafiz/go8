@@ -2,9 +2,9 @@
 # docker run -it go8/e2e
 FROM golang:1.21 AS src_e2e
 
-# Copy dependencies first to take advantage of Docker caching
 WORKDIR /go/src/app/
 
+# Copy dependencies first to take advantage of Docker caching
 COPY go.mod ./
 COPY go.sum ./
 RUN go mod download
@@ -13,12 +13,12 @@ COPY . ./
 
 # Build Go Binary
 RUN set -ex; \
-    CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o ./end_to_end ./cmd/e2e/main.go;
+    CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o ./end_to_end ./e2e/main.go;
 
 
 FROM gcr.io/distroless/static-debian11
 
-LABEL com.gmhafiz.maintainers="User <author@example.com>"
+LABEL com.example.maintainers="User <author@example.com>"
 
 WORKDIR /usr/local/bin
 

@@ -81,9 +81,11 @@ vim .env
 
 Have a database ready either by installing them yourself or use the following command. The `docker-compose.yml` will use database credentials set in either `.env` file or environment variables which is initialized in the previous step. Optionally, you may want redis as well.
 
-```shell
+```sh
 docker-compose up -d postgres
-# or
+```
+or
+ ```sh
 docker-compose up -d postgres redis
 ```
 
@@ -164,27 +166,53 @@ go run cmd/route/main.go
 
 ![go run cmd/routes/main.go](assets/routes.png)
 
-A test database needs to be created first for integration test.
+To run only unit tests,
+
+```sh
+go test -short ./...
+```
+
+To run integration tests, a test database needs to be created first.
 
 ```sh
 docker exec -it go8_postgres psql -U user go8_db
 ```
 
-Then create
+Then in the psql command prompt, create a test database
 ```sql
 create database test;
 ```
 
-Once created, run the following command to run all unit and integration tests
+To quit the psql prompt, type
 
-```shell
+```postgresql
+\q
+```
+
+Once created, run the following command to run tests with `Integration` in the function name to only run integration tests
+
+```sh
+go test -run Integration ./...
+```
+
+Since the test database has been created, the following command will run both unit and integration tests
+
+```sh
 go test ./...
 ```
 
-For end-to-end tests, run the following command
+For end-to-end tests, run the following docker-compose command. It will run a database, a server, and its table migrations. Then it runs end-to-end program (located in `e2e/main.go`) against it &mdash; all in a self-contained container environment. 
 
 ```sh
 docker-compose -f e2e/docker-compose.yml up --build
+```
+
+Press `Ctrl+C` to quit the e2e test and stop all e2e containers. 
+
+To remove the containers,
+
+```sh
+docker-compose -f e2e/docker-compose.yml down
 ```
 
 # Table of Contents
@@ -1061,6 +1089,12 @@ The `authentication` domain is tested using integration tests (in `integration_t
 
 Note: This repository also details regarding unit tests which are explained in the [Testing](#testing) section.
 
+To run only integration test,
+
+```sh
+go test -run Integration ./...
+```
+
 # Cache
 
 The three most significant bottlenecks are
@@ -1228,8 +1262,7 @@ ar under `utilty` package because it is [unclear from the name](https://go.dev/d
 
 # Testing
 
-A testable code is a sign that you have a good code. However, it can be hard to
-write not only of a function, but also how different functions work together. 
+A testable code is a sign that you have a good code structure. However, it can be hard to write not only of a function, but also how different functions work together. 
 Going on a tangent, following [SOLID principle](https://en.wikipedia.org/wiki/SOLID)  is a good way to design our code and make it testable. But this repository isn't nearly complex enough to show good examples of each principle. In any case, we shall start with unit tests.
 
 ## Unit Testing
@@ -1237,13 +1270,12 @@ Going on a tangent, following [SOLID principle](https://en.wikipedia.org/wiki/SO
 Unit testing can be run with
 
 ```sh
-task test
+task test:unit
 ```
     
-Which runs `go test -v ./...`
+Which runs `go test -v -short ./...`
 
-A quick note, in Go, a unit test file is handled by appending `_test` to a file's name. For example, to test `/internal/domain/book/handler/http/handler.go`, we add unit test file by creating `/internal/domain/book/handler/http/handler_test.go`
-
+A quick note, in Go, a unit test file is handled by appending `_test` to a file's name. For example, to test `/internal/domain/book/handler/http/handler.go`, we add unit test file in the same directory by creating `/internal/domain/book/handler/http/handler_test.go`. No more hunting for test file nested deep in a `tests` directory like in other language!
 
 Tests that run fast means you run them [more often](https://medium.com/pragmatic-programmers/unit-tests-are-first-fast-isolated-repeatable-self-verifying-and-timely), which leads to writing more tests. You can find top ten slow tests by running the following [command](https://leighmcculloch.com/posts/go-find-slow-tests/)
 
@@ -1873,7 +1905,11 @@ inside the database by looking at the `databaseUrl` variable inside `TestMain()`
 
 An integration testing tests if different modules at different layers work with each other. For example, we can start testing from handler layer by supplying simple inputs, and compare if the result is what is expected. This integration test go through use case and repository layer thus making sure all layers play well with each other.
 
-Integration testing has been demonstration in the Authentication's [integration testing](#integration-testing) section.
+Integration testing has been detailed in the Authentication's [integration testing](#integration-testing) section, but it can be run with
+
+```sh
+go test -run Integration ./...
+```
 
 ## End-to-End Test
 
@@ -1884,7 +1920,7 @@ In this approach, and you only need to write Go code for the tests. We run both 
 The one thing that differs with production is all containers use distinct environment variables as defined in the `e2e` directory. Critical differences are the hostname for both api and database ad they use a name defined in the service section in the `e2e/docker-compose.yml` file. The reason is that Docker manages the hostnames within the network, so we cannot point to a container using its IP address. For example in our e2e docker compose file:
 
 ```yaml
-version: '3.4'
+version: '3.8'
 services:
   postgres: # database container is named postgres 
     image: "postgres:15.4"

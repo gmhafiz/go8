@@ -112,9 +112,19 @@ tasks:
       - go fmt ./...
 
   test:
-    desc: Test all code
+    desc: Test all code (unit and integration)
     cmds:
       - go test ./...
+
+  test:unit:
+    desc: Test only unit tests
+    cmds:
+      - go test -short ./...
+
+  test:integration:
+    desc: Test only integration tests
+    cmds:
+      - go test -run Integration ./...
 
   test:verbose:
     desc: Test all code with verbose mode
@@ -142,7 +152,7 @@ tasks:
     silent: true
 
   test:e2e:down:
-    desc: Stops e2e test
+    desc: Stops e2e test and remove the containers
     dir: e2e
     cmds:
       - docker-compose -f e2e/docker-compose.yml down -v
@@ -152,7 +162,7 @@ tasks:
     cmds:
       - go test -race ./...
 
-  test:clean:cache:
+  test:clean:
     desc: Clear tests cache
     cmds:
       - go clean -testcache

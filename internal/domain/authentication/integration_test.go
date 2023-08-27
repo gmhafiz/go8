@@ -121,7 +121,11 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestHandler_Register(t *testing.T) {
+func TestHandler_RegisterIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
 	type args struct {
 		*RegisterRequest
 	}
@@ -232,7 +236,11 @@ func TestHandler_Register(t *testing.T) {
 	}
 }
 
-func TestHandler_Login(t *testing.T) {
+func TestHandler_LoginIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
 	type args struct {
 		*LoginRequest
 	}
@@ -268,7 +276,7 @@ func TestHandler_Login(t *testing.T) {
 			name: "not registered",
 			args: args{
 				LoginRequest: &LoginRequest{
-					Email:    "gmhafiz@gmail.XXX",
+					Email:    "gmhafiz@gmail.com",
 					Password: "highEntropyPassword",
 				},
 			},
@@ -323,7 +331,11 @@ func TestHandler_Login(t *testing.T) {
 	}
 }
 
-func TestHandler_Protected(t *testing.T) {
+func TestHandler_ProtectedIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
 	type args struct {
 		*LoginRequest
 	}
@@ -407,7 +419,11 @@ func TestHandler_Protected(t *testing.T) {
 	}
 }
 
-func TestHandler_Me(t *testing.T) {
+func TestHandler_MeIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
 	type args struct {
 		*LoginRequest
 	}
@@ -507,7 +523,11 @@ func TestHandler_Me(t *testing.T) {
 	}
 }
 
-func TestHandler_Logout(t *testing.T) {
+func TestHandler_LogoutIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
 	type args struct {
 		*LoginRequest
 	}
@@ -601,7 +621,11 @@ func TestHandler_Logout(t *testing.T) {
 	}
 }
 
-func TestHandler_Force_Logout(t *testing.T) {
+func TestHandler_Force_LogoutIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
 	type args struct {
 		*LoginRequest
 	}
@@ -723,7 +747,11 @@ func TestHandler_Force_Logout(t *testing.T) {
 	}
 }
 
-func TestHandler_Csrf_Valid_Token(t *testing.T) {
+func TestHandler_Csrf_Valid_TokenIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
 	type args struct {
 		*LoginRequest
 	}
@@ -828,7 +856,11 @@ func TestHandler_Csrf_Valid_Token(t *testing.T) {
 	}
 }
 
-func TestHandler_Csrf_Valid_And_Delete_Token(t *testing.T) {
+func TestHandler_Csrf_Valid_And_Delete_TokenIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
 	type args struct {
 		*LoginRequest
 	}

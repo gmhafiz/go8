@@ -80,15 +80,11 @@ tasks:
     silent: true
 
   clean:
-    desc: Clears built files
+    desc: Clears built files and tests
     cmds:
       - rm -rf ./bin/*
       - rm -rf ./bin/.*
-
-  clean:cache:
-    desc: Clear tests cache
-    cmds:
-      - go clean -testcache
+      - task: test:clean:cache
 
   tidy:
     desc: Downloads dependencies and removes unused ones
@@ -111,7 +107,7 @@ tasks:
       - govulncheck ./...
 
   fmt:
-    desc: Lint code
+    desc: Reformat code
     cmds:
       - go fmt ./...
 
@@ -141,31 +137,35 @@ tasks:
     desc: Run e2e test
     dir: e2e
     cmds:
-      - task: test:e2e:down # Ensure all containers are shut down for clean data directories
-      - docker-compose -f docker-compose.yml up --build
+      - task: test:e2e:down # Ensures all containers are shut down for clean data directories
+      - docker-compose -f e2e/docker-compose.yml up --build
     silent: true
 
   test:e2e:down:
     desc: Stops e2e test
     dir: e2e
     cmds:
-      - docker-compose -f docker-compose.yml down -v
-
-
-  generate:
-    desc: Runs all //go:generate commands embedded in .go files
-    cmds:
-      - go generate ./...
+      - docker-compose -f e2e/docker-compose.yml down -v
 
   race:
     desc: Check race condition
     cmds:
       - go test -race ./...
 
+  test:clean:cache:
+    desc: Clear tests cache
+    cmds:
+      - go clean -testcache
+
+  generate:
+    desc: Runs all //go:generate commands embedded in .go files
+    cmds:
+      - go generate ./...
+
   swagger:
     desc: Generates Swagger page for API reference
     cmds:
-      - swag init -g cmd/go8/main.go
+      - swag init -o internal/server/docs -g cmd/go8/main.go
 
   docker:build:
     desc: Builds a Docker image a server container

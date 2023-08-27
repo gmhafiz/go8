@@ -71,7 +71,7 @@ export DB_PASS=password
 export DB_NAME=go8_db
 ```
 
-It is also possible to set them in `env` file. Just make sure this file is ignored in `.gitignore` because it should never be checked into source control.
+It is also possible to set them in an `.env` file. Just make sure this file is ignored in `.gitignore` because it should never be checked into source control.
 
 2. Fill in your database credentials in `.env` by making a copy of `env.example` first.
 ```shell
@@ -79,7 +79,7 @@ cp env.example .env
 vim .env
 ```
 
-Have a database ready either by installing them yourself or the following command. The `docker-compose.yml` will use database credentials set in either `.env` file or environment variables which is initialized in the previous step. Optionally, you may want redis as well.
+Have a database ready either by installing them yourself or use the following command. The `docker-compose.yml` will use database credentials set in either `.env` file or environment variables which is initialized in the previous step. Optionally, you may want redis as well.
 
 ```shell
 docker-compose up -d postgres
@@ -87,7 +87,7 @@ docker-compose up -d postgres
 docker-compose up -d postgres redis
 ```
 
-Once the database is up you may run the migration with the following command. Also, the seeder as well because it will be needed for authentication later.
+Once the database is up, tables and seed data needs to be created using a migration system with the following command. The seed data is needed for authentication later.
 
 ```shell
 go run cmd/migrate/main.go
@@ -164,10 +164,27 @@ go run cmd/route/main.go
 
 ![go run cmd/routes/main.go](assets/routes.png)
 
-To run all tests,
+A test database needs to be created first for integration test.
+
+```sh
+docker exec -it go8_postgres psql -U user go8_db
+```
+
+Then create
+```sql
+create database test;
+```
+
+Once created, run the following command to run all unit and integration tests
 
 ```shell
 go test ./...
+```
+
+For end-to-end tests, run the following command
+
+```sh
+docker-compose -f e2e/docker-compose.yml up --build
 ```
 
 # Table of Contents
@@ -429,7 +446,7 @@ Create a statically linked executable for linux.
 task clean
 ```
 
-Clears all files inside `bin` directory.
+Clears all files inside `bin` directory as well as cached unit test files.
 
 
 # Structure
@@ -1092,7 +1109,7 @@ Using the `url`, we try and retrieve a value from the cache,
 val, ok := c.lru.Get(url)
 ```
 
-If it doesn't exist, we can simply add it to our cache.
+If it doesn't exist, retrieve from database layer and add it to our cache for future use.
 ```go
 c.lru.Add(url, res)
 ```
@@ -1889,7 +1906,7 @@ Thus, we change environment variable from pointing to an IP addresses to hostnam
 
 This means after api container is run, our e2e test is not calling `http://localhost:3080`, but instead, it calls the address with `http://server:3090` where `server` is the api address as defined in the docker-compose.yml file and the port number as defined in `e2e/.env` file.
 
-Our end-to-end program also needs to wait until the api server is ready before doing any HTTP calls to it. For that reason, we try calling `/api/health/readiness` endpoint. If the api is not ready, we retry using exponential backoff. 
+Our end-to-end program also needs to wait until the api server is ready before doing any HTTP calls to it. For that reason, we try to call the `/api/health/readiness` endpoint. If the api is not ready, we retry using exponential backoff. 
 
 ### Run 
 

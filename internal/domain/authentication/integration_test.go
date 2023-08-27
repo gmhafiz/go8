@@ -276,7 +276,7 @@ func TestHandler_LoginIntegration(t *testing.T) {
 			name: "not registered",
 			args: args{
 				LoginRequest: &LoginRequest{
-					Email:    "gmhafiz@gmail.com",
+					Email:    "gmhafiz@gmail.XXX", // non-existent email
 					Password: "highEntropyPassword",
 				},
 			},

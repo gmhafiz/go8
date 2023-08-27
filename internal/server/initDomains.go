@@ -1,6 +1,7 @@
 package server
 
 import (
+	"io/fs"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -44,7 +45,12 @@ func (s *Server) initHealth() {
 
 func (s *Server) initSwagger() {
 	if s.Config().Api.RunSwagger {
-		fileServer := http.FileServer(http.Dir(swaggerDocsAssetPath))
+		docsPath, err := fs.Sub(swaggerDocsAssetPath, "docs")
+		if err != nil {
+			panic(err)
+		}
+
+		fileServer := http.FileServer(http.FS(docsPath))
 
 		s.router.HandleFunc("/swagger", func(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/swagger/", http.StatusMovedPermanently)

@@ -8,7 +8,8 @@ import (
 type Schema struct {
 	ID            int          `db:"id"`
 	Title         string       `db:"title"`
-	PublishedDate time.Time    `db:"published_date"`
+	//PublishedDate time.Time    `db:"published_date"`
+	PublishedDate internal.RFC3339    `db:"published_date"`
 	ImageURL      string       `db:"image_url"`
 	Description   string       `db:"description"`
 	CreatedAt     time.Time    `db:"created_at"`

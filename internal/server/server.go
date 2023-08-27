@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"database/sql"
+	"embed"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -33,7 +34,7 @@ import (
 
 	"github.com/gmhafiz/go8/config"
 	"github.com/gmhafiz/go8/database"
-	_ "github.com/gmhafiz/go8/docs"
+	//_ "github.com/gmhafiz/go8/docs"
 	"github.com/gmhafiz/go8/ent/gen"
 	"github.com/gmhafiz/go8/internal/middleware"
 	db "github.com/gmhafiz/go8/third_party/database"
@@ -42,9 +43,8 @@ import (
 	"github.com/gmhafiz/go8/third_party/validate"
 )
 
-const (
-	swaggerDocsAssetPath = "./docs/"
-)
+//go:embed docs/*
+var swaggerDocsAssetPath embed.FS
 
 type Server struct {
 	Version string

@@ -18,17 +18,8 @@ FROM gcr.io/distroless/static-debian11
 
 LABEL com.example.maintainers="User <author@example.com>"
 
-WORKDIR /App
-
-COPY --from=src /go/src/app/server /App/server
-
-# Docker cannot copy hidden .env file. So in Taskfile.yml, we make a copy of it.
-COPY --from=src /go/src/app/env.prod /App/.env
-
-# Copies the folder containing swagger assets and our openapi specs.
-# Todo: embed the folder using embed tag
-COPY --from=src /go/src/app/docs /App/docs
+COPY --from=src /go/src/app/server /usr/bin/local/server
 
 EXPOSE 3080
 
-ENTRYPOINT ["/App/server"]
+ENTRYPOINT ["/usr/bin/local/server"]

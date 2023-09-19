@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	lru "github.com/hashicorp/golang-lru"
+	"github.com/hashicorp/golang-lru/v2"
 
 	"github.com/gmhafiz/go8/internal/domain/author"
 	"github.com/gmhafiz/go8/internal/middleware"
@@ -12,7 +12,7 @@ import (
 
 type AuthorLRU struct {
 	service Author
-	lru     *lru.Cache
+	lru     *lru.Cache[string, any]
 }
 
 type AuthorLRUService interface {
@@ -26,7 +26,7 @@ func NewLRUCache(service Author) *AuthorLRU {
 	// https://en.wikipedia.org/wiki/Cache_replacement_policies#Least_recently_used_(LRU)
 	// Once cache is filled, the least recently used key is discarded to make
 	// way for a new key.
-	c, _ := lru.New(8)
+	c, _ := lru.New[string, any](128) // The number of items to be held at any time can be parameterised instead.
 	return &AuthorLRU{
 		service: service,
 		lru:     c,
@@ -77,7 +77,7 @@ func (c *AuthorLRU) invalidate(ctx context.Context) {
 
 	keys := c.lru.Keys()
 	for _, key := range keys {
-		if strings.HasPrefix(key.(string), url) {
+		if strings.HasPrefix(key, url) {
 			c.lru.Remove(key)
 		}
 	}

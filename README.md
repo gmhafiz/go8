@@ -49,7 +49,7 @@ This kit is composed of standard Go library together with some well-known librar
 
 # Quick Start
 
-It is advisable to use the latest supported [Go version](https://go.dev/dl/go1.21.0.linux-amd64.tar.gz) (>= v1.20). Optionally `docker` and `docker-compose` for easier start up. There is a quick guide for Debian in the [appendix](#appendix).
+It is advisable to use the latest supported [Go version](https://go.dev/dl/go1.21.1.linux-amd64.tar.gz) (>= v1.20). Optionally `docker` and `docker-compose` for easier start up. There is a quick guide for Debian in the [appendix](#appendix).
 
 Get it
 
@@ -99,14 +99,14 @@ go run cmd/seed/main.go
 You will see a bunch of dependencies download for a first time run followed by the sql migration files
 
 ```
-2023/02/05 19:23:48 connecting to database...
-2023/02/05 19:23:48 connecting connected
-2023/02/05 19:23:48 OK    20221213140051_create_books.sql
-2023/02/05 19:23:48 OK    20221213140144_create_authors.sql
-2023/02/05 19:23:48 OK    20221213140219_create_book_authors.sql
-2023/05/13 11:12:37 OK    20230409004013_create_users.sql
-2023/05/13 11:12:37 OK    20230409004420_create_sessions.sql
-2023/02/05 11:12:37 goose: no migrations to run. current version: 20230409004420
+2023/09/16 19:06:56 connecting to database... 
+2023/09/16 19:06:56 database connected
+2023/09/16 19:06:56 OK   20221213140051_create_books.sql (28.26ms)
+2023/09/16 19:06:56 OK   20221213140144_create_authors.sql (19.26ms)
+2023/09/16 19:06:56 OK   20221213140219_create_book_authors.sql (13.34ms)
+2023/09/16 19:06:56 OK   20230409004013_create_users_table.sql (14.13ms)
+2023/09/16 19:06:56 OK   20230409004420_create_sessions_table.sql (9.67ms)
+2023/09/16 19:06:56 goose: successfully migrated database to version: 20230409004420
 ```
 
 Run the API with the following command.
@@ -2022,8 +2022,8 @@ For Debian:
 
 ```shell
 sudo apt update && sudo apt install git curl build-essential docker docker-compose wget vim jq
-wget https://go.dev/dl/go1.21.0.linux-amd64.tar.gz
-sudo tar -C /usr/local -xzf go1.21.0.linux-amd64.tar.gz
+wget https://go.dev/dl/go1.21.1.linux-amd64.tar.gz
+sudo tar -C /usr/local -xzf go1.21.1.linux-amd64.tar.gz
 export PATH=$PATH:/usr/local/go/bin
 echo 'PATH=$PATH:/usr/local/go/bin' >> ~/.bash_aliases
 echo 'PATH=$PATH:$HOME/go/bin' >> ~/.bash_aliases

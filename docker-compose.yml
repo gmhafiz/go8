@@ -14,7 +14,7 @@ services:
       - ${API_PORT}:${API_PORT}
 
   postgres:
-    image: "postgres:15.4"
+    image: "postgres:16.0"
     restart: always
     container_name: "go8_postgres"
     healthcheck:

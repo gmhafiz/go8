@@ -7,7 +7,7 @@ import (
 	"net/http/httputil"
 	"runtime/debug"
 
-	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 // Recovery adapted from https://github.com/go-chi/chi/blob/master/middleware/recoverer.go

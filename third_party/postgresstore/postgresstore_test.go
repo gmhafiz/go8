@@ -24,12 +24,12 @@ func TestMain(m *testing.M) {
 		return
 	}
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
 	}
 	if strings.Contains(getwd, "/third_party/postgresstore") {
 		err := os.Chdir("../../")
 		if err != nil {
-			log.Fatalln(err)
+			log.Println(err)
 		}
 	}
 
@@ -45,12 +45,12 @@ func TestMain(m *testing.M) {
 
 	err = os.Setenv("SCS_POSTGRES_TEST_DSN", dsn)
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
 	}
 
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
 	}
 
 	ctx := context.Background()
@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS users
     verified_at timestamptz
 );`)
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
 	}
 
 	_, err = db.ExecContext(ctx, `
@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS sessions
     expiry  TIMESTAMPTZ NOT NULL
 );`)
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
 	}
 
 	_, err = db.ExecContext(ctx, `
@@ -88,7 +88,7 @@ ON CONFLICT DO NOTHING
 `, "admin@example.com", "test", time.Now(),
 	)
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
 	}
 
 	code := m.Run()
@@ -96,6 +96,10 @@ ON CONFLICT DO NOTHING
 }
 
 func TestFind(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
 	dsn := os.Getenv("SCS_POSTGRES_TEST_DSN")
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
@@ -139,6 +143,10 @@ VALUES($1, $2, $3, current_timestamp + interval '1 minute')`, hash, 1, "encoded_
 }
 
 func TestFindMissing(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
 	dsn := os.Getenv("SCS_POSTGRES_TEST_DSN")
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
@@ -167,6 +175,10 @@ func TestFindMissing(t *testing.T) {
 }
 
 func TestSaveNew(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
 	dsn := os.Getenv("SCS_POSTGRES_TEST_DSN")
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
@@ -208,6 +220,10 @@ func TestSaveNew(t *testing.T) {
 }
 
 func TestSaveUpdated(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
 	dsn := os.Getenv("SCS_POSTGRES_TEST_DSN")
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
@@ -253,6 +269,10 @@ func TestSaveUpdated(t *testing.T) {
 }
 
 func TestExpiry(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
 	dsn := os.Getenv("SCS_POSTGRES_TEST_DSN")
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
@@ -290,6 +310,10 @@ func TestExpiry(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
 	dsn := os.Getenv("SCS_POSTGRES_TEST_DSN")
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
@@ -335,6 +359,10 @@ func TestDelete(t *testing.T) {
 }
 
 func TestCleanup(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
 	dsn := os.Getenv("SCS_POSTGRES_TEST_DSN")
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
@@ -387,6 +415,10 @@ func TestCleanup(t *testing.T) {
 }
 
 func TestStopNilCleanup(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
 	dsn := os.Getenv("SCS_POSTGRES_TEST_DSN")
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {

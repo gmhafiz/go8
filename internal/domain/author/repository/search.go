@@ -3,6 +3,9 @@ package repository
 import (
 	"context"
 	"fmt"
+
+	"go.opentelemetry.io/otel"
+
 	"github.com/gmhafiz/go8/ent/gen"
 	entAuthor "github.com/gmhafiz/go8/ent/gen/author"
 	"github.com/gmhafiz/go8/ent/gen/predicate"
@@ -16,6 +19,10 @@ func NewSearch(db *gen.Client) *repository {
 // Search using the same store. May use other store e.g. elasticsearch/bleve as
 // the search repository.
 func (r *repository) Search(ctx context.Context, f *author.Filter) ([]*author.Schema, int, error) {
+	tracer := otel.Tracer("")
+	ctx, span := tracer.Start(ctx, "AuthorSearch")
+	defer span.End()
+
 	var predicateUser []predicate.Author
 	if f.FirstName != "" {
 		predicateUser = append(predicateUser, entAuthor.FirstNameContainsFold(f.FirstName))

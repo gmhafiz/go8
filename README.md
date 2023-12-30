@@ -46,6 +46,7 @@ This kit is composed of standard Go library together with some well-known librar
   - [x] Unit testing of repository, use case, and handler using mocks and [dockertest](https://github.com/ory/dockertest)
   - [x] Integration testing
   - [x] End-to-end test using ephemeral docker containers
+  - [x] OpenTelemetry with Grafana, otel-collector, Prometheus, Loki, and Jaeger
 
 # Quick Start
 
@@ -58,35 +59,37 @@ git clone https://github.com/gmhafiz/go8
 cd go8
 ```
 
-The application depends on a database. Ideally applications load configurations from [environment variable](https://12factor.net/config) or from a vault. 
+The application depends on a database. Ideally applications load configurations from [environment variable](https://12factor.net/config) (Method A) or from a vault. 
 
-1. Set values by exporting them into environment variables
+(Method A)
+
+Set values by exporting them into environment variables
 
 ```shell
 export DB_DRIVER=postgres
 export DB_HOST=localhost
 export DB_PORT=5432
-export DB_USER=user
+export DB_USER=postgres
 export DB_PASS=password
 export DB_NAME=go8_db
 ```
 
+(Method B)
+
 It is also possible to set them in an `.env` file. Just make sure this file is ignored in `.gitignore` because it should never be checked into source control.
 
-2. Fill in your database credentials in `.env` by making a copy of `env.example` first.
+ Fill in your database credentials in `.env` by making a copy of `env.example` first.
 ```shell
 cp env.example .env
 vim .env
 ```
 
-Have a database ready either by installing them yourself or use the following command. The `docker-compose.yml` will use database credentials set in either `.env` file or environment variables which is initialized in the previous step. Optionally, you may want redis as well.
+## Database
+
+Have a database ready either by installing them yourself or use the following command. The `docker-compose-infra.yml` will use database credentials set in either `.env` file or environment variables which is initialized in the previous step. In addition, creating database this way will also create an integration database as well.
 
 ```sh
-docker-compose up -d postgres
-```
-or
- ```sh
-docker-compose up -d postgres redis
+docker-compose up -f docker-compose-infra.yml -d postgres
 ```
 
 Once the database is up, tables and seed data needs to be created using a migration system with the following command. The seed data is needed for authentication later.
@@ -172,7 +175,7 @@ To run only unit tests,
 go test -short ./...
 ```
 
-To run integration tests, a test database needs to be created first.
+To run integration tests, if it does not exist yet, a test database needs to be created first.
 
 ```sh
 docker exec -it go8_postgres psql -U user go8_db
@@ -221,6 +224,7 @@ docker-compose -f e2e/docker-compose.yml down
 - [Motivation](#motivation)
 - [Features](#features)
 - [Quick Start](#quick-start)
+- [OpenTelemetry](#opentelemetry)
 - [Tooling](#tooling)
    * [Tools](#tools)
       + [Install](#install)
@@ -294,6 +298,25 @@ docker-compose -f e2e/docker-compose.yml down
 - [Appendix](#appendix)
    * [Dev Environment Installation](#dev-environment-installation)
 
+# OpenTelemetry
+
+During development, we follow a process and have many tools including functional tests (unit, integration, end-to-end), static analyzer, performance regression tests, and others before we ship to production. In spite of developers' best effort, bugs do occur in production. Typical tools we have during development may not be applicable to a production setting. What we need is some visibility on how our program's internal state and how it behaves in production for example, error logs can be useful to give us this information. An endpoint which is slow will need to be looked at, and it will be great if we can pinpoint exactly where the offending part of a codebase is. 
+
+OpenTelemetry is a collection of APIs, SDKs, and tools to instrument, generate, collect, and export telemetry data including metrics, logs, and traces. Using docker-compose, all infrastructure needed to bring up OpenTelemetry integration can be started automatically. This includes configurations and the dashboard.
+
+First step is to enable OpenTelemetry in environment variable either by exporting it or by editing the value for `OTEL_ENABLE` from `false` to `true` in `.env`.
+
+```sh
+export OTEL_ENABLE=true
+```
+
+Then,
+
+```sh
+docker-compose -f docker-compose-infra.yml up -d
+```
+
+Once everything is up, the dashboard is accessed through Grafana at http://localhost:3300. Initial login credential is admin/admin. Then you will be prompted to set a new password.
 
 # Tooling
 
@@ -1997,10 +2020,10 @@ No data seeding is demonstrated here. To make this e2e as real as possible, you 
  - [x] Better return response
  - [x] LRU cache
  - [X] Redis Cache
- - [ ] Opentelemetry
-   - [ ] Tracing
-   - [ ] Metric
-   - [ ] Logging
+ - [x] Opentelemetry
+   - [x] Tracing
+   - [x] Metric
+   - [x] Logging
 
 # Acknowledgements
 
@@ -2022,8 +2045,8 @@ For Debian:
 
 ```shell
 sudo apt update && sudo apt install git curl build-essential docker docker-compose wget vim jq
-wget https://go.dev/dl/go1.21.1.linux-amd64.tar.gz
-sudo tar -C /usr/local -xzf go1.21.1.linux-amd64.tar.gz
+wget https://go.dev/dl/go1.21.5.linux-amd64.tar.gz
+sudo tar -C /usr/local -xzf go1.21.5.linux-amd64.tar.gz
 export PATH=$PATH:/usr/local/go/bin
 echo 'PATH=$PATH:/usr/local/go/bin' >> ~/.bash_aliases
 echo 'PATH=$PATH:$HOME/go/bin' >> ~/.bash_aliases
@@ -2032,5 +2055,6 @@ go install golang.org/x/tools/...@latest
 
 sudo usermod -aG docker ${USER}
 newgrp docker
+sudo systemctl restart docker
 su - ${USER} # or logout and login
 ```

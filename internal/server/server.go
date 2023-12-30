@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"log/slog"
 	"math"
 	"net/http"
 	"os"
@@ -20,6 +21,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
+	entsql "entgo.io/ent/dialect/sql"
 	"github.com/gmhafiz/scs/v2"
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
@@ -28,12 +30,17 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/jwalton/gchalk"
 	_ "github.com/lib/pq"
+	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/cors"
+	"go.nhat.io/otelsql"
+	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
 	"golang.org/x/mod/modfile"
 
 	"github.com/gmhafiz/go8/config"
 	"github.com/gmhafiz/go8/database"
+	"github.com/gmhafiz/go8/logger"
+	"github.com/gmhafiz/go8/third_party/otlp"
 	//_ "github.com/gmhafiz/go8/docs"
 	"github.com/gmhafiz/go8/ent/gen"
 	"github.com/gmhafiz/go8/internal/middleware"
@@ -59,6 +66,8 @@ type Server struct {
 
 	session       *scs.SessionManager
 	sessionCloser *postgresstore.PostgresStore
+
+	otlp *middleware.Config
 
 	validator *validator.Validate
 	cors      *cors.Cors
@@ -97,7 +106,9 @@ func defaultServer() *Server {
 }
 
 func (s *Server) Init() {
+	s.initLog()
 	s.setCors()
+	s.newOpenTelemetry()
 	s.newRedis()
 	s.NewDatabase()
 	s.newValidator()
@@ -105,6 +116,13 @@ func (s *Server) Init() {
 	s.newRouter()
 	s.setGlobalMiddleware()
 	s.InitDomains()
+}
+
+func (s *Server) initLog() {
+	slog.SetDefault(slog.New(logger.NewTraceHandler(
+		os.Stdout,
+		&slog.HandlerOptions{},
+	)))
 }
 
 func (s *Server) setCors() {
@@ -124,6 +142,25 @@ func (s *Server) setCors() {
 		})
 }
 
+func (s *Server) newOpenTelemetry() {
+	ctx := context.Background()
+
+	otlpConfig := s.cfg.OpenTelemetry
+
+	if !otlpConfig.Enable {
+		log.Println("not enabling otlp")
+		return
+	}
+
+	log.Println("connecting to otlp...")
+
+	shutdown := otlp.SetupOTLPExporter(ctx, s.cfg.OpenTelemetry)
+
+	s.otlp = &middleware.Config{
+		Cancel: shutdown,
+	}
+}
+
 func (s *Server) newRedis() {
 	if !s.cfg.Cache.Enable {
 		return
@@ -133,6 +170,13 @@ func (s *Server) newRedis() {
 		s.cluster = redisLib.NewCluster(s.cfg.Cache)
 	} else {
 		s.cache = redisLib.New(s.cfg.Cache)
+
+		if err := redisotel.InstrumentTracing(s.cache); err != nil {
+			panic(err)
+		}
+		if err := redisotel.InstrumentMetrics(s.cache); err != nil {
+			panic(err)
+		}
 	}
 }
 
@@ -191,6 +235,7 @@ func (s *Server) setGlobalMiddleware() {
 		_, _ = w.Write([]byte(`{"message": "endpoint not found"}`))
 	})
 	s.router.Use(s.cors.Handler)
+	s.router.Use(middleware.Otlp(s.cfg.OpenTelemetry.Enable))
 	s.router.Use(middleware.Json)
 	s.router.Use(middleware.LoadAndSave(s.session))
 	s.router.Use(middleware.Audit)
@@ -302,10 +347,20 @@ func (s *Server) PrintAllRegisteredRoutes(exceptions ...string) {
 }
 
 func (s *Server) newEnt(dsn string) {
-	client, err := gen.Open(dialect.Postgres, dsn)
+	driverName, err := otelsql.Register(dialect.Postgres,
+		otelsql.AllowRoot(),
+		otelsql.TraceQueryWithoutArgs(),
+		otelsql.WithSystem(semconv.DBSystemPostgreSQL),
+	)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
+	otelDB, err := sql.Open(driverName, dsn)
+	if err != nil {
+		log.Println(err)
+	}
+	drv := entsql.OpenDB(dialect.Postgres, otelDB)
+	client := gen.NewClient(gen.Driver(drv))
 
 	client.Use(func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, mutation ent.Mutation) (ent.Value, error) {
@@ -437,4 +492,5 @@ func (s *Server) closeResources(ctx context.Context) {
 	s.cluster.Shutdown(ctx)
 	s.cache.Shutdown(ctx)
 	s.sessionCloser.StopCleanup()
+	defer s.otlp.Cancel()
 }

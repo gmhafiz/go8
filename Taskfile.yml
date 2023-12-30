@@ -186,17 +186,23 @@ tasks:
   docker:run:
     desc: Runs the app Docker image as a Docker container
     cmds:
-      - docker run -p 3080:3080 --rm -it --net=host --name go8_container go8/server
+#      - docker run -p 3080:3080 -e DB_DRIVER=${DB_DRIVER} -e DB_Host=${DB_HOST} -e DB_PORT=${DB_PORT} -e DB_NAME=${DB_NAME} -e DB_USER=${DB_USER} -e DB_PASS=${DB_PASS} --rm -it --name go8_container go8/server
+      - docker run --network=host --env-file ./.env --rm -it --name go8_container go8/server
 
   docker-compose:start:
-    desc: Runs server and database using docker-compose
+    desc: Runs server using docker-compose
     cmds:
-      - docker-compose -f docker-compose.yml up --build --abort-on-container-exit
+      - docker-compose -f docker-compose.yml up --build
 
   docker-compose:stop:
-    desc: Stops server and database using docker-compose
+    desc: Stops server using docker-compose
     cmds:
-      - docker-compose -f docker-compose.yml down --volumes
+      - docker-compose -f docker-compose.yml down
+
+  docker-compose:infra:start:
+    desc: Runs infrastructure using docker-compose
+    cmds:
+      - docker-compose -f docker-compose-infra.yml up --abort-on-container-exit
 
   k8s:push:
     desc: build and push

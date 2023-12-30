@@ -14,11 +14,12 @@ COPY . ./
 RUN set -ex; \
     CGO_ENABLED=0 GOOS=linux go build -ldflags="-X main.Version=$(git describe --abbrev=0 --tags)-$(git rev-list -1 HEAD) -w -s" -o ./server ./cmd/go8/main.go;
 
-FROM gcr.io/distroless/static-debian11
+FROM gcr.io/distroless/static-debian12:nonroot
 
 LABEL com.example.maintainers="User <author@example.com>"
 
 COPY --from=src /go/src/app/server /usr/bin/local/server
+#COPY --from=src /go/src/app/env.prod /usr/bin/local/.env
 
 EXPOSE 3080
 

@@ -14,6 +14,7 @@ type Config struct {
 	Cache
 	Elasticsearch
 
+	OpenTelemetry
 	Session
 }
 
@@ -30,5 +31,6 @@ func New() *Config {
 		Cache:         NewCache(),
 		Elasticsearch: ElasticSearch(),
 		Session:       NewSession(),
+		OpenTelemetry: NewOpenTelemetry(),
 	}
 }

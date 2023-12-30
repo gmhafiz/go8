@@ -2,11 +2,13 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"strings"
 	"time"
 
 	"github.com/redis/go-redis/v9"
 	"github.com/vmihailenco/msgpack/v5"
+	"go.opentelemetry.io/otel"
 
 	"github.com/gmhafiz/go8/internal/domain/author"
 	"github.com/gmhafiz/go8/internal/middleware"
@@ -32,6 +34,10 @@ func NewRedisCache(service Author, cache *redis.Client) *Cache {
 }
 
 func (c *Cache) List(ctx context.Context, f *author.Filter) ([]*author.Schema, int, error) {
+	tracer := otel.Tracer("")
+	ctx, span := tracer.Start(ctx, "AuthorListCache")
+	defer span.End()
+
 	// We want to store both list and the count together in one cache key.
 	type result struct {
 		List []*author.Schema `json:"list"`
@@ -45,7 +51,7 @@ func (c *Cache) List(ctx context.Context, f *author.Filter) ([]*author.Schema, i
 	res := &result{}
 
 	val, err := c.cache.Get(ctx, url).Result()
-	if err == redis.Nil || err != nil {
+	if errors.Is(err, redis.Nil) || err != nil {
 		list, num, err := c.service.List(ctx, f)
 		if err != nil {
 			return nil, 0, err

@@ -34,6 +34,7 @@ func Alive(db *sql.DB) {
 			jitter := rand.Int63n(int64(backoff * 3))
 			sleep := base + time.Duration(jitter)
 			time.Sleep(sleep)
+			log.Println("retrying to connect to database...")
 			_, err := db.Exec("SELECT true")
 			if err == nil {
 				log.Println("database connected")

@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 
+	"go.opentelemetry.io/otel"
+
 	"github.com/gmhafiz/go8/config"
 	"github.com/gmhafiz/go8/internal/domain/author"
 	"github.com/gmhafiz/go8/internal/domain/author/repository"
@@ -43,6 +45,10 @@ func (u *AuthorUseCase) Create(ctx context.Context, r *author.CreateRequest) (*a
 }
 
 func (u *AuthorUseCase) List(ctx context.Context, f *author.Filter) ([]*author.Schema, int, error) {
+	tracer := otel.Tracer("")
+	ctx, span := tracer.Start(ctx, "AuthorUseCase")
+	defer span.End()
+
 	if f.Base.Search {
 		return u.searchRepo.Search(ctx, f)
 	}

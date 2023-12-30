@@ -7,38 +7,13 @@ services:
     container_name: "go8_container"
     env_file:
       - .env
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - OTEL_OTLP_ENDPOINT=otel-collector:4317
+      - REDIS_HOST=redis
     build:
       context: .
       dockerfile: Dockerfile
     ports:
       - ${API_PORT}:${API_PORT}
-
-  postgres:
-    image: "postgres:16.0"
-    restart: always
-    container_name: "go8_postgres"
-    healthcheck:
-      test: pg_isready -U ${DB_USER}
-    environment:
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASS}
-      - POSTGRES_DB=${DB_NAME}
-    ports:
-      - ${DB_PORT}:5432
-    expose:
-      - "5432"
-    volumes:
-      - postgres:/var/lib/postgresql/data
-      - ./scripts/create-db.sh:/docker-entrypoint-initdb.d
-
-  redis:
-    image: 'redis:7.2'
-    restart: always
-    ports:
-      - "6379:6379"
-    environment:
-      - ALLOW_EMPTY_PASSWORD=yes
-
-
-volumes:
-  postgres:

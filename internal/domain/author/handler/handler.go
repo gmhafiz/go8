@@ -6,9 +6,11 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
+	"go.opentelemetry.io/otel"
 
 	"github.com/gmhafiz/go8/internal/domain/author"
 	"github.com/gmhafiz/go8/internal/domain/author/usecase"
@@ -58,7 +60,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	create, err := h.useCase.Create(r.Context(), &req)
 	if err != nil {
 		log.Println(err)
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			respond.Error(w, http.StatusBadRequest, message.ErrBadRequest)
 			return
 		}
@@ -84,11 +86,17 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {string} Internal Server Error
 // @router /api/v1/author [get]
 func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
+	tracer := otel.Tracer("")
+	ctx, span := tracer.Start(r.Context(), "AuthorList")
+	defer span.End()
+
+	slog.InfoContext(ctx, "listing authors")
+
 	filters := author.Filters(r.URL.Query())
 
-	authors, total, err := h.useCase.List(r.Context(), filters)
+	authors, total, err := h.useCase.List(ctx, filters)
 	if err != nil {
-		log.Println(err)
+		slog.ErrorContext(ctx, err.Error())
 		respond.Error(w, http.StatusInternalServerError, err)
 		return
 	}

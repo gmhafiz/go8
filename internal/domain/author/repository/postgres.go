@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"go.opentelemetry.io/otel"
 
 	"github.com/gmhafiz/go8/ent/gen"
 	entAuthor "github.com/gmhafiz/go8/ent/gen/author"
@@ -103,6 +104,10 @@ func (r *repository) Create(ctx context.Context, request *author.CreateRequest) 
 }
 
 func (r *repository) List(ctx context.Context, f *author.Filter) ([]*author.Schema, int, error) {
+	tracer := otel.Tracer("")
+	ctx, span := tracer.Start(ctx, "AuthorRepoList")
+	defer span.End()
+
 	// filter by first and last names, if exists
 	var predicateUser []predicate.Author
 	if f.FirstName != "" {
@@ -122,7 +127,7 @@ func (r *repository) List(ctx context.Context, f *author.Filter) ([]*author.Sche
 		Where(entAuthor.DeletedAtIsNil()).
 		Count(ctx)
 	if err != nil {
-		return nil, 0, err
+		return nil, 0, fmt.Errorf("get total author records: %w", err)
 	}
 
 	authors, err := r.ent.Author.Query().
@@ -134,7 +139,7 @@ func (r *repository) List(ctx context.Context, f *author.Filter) ([]*author.Sche
 		Order(orderFunc...).
 		All(ctx)
 	if err != nil {
-		return nil, 0, err
+		return nil, 0, fmt.Errorf("get author records: %w", err)
 	}
 
 	resp := make([]*author.Schema, 0)

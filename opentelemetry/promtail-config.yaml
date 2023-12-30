@@ -1,0 +1,20 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+positions:
+  filename: /tmp/promtail-positions.yaml
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+#  - url: http://0.0.0.0:3100/loki/api/v1/push
+scrape_configs:
+  - job_name: app
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+        filters:
+          - name: name
+            values: [ go8_container ]
+    relabel_configs:
+      - source_labels: [ '__meta_docker_container_name' ]
+        regex: '/(.*)'
+        target_label: 'container'

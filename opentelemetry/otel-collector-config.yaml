@@ -1,0 +1,52 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+
+exporters:
+  prometheus:
+    endpoint: "otel-collector:8889"
+
+  debug:
+    verbosity: detailed
+
+  otlp:
+    endpoint: jaeger-all-in-one:4317
+    tls:
+      insecure: true
+
+processors:
+  # https://github.com/open-telemetry/opentelemetry-collector/tree/main/processor
+  batch:
+#    send_batch_size: 1000
+#    timeout: 10s
+
+  memory_limiter:
+    # 80% of maximum memory up to 2G
+    limit_mib: 4000
+    # 25% of limit up to 2G
+    spike_limit_mib: 1000
+    check_interval: 5s
+
+extensions:
+  health_check:
+  pprof:
+    endpoint: :1888
+  zpages:
+    endpoint: :55679
+
+service:
+  extensions: [pprof, zpages, health_check]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch, memory_limiter]
+      exporters: [debug, otlp]
+    metrics:
+      receivers: [otlp]
+      processors: [batch, memory_limiter]
+      exporters: [debug, prometheus]
+    logs:
+      receivers: [otlp]
+      exporters: [debug]

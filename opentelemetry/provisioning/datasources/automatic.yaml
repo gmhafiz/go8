@@ -1,0 +1,23 @@
+apiVersion: 1
+
+datasources:
+  - name: prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    editable: true
+    uid: "edc123e5-c122-4428-b70a-dd054b207342"
+
+  - name: jaeger
+    type: jaeger
+    access: proxy
+    url: http://jaeger-all-in-one:16686
+    editable: true
+    uid: "ba10f201-5507-4a1a-a82d-7f03156b1f17"
+
+  - name: loki
+    type: loki
+    access: proxy
+    url: http://loki:3100
+    editable: true
+    uid: "cfdc892f-f2cf-4ba7-a465-a6ddedb0fdf4"

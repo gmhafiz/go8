@@ -89,7 +89,7 @@ vim .env
 Have a database ready either by installing them yourself or use the following command. The `docker-compose-infra.yml` will use database credentials set in either `.env` file or environment variables which is initialized in the previous step. In addition, creating database this way will also create an integration database as well.
 
 ```sh
-docker-compose up -f docker-compose-infra.yml -d postgres
+docker-compose -f docker-compose-infra.yml up -d postgres
 ```
 
 Once the database is up, tables and seed data needs to be created using a migration system with the following command. The seed data is needed for authentication later.
@@ -210,6 +210,19 @@ For end-to-end tests, run the following docker-compose command. It will run a da
 docker-compose -f e2e/docker-compose.yml up --build
 ```
 
+You will see a bunch of containers being built and then run. The e2e test ends with the following message
+
+```
+go8_e2e_test | 2023/12/30 03:08:04 api is up
+go8_e2e_test | 2023/12/30 03:08:04 testEmptyBook passes
+go8_e2e_test | 2023/12/30 03:08:04 testAddOneBook passes
+go8_e2e_test | 2023/12/30 03:08:04 testGetBook passes
+go8_e2e_test | 2023/12/30 03:08:04 testUpdateBook passes
+go8_e2e_test | 2023/12/30 03:08:04 testDeleteOneBook passes
+go8_e2e_test | 2023/12/30 03:08:04 all tests have passed.
+go8_e2e_test exited with code 0
+```
+
 Press `Ctrl+C` to quit the e2e test and stop all e2e containers. 
 
 To remove the containers,
@@ -304,21 +317,28 @@ During development, we follow a process and have many tools including functional
 
 OpenTelemetry is a collection of APIs, SDKs, and tools to instrument, generate, collect, and export telemetry data including metrics, logs, and traces. Using docker-compose, all infrastructure needed to bring up OpenTelemetry integration can be started automatically. This includes configurations and the dashboard.
 
-First step is to enable OpenTelemetry in environment variable either by exporting it or by editing the value for `OTEL_ENABLE` from `false` to `true` in `.env`.
-
-```sh
-export OTEL_ENABLE=true
-```
-
-Then,
-
 ```sh
 docker-compose -f docker-compose-infra.yml up -d
 ```
 
 Once everything is up, the dashboard is accessed through Grafana at http://localhost:3300. Initial login credential is admin/admin. Then you will be prompted to set a new password.
 
-The Grafana dashboard named 'Observe' is empty until there are some data being created. Either [k6](https://k6.io) or [locust](https://locust.io) can be used to generated synthetic load.
+Before moving forward with the dashboard, OpenTelemetry needs to be enabled in the api server. Switch on the feature in environment variable either by exporting it or by editing the value for `OTEL_ENABLE` from `false` to `true` in `.env`.
+
+```sh
+sed -i "s/^OTEL_ENABLE=.*/OTEL_ENABLE=true/" ".env"
+# or
+export OTEL_ENABLE=true
+```
+
+As everything is started as containers, finding the services are now done with its container name instead of `localhost`. Using docker-compose provides the convenience of setting the correct host necessary for api server to find the services. Stop the current api server and start it again with the provided docker-compose file.
+
+```sh
+ctrl+C
+docker-compose up -d
+```
+
+Circling back to Grafana, the dashboard named 'Observe' is empty until there are some data being created. Either [k6](https://grafana.com/docs/k6/latest/get-started/installation/) or [locust](https://docs.locust.io/en/stable/installation.html) can be used to generated synthetic load.
 
 ```sh
 k6 run scripts/k6.js

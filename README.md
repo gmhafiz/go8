@@ -318,6 +318,12 @@ docker-compose -f docker-compose-infra.yml up -d
 
 Once everything is up, the dashboard is accessed through Grafana at http://localhost:3300. Initial login credential is admin/admin. Then you will be prompted to set a new password.
 
+The Grafana dashboard named 'Observe' is empty until there are some data being created. Either [k6](https://k6.io) or [locust](https://locust.io) can be used to generated synthetic load.
+
+```sh
+k6 run scripts/k6.js
+```
+
 # Tooling
 
 The above quick start is sufficient to start the API. However, we can take advantage of a tool to make task management easier. While you may run migration with `go run cmd/migrate/main.go`,  it is a lot easier to remember to type `task migrate` instead. Think of it as a simplified `Makefile`.

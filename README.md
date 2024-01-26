@@ -338,7 +338,7 @@ ctrl+C
 docker-compose up -d
 ```
 
-Circling back to Grafana, the dashboard named 'Observe' is empty until there are some data being created. Either [k6](https://grafana.com/docs/k6/latest/get-started/installation/) or [locust](https://docs.locust.io/en/stable/installation.html) can be used to generated synthetic load.
+Circling back to Grafana, the dashboard named 'Observe' found at http://localhost:3300/dashboards is empty until there are some data being created. Either [k6](https://grafana.com/docs/k6/latest/get-started/installation/) or [locust](https://docs.locust.io/en/stable/installation.html) can be used to generated synthetic load.
 
 ```sh
 k6 run scripts/k6.js

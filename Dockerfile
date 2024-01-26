@@ -19,7 +19,6 @@ FROM gcr.io/distroless/static-debian12:nonroot
 LABEL com.example.maintainers="User <author@example.com>"
 
 COPY --from=src /go/src/app/server /usr/bin/local/server
-#COPY --from=src /go/src/app/env.prod /usr/bin/local/.env
 
 EXPOSE 3080
 

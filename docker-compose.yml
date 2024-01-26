@@ -8,6 +8,7 @@ services:
     env_file:
       - .env
     environment:
+      - API_HOST=0.0.0.0
       - DB_HOST=postgres
       - DB_PORT=5432
       - OTEL_OTLP_ENDPOINT=otel-collector:4317

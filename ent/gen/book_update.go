@@ -35,9 +35,25 @@ func (bu *BookUpdate) SetTitle(s string) *BookUpdate {
 	return bu
 }
 
+// SetNillableTitle sets the "title" field if the given value is not nil.
+func (bu *BookUpdate) SetNillableTitle(s *string) *BookUpdate {
+	if s != nil {
+		bu.SetTitle(*s)
+	}
+	return bu
+}
+
 // SetPublishedDate sets the "published_date" field.
 func (bu *BookUpdate) SetPublishedDate(t time.Time) *BookUpdate {
 	bu.mutation.SetPublishedDate(t)
+	return bu
+}
+
+// SetNillablePublishedDate sets the "published_date" field if the given value is not nil.
+func (bu *BookUpdate) SetNillablePublishedDate(t *time.Time) *BookUpdate {
+	if t != nil {
+		bu.SetPublishedDate(*t)
+	}
 	return bu
 }
 
@@ -64,6 +80,14 @@ func (bu *BookUpdate) ClearImageURL() *BookUpdate {
 // SetDescription sets the "description" field.
 func (bu *BookUpdate) SetDescription(s string) *BookUpdate {
 	bu.mutation.SetDescription(s)
+	return bu
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (bu *BookUpdate) SetNillableDescription(s *string) *BookUpdate {
+	if s != nil {
+		bu.SetDescription(*s)
+	}
 	return bu
 }
 
@@ -308,9 +332,25 @@ func (buo *BookUpdateOne) SetTitle(s string) *BookUpdateOne {
 	return buo
 }
 
+// SetNillableTitle sets the "title" field if the given value is not nil.
+func (buo *BookUpdateOne) SetNillableTitle(s *string) *BookUpdateOne {
+	if s != nil {
+		buo.SetTitle(*s)
+	}
+	return buo
+}
+
 // SetPublishedDate sets the "published_date" field.
 func (buo *BookUpdateOne) SetPublishedDate(t time.Time) *BookUpdateOne {
 	buo.mutation.SetPublishedDate(t)
+	return buo
+}
+
+// SetNillablePublishedDate sets the "published_date" field if the given value is not nil.
+func (buo *BookUpdateOne) SetNillablePublishedDate(t *time.Time) *BookUpdateOne {
+	if t != nil {
+		buo.SetPublishedDate(*t)
+	}
 	return buo
 }
 
@@ -337,6 +377,14 @@ func (buo *BookUpdateOne) ClearImageURL() *BookUpdateOne {
 // SetDescription sets the "description" field.
 func (buo *BookUpdateOne) SetDescription(s string) *BookUpdateOne {
 	buo.mutation.SetDescription(s)
+	return buo
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (buo *BookUpdateOne) SetNillableDescription(s *string) *BookUpdateOne {
+	if s != nil {
+		buo.SetDescription(*s)
+	}
 	return buo
 }
 

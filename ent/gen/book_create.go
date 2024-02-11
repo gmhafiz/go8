@@ -241,11 +241,15 @@ func (bc *BookCreate) createSpec() (*Book, *sqlgraph.CreateSpec) {
 // BookCreateBulk is the builder for creating many Book entities in bulk.
 type BookCreateBulk struct {
 	config
+	err      error
 	builders []*BookCreate
 }
 
 // Save creates the Book entities in the database.
 func (bcb *BookCreateBulk) Save(ctx context.Context) ([]*Book, error) {
+	if bcb.err != nil {
+		return nil, bcb.err
+	}
 	specs := make([]*sqlgraph.CreateSpec, len(bcb.builders))
 	nodes := make([]*Book, len(bcb.builders))
 	mutators := make([]Mutator, len(bcb.builders))

@@ -228,11 +228,15 @@ func (ac *AuthorCreate) createSpec() (*Author, *sqlgraph.CreateSpec) {
 // AuthorCreateBulk is the builder for creating many Author entities in bulk.
 type AuthorCreateBulk struct {
 	config
+	err      error
 	builders []*AuthorCreate
 }
 
 // Save creates the Author entities in the database.
 func (acb *AuthorCreateBulk) Save(ctx context.Context) ([]*Author, error) {
+	if acb.err != nil {
+		return nil, acb.err
+	}
 	specs := make([]*sqlgraph.CreateSpec, len(acb.builders))
 	nodes := make([]*Author, len(acb.builders))
 	mutators := make([]Mutator, len(acb.builders))

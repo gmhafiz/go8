@@ -67,6 +67,14 @@ func (su *SessionUpdate) SetExpiry(t time.Time) *SessionUpdate {
 	return su
 }
 
+// SetNillableExpiry sets the "expiry" field if the given value is not nil.
+func (su *SessionUpdate) SetNillableExpiry(t *time.Time) *SessionUpdate {
+	if t != nil {
+		su.SetExpiry(*t)
+	}
+	return su
+}
+
 // Mutation returns the SessionMutation object of the builder.
 func (su *SessionUpdate) Mutation() *SessionMutation {
 	return su.mutation
@@ -179,6 +187,14 @@ func (suo *SessionUpdateOne) SetData(b []byte) *SessionUpdateOne {
 // SetExpiry sets the "expiry" field.
 func (suo *SessionUpdateOne) SetExpiry(t time.Time) *SessionUpdateOne {
 	suo.mutation.SetExpiry(t)
+	return suo
+}
+
+// SetNillableExpiry sets the "expiry" field if the given value is not nil.
+func (suo *SessionUpdateOne) SetNillableExpiry(t *time.Time) *SessionUpdateOne {
+	if t != nil {
+		suo.SetExpiry(*t)
+	}
 	return suo
 }
 

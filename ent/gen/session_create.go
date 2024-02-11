@@ -145,11 +145,15 @@ func (sc *SessionCreate) createSpec() (*Session, *sqlgraph.CreateSpec) {
 // SessionCreateBulk is the builder for creating many Session entities in bulk.
 type SessionCreateBulk struct {
 	config
+	err      error
 	builders []*SessionCreate
 }
 
 // Save creates the Session entities in the database.
 func (scb *SessionCreateBulk) Save(ctx context.Context) ([]*Session, error) {
+	if scb.err != nil {
+		return nil, scb.err
+	}
 	specs := make([]*sqlgraph.CreateSpec, len(scb.builders))
 	nodes := make([]*Session, len(scb.builders))
 	mutators := make([]Mutator, len(scb.builders))

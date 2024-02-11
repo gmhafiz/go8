@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"reflect"
 
 	"github.com/gmhafiz/go8/ent/gen/migrate"
 
@@ -37,9 +38,7 @@ type Client struct {
 
 // NewClient creates a new client configured with the given options.
 func NewClient(opts ...Option) *Client {
-	cfg := config{log: log.Println, hooks: &hooks{}, inters: &inters{}}
-	cfg.options(opts...)
-	client := &Client{config: cfg}
+	client := &Client{config: newConfig(opts...)}
 	client.init()
 	return client
 }
@@ -69,6 +68,13 @@ type (
 	// Option function to configure the client.
 	Option func(*config)
 )
+
+// newConfig creates a new config for the client.
+func newConfig(opts ...Option) config {
+	cfg := config{log: log.Println, hooks: &hooks{}, inters: &inters{}}
+	cfg.options(opts...)
+	return cfg
+}
 
 // options applies the options on the config object.
 func (c *config) options(opts ...Option) {
@@ -117,11 +123,14 @@ func Open(driverName, dataSourceName string, options ...Option) (*Client, error)
 	}
 }
 
+// ErrTxStarted is returned when trying to start a new transaction from a transactional client.
+var ErrTxStarted = errors.New("gen: cannot start a transaction within a transaction")
+
 // Tx returns a new transactional client. The provided context
 // is used until the transaction is committed or rolled back.
 func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	if _, ok := c.driver.(*txDriver); ok {
-		return nil, errors.New("gen: cannot start a transaction within a transaction")
+		return nil, ErrTxStarted
 	}
 	tx, err := newTx(ctx, c.driver)
 	if err != nil {
@@ -248,6 +257,21 @@ func (c *AuthorClient) Create() *AuthorCreate {
 
 // CreateBulk returns a builder for creating a bulk of Author entities.
 func (c *AuthorClient) CreateBulk(builders ...*AuthorCreate) *AuthorCreateBulk {
+	return &AuthorCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *AuthorClient) MapCreateBulk(slice any, setFunc func(*AuthorCreate, int)) *AuthorCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &AuthorCreateBulk{err: fmt.Errorf("calling to AuthorClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*AuthorCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
 	return &AuthorCreateBulk{config: c.config, builders: builders}
 }
 
@@ -385,6 +409,21 @@ func (c *BookClient) CreateBulk(builders ...*BookCreate) *BookCreateBulk {
 	return &BookCreateBulk{config: c.config, builders: builders}
 }
 
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *BookClient) MapCreateBulk(slice any, setFunc func(*BookCreate, int)) *BookCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &BookCreateBulk{err: fmt.Errorf("calling to BookClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*BookCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &BookCreateBulk{config: c.config, builders: builders}
+}
+
 // Update returns an update builder for Book.
 func (c *BookClient) Update() *BookUpdate {
 	mutation := newBookMutation(c.config, OpUpdate)
@@ -519,6 +558,21 @@ func (c *SessionClient) CreateBulk(builders ...*SessionCreate) *SessionCreateBul
 	return &SessionCreateBulk{config: c.config, builders: builders}
 }
 
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *SessionClient) MapCreateBulk(slice any, setFunc func(*SessionCreate, int)) *SessionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &SessionCreateBulk{err: fmt.Errorf("calling to SessionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*SessionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &SessionCreateBulk{config: c.config, builders: builders}
+}
+
 // Update returns an update builder for Session.
 func (c *SessionClient) Update() *SessionUpdate {
 	mutation := newSessionMutation(c.config, OpUpdate)
@@ -634,6 +688,21 @@ func (c *UserClient) Create() *UserCreate {
 
 // CreateBulk returns a builder for creating a bulk of User entities.
 func (c *UserClient) CreateBulk(builders ...*UserCreate) *UserCreateBulk {
+	return &UserCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *UserClient) MapCreateBulk(slice any, setFunc func(*UserCreate, int)) *UserCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &UserCreateBulk{err: fmt.Errorf("calling to UserClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*UserCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
 	return &UserCreateBulk{config: c.config, builders: builders}
 }
 

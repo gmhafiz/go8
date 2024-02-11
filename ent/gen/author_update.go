@@ -35,6 +35,14 @@ func (au *AuthorUpdate) SetFirstName(s string) *AuthorUpdate {
 	return au
 }
 
+// SetNillableFirstName sets the "first_name" field if the given value is not nil.
+func (au *AuthorUpdate) SetNillableFirstName(s *string) *AuthorUpdate {
+	if s != nil {
+		au.SetFirstName(*s)
+	}
+	return au
+}
+
 // SetMiddleName sets the "middle_name" field.
 func (au *AuthorUpdate) SetMiddleName(s string) *AuthorUpdate {
 	au.mutation.SetMiddleName(s)
@@ -58,6 +66,14 @@ func (au *AuthorUpdate) ClearMiddleName() *AuthorUpdate {
 // SetLastName sets the "last_name" field.
 func (au *AuthorUpdate) SetLastName(s string) *AuthorUpdate {
 	au.mutation.SetLastName(s)
+	return au
+}
+
+// SetNillableLastName sets the "last_name" field if the given value is not nil.
+func (au *AuthorUpdate) SetNillableLastName(s *string) *AuthorUpdate {
+	if s != nil {
+		au.SetLastName(*s)
+	}
 	return au
 }
 
@@ -299,6 +315,14 @@ func (auo *AuthorUpdateOne) SetFirstName(s string) *AuthorUpdateOne {
 	return auo
 }
 
+// SetNillableFirstName sets the "first_name" field if the given value is not nil.
+func (auo *AuthorUpdateOne) SetNillableFirstName(s *string) *AuthorUpdateOne {
+	if s != nil {
+		auo.SetFirstName(*s)
+	}
+	return auo
+}
+
 // SetMiddleName sets the "middle_name" field.
 func (auo *AuthorUpdateOne) SetMiddleName(s string) *AuthorUpdateOne {
 	auo.mutation.SetMiddleName(s)
@@ -322,6 +346,14 @@ func (auo *AuthorUpdateOne) ClearMiddleName() *AuthorUpdateOne {
 // SetLastName sets the "last_name" field.
 func (auo *AuthorUpdateOne) SetLastName(s string) *AuthorUpdateOne {
 	auo.mutation.SetLastName(s)
+	return auo
+}
+
+// SetNillableLastName sets the "last_name" field if the given value is not nil.
+func (auo *AuthorUpdateOne) SetNillableLastName(s *string) *AuthorUpdateOne {
+	if s != nil {
+		auo.SetLastName(*s)
+	}
 	return auo
 }
 

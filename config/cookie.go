@@ -36,7 +36,8 @@ func (sd *SameSiteDecoder) Decode(value string) error {
 	case "strict":
 		*sd = SameSiteDecoder(http.SameSiteStrictMode)
 	case "none":
-	case "":
+		*sd = SameSiteDecoder(http.SameSiteNoneMode)
+	default:
 		*sd = SameSiteDecoder(http.SameSiteLaxMode)
 	}
 

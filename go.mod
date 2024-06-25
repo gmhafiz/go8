@@ -1,6 +1,6 @@
 module github.com/gmhafiz/go8
 
-go 1.22
+go 1.22.0
 
 require (
 	entgo.io/ent v0.13.0

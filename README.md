@@ -50,7 +50,7 @@ This kit is composed of standard Go library together with some well-known librar
 
 # Quick Start
 
-It is advisable to use the latest supported [Go version](https://go.dev/dl/go1.21.1.linux-amd64.tar.gz) (>= v1.20). Optionally `docker` and `docker-compose` for easier start up. There is a quick guide for Debian in the [appendix](#appendix).
+It is advisable to use the latest supported [Go version](https://go.dev/dl/go1.21.1.linux-amd64.tar.gz) (>= v1.21). Optionally `docker` and `docker-compose` for easier start up. There is a quick guide for Debian in the [appendix](#appendix).
 
 Get it
 
@@ -2071,8 +2071,8 @@ For Debian:
 
 ```shell
 sudo apt update && sudo apt install git curl build-essential docker docker-compose wget vim jq
-wget https://go.dev/dl/go1.22.0.linux-amd64.tar.gz
-sudo tar -C /usr/local -xzf go1.22.0.linux-amd64.tar.gz
+wget https://go.dev/dl/go1.22.5.linux-amd64.tar.gz
+sudo tar -C /usr/local -xzf go1.22.5.linux-amd64.tar.gz
 export PATH=$PATH:/usr/local/go/bin
 echo 'PATH=$PATH:/usr/local/go/bin' >> ~/.bash_aliases
 echo 'PATH=$PATH:$HOME/go/bin' >> ~/.bash_aliases

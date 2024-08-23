@@ -12,7 +12,7 @@ services:
       - DB_HOST=postgres
       - DB_PORT=5432
       - OTEL_OTLP_ENDPOINT=otel-collector:4317
-      - REDIS_HOST=redis
+      - REDIS_HOST=valkey
     build:
       context: .
       dockerfile: Dockerfile

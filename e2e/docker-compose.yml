@@ -3,7 +3,7 @@ version: '3.8'
 services:
 
   postgres:
-    image: "postgres:16.1"
+    image: "postgres:16.4"
     container_name: "go8_postgres_e2e"
     restart: "no"
     healthcheck:
@@ -24,10 +24,10 @@ services:
     depends_on:
       - postgres
       - migrate
-      - redis
+      - valkey
 
-  redis:
-    image: 'redis:7.2'
+  valkey:
+    image: 'valkey/valkey:7.2'
     container_name: "go8_redis_e2e"
     restart: "no"
     environment:

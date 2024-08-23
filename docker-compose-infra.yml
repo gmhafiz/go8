@@ -3,7 +3,7 @@ version: '3.8'
 services:
 
   postgres:
-    image: postgres:16.1
+    image: postgres:16.4
     restart: always
     container_name: "go8_postgres"
     healthcheck:
@@ -19,8 +19,8 @@ services:
       - postgresVolume:/var/lib/postgresql/data
       - ./scripts/create-dbs.sh:/docker-entrypoint-initdb.d/create-dbs.sh
 
-  redis:
-    image: redis:7.2
+  valkey:
+    image: valkey/valkey:7.2
     restart: always
     expose:
       - 6379

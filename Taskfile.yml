@@ -61,7 +61,7 @@ tasks:
         sh: git rev-list -1 HEAD
     cmds:
       - task: check
-      - go build -ldflags="-X main.Version={{.GIT_TAG}}-{{.GIT_COMMIT}} -w -s"  -o go8 cmd/go8/main.go
+      - go build -ldflags="-X main.Version={{.GIT_TAG}}-{{.GIT_COMMIT}} -s"  -o go8 cmd/go8/main.go
       - mkdir -p bin
       - mv go8 bin/
       - cp .env bin
@@ -222,6 +222,7 @@ tasks:
       - task: install:golangci
       - task: install:swagger
       - task: install:goose
+      - task: install:ent
       - task: install:mirip
       - task: install:air
       - task: install:vuln
@@ -247,10 +248,15 @@ tasks:
     cmds:
       - go install github.com/pressly/goose/v3/cmd/goose@latest
 
+  install:ent:
+    desc: Install ent database ORM tool
+    cmds:
+        - go install entgo.io/ent/cmd/ent@latest
+
   install:air:
     desc: Install a hot reloader. Watch for file changes and automatically rebuilds binary
     cmds:
-      - go install github.com/cosmtrek/air@latest
+      - go install github.com/air-verse/air@latest
 
   install:vuln:
     desc: Install Go Vulnerability Check

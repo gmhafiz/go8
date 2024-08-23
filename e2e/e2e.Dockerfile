@@ -1,6 +1,6 @@
 # docker build -f e2e/e2e.Dockerfile -t go8/e2e .
 # docker run -it go8/e2e
-FROM golang:1.21 AS src_e2e
+FROM golang:1.22 AS src_e2e
 
 WORKDIR /go/src/app/
 
@@ -13,7 +13,7 @@ COPY . ./
 
 # Build Go Binary
 RUN set -ex; \
-    CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o ./end_to_end ./e2e/main.go;
+    CGO_ENABLED=0 GOOS=linux go build -ldflags="-s" -o ./end_to_end ./e2e/main.go;
 
 
 FROM gcr.io/distroless/static-debian11

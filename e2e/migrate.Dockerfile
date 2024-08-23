@@ -1,4 +1,4 @@
-FROM golang:1.21 AS src_migrate
+FROM golang:1.22 AS src_migrate
 
 # Copy dependencies first to take advantage of Docker caching
 WORKDIR /go/src/app/
@@ -11,7 +11,7 @@ COPY . ./
 
 # Build Go Binary
 RUN set -ex; \
-    CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o ./migrate ./cmd/migrate/main.go;
+    CGO_ENABLED=0 GOOS=linux go build -ldflags="-s" -o ./migrate ./cmd/migrate/main.go;
 
 FROM gcr.io/distroless/static-debian11
 

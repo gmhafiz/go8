@@ -1024,7 +1024,7 @@ Let us register a new user:
 curl -vX POST  -H 'content-type: application/json' 'http://localhost:3080/api/v1/register' -d '{
   "first_name": "Hafiz",
   "last_name": "Shafruddin",
-  "email": "gmhafiz@gmail.com",
+  "email": "email@example.com",
   "password": "highEntropyPassword"
 }'
 ```
@@ -1035,7 +1035,7 @@ You should get a 201 Created HTTP status response. Now you can login
 curl -vX POST -H 'content-type: application/json' \ 
 'http://localhost:3080/api/v1/login' \
 -d '{
-  "email": "gmhafiz@gmail.com",
+  "email": "email@example.com",
   "password": "highEntropyPassword"
 }
 '
@@ -1078,7 +1078,7 @@ login() {
     credentials: 'include',
     method: 'POST',
     body: {
-      email: 'gmhafiz@gmail.com',
+      email: 'email@example.com',
       password: 'password',
     },
   })

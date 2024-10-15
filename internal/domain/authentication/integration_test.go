@@ -142,7 +142,7 @@ func TestHandler_RegisterIntegration(t *testing.T) {
 			name: "simple",
 			args: args{
 				RegisterRequest: &RegisterRequest{
-					Email:    "gmhafiz@gmail.com",
+					Email:    "email@example.com",
 					Password: "highEntropyPassword",
 				},
 			},
@@ -155,7 +155,7 @@ func TestHandler_RegisterIntegration(t *testing.T) {
 			name: "email already registered",
 			args: args{
 				RegisterRequest: &RegisterRequest{
-					Email:    "gmhafiz@gmail.com",
+					Email:    "email@example.com",
 					Password: "highEntropyPassword",
 				},
 			},
@@ -181,7 +181,7 @@ func TestHandler_RegisterIntegration(t *testing.T) {
 			name: "no password is supplied",
 			args: args{
 				RegisterRequest: &RegisterRequest{
-					Email:    "gmhafiz@gmail.com",
+					Email:    "email@example.com",
 					Password: "",
 				},
 			},
@@ -258,7 +258,7 @@ func TestHandler_LoginIntegration(t *testing.T) {
 			name: "simple",
 			args: args{
 				LoginRequest: &LoginRequest{
-					Email:    "gmhafiz@gmail.com",
+					Email:    "email@example.com",
 					Password: "highEntropyPassword",
 				},
 			},
@@ -276,7 +276,7 @@ func TestHandler_LoginIntegration(t *testing.T) {
 			name: "not registered",
 			args: args{
 				LoginRequest: &LoginRequest{
-					Email:    "gmhafiz@gmail.XXX", // non-existent email
+					Email:    "email@example.XXX", // non-existent email
 					Password: "highEntropyPassword",
 				},
 			},
@@ -302,7 +302,7 @@ func TestHandler_LoginIntegration(t *testing.T) {
 	_, err = repo.db.ExecContext(context.Background(), `
 		INSERT INTO users (email, password) VALUES ($1, $2)
 		ON CONFLICT (email) DO NOTHING 
-		`, "gmhafiz@gmail.com", hashedPassword)
+		`, "email@example.com", hashedPassword)
 	assert.Nil(t, err)
 
 	for _, tt := range tests {
@@ -352,7 +352,7 @@ func TestHandler_ProtectedIntegration(t *testing.T) {
 			name: "normal",
 			args: args{
 				LoginRequest: &LoginRequest{
-					Email:    "gmhafiz@gmail.com",
+					Email:    "email@example.com",
 					Password: "highEntropyPassword",
 				},
 			},
@@ -373,7 +373,7 @@ func TestHandler_ProtectedIntegration(t *testing.T) {
 	_, err = repo.db.ExecContext(context.Background(), `
 		INSERT INTO users (email, password) VALUES ($1, $2)
 		ON CONFLICT (email) DO NOTHING 
-		`, "gmhafiz@gmail.com", hashedPassword)
+		`, "email@example.com", hashedPassword)
 	assert.Nil(t, err)
 
 	for _, tt := range tests {
@@ -440,7 +440,7 @@ func TestHandler_MeIntegration(t *testing.T) {
 			name: "normal",
 			args: args{
 				LoginRequest: &LoginRequest{
-					Email:    "gmhafiz@gmail.com",
+					Email:    "email@example.com",
 					Password: "highEntropyPassword",
 				},
 			},
@@ -461,7 +461,7 @@ func TestHandler_MeIntegration(t *testing.T) {
 	_, err = repo.db.ExecContext(context.Background(), `
 		INSERT INTO users (email, password) VALUES ($1, $2)
 		ON CONFLICT (email) DO NOTHING 
-		`, "gmhafiz@gmail.com", hashedPassword)
+		`, "email@example.com", hashedPassword)
 	assert.Nil(t, err)
 
 	for _, tt := range tests {
@@ -544,7 +544,7 @@ func TestHandler_LogoutIntegration(t *testing.T) {
 			name: "normal",
 			args: args{
 				LoginRequest: &LoginRequest{
-					Email:    "gmhafiz@gmail.com",
+					Email:    "email@example.com",
 					Password: "highEntropyPassword",
 				},
 			},
@@ -565,7 +565,7 @@ func TestHandler_LogoutIntegration(t *testing.T) {
 	_, err = repo.db.ExecContext(context.Background(), `
 		INSERT INTO users (email, password) VALUES ($1, $2)
 		ON CONFLICT (email) DO NOTHING 
-		`, "gmhafiz@gmail.com", hashedPassword)
+		`, "email@example.com", hashedPassword)
 	assert.Nil(t, err)
 
 	for _, tt := range tests {
@@ -642,7 +642,7 @@ func TestHandler_Force_LogoutIntegration(t *testing.T) {
 			name: "normal",
 			args: args{
 				LoginRequest: &LoginRequest{
-					Email:    "gmhafiz@gmail.com",
+					Email:    "email@example.com",
 					Password: "highEntropyPassword",
 				},
 			},
@@ -664,7 +664,7 @@ func TestHandler_Force_LogoutIntegration(t *testing.T) {
 	_, err = repo.db.ExecContext(context.Background(), `
 		INSERT INTO users (email, password) VALUES ($1, $2)
 		ON CONFLICT (email) DO NOTHING 
-		`, "gmhafiz@gmail.com", hashedPassword)
+		`, "email@example.com", hashedPassword)
 	assert.Nil(t, err)
 
 	for _, tt := range tests {
@@ -703,7 +703,7 @@ func TestHandler_Force_LogoutIntegration(t *testing.T) {
 
 			assert.Equal(t, tt.want.status, ww.Code)
 
-			// Now we log in as super admin to log out gmhafiz@gmail.com
+			// Now we log in as super admin to log out admin@gmail.com
 			admin := &LoginRequest{
 				Email:    "admin@gmhafiz.com",
 				Password: "highEntropyPassword",
@@ -770,7 +770,7 @@ func TestHandler_Csrf_Valid_TokenIntegration(t *testing.T) {
 			name: "normal",
 			args: args{
 				LoginRequest: &LoginRequest{
-					Email:    "gmhafiz@gmail.com",
+					Email:    "email@example.com",
 					Password: "highEntropyPassword",
 				},
 			},
@@ -793,7 +793,7 @@ func TestHandler_Csrf_Valid_TokenIntegration(t *testing.T) {
 	_, err = repo.db.ExecContext(context.Background(), `
 		INSERT INTO users (email, password) VALUES ($1, $2)
 		ON CONFLICT (email) DO NOTHING 
-		`, "gmhafiz@gmail.com", hashedPassword)
+		`, "email@example.com", hashedPassword)
 	assert.Nil(t, err)
 
 	for _, tt := range tests {
@@ -879,7 +879,7 @@ func TestHandler_Csrf_Valid_And_Delete_TokenIntegration(t *testing.T) {
 			name: "normal",
 			args: args{
 				LoginRequest: &LoginRequest{
-					Email:    "gmhafiz@gmail.com",
+					Email:    "email@example.com",
 					Password: "highEntropyPassword",
 				},
 			},
@@ -902,7 +902,7 @@ func TestHandler_Csrf_Valid_And_Delete_TokenIntegration(t *testing.T) {
 	_, err = repo.db.ExecContext(context.Background(), `
 		INSERT INTO users (email, password) VALUES ($1, $2)
 		ON CONFLICT (email) DO NOTHING 
-		`, "gmhafiz@gmail.com", hashedPassword)
+		`, "email@example.com", hashedPassword)
 	assert.Nil(t, err)
 
 	for _, tt := range tests {

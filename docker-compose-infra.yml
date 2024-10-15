@@ -3,7 +3,7 @@ version: '3.8'
 services:
 
   postgres:
-    image: postgres:16.4
+    image: postgres:17
     restart: always
     container_name: "go8_postgres"
     healthcheck:
@@ -53,8 +53,6 @@ services:
       - "4317:4317"   # OTLP gRPC receiver.
       - "4318:4318"   # OTLP http receiver
       - "55679:55679" # zpages extension
-    depends_on:
-      - jaeger-all-in-one
 
   prometheus:
     image: prom/prometheus:${PROM_IMG}
@@ -70,8 +68,8 @@ services:
   jaeger-all-in-one:
     image: jaegertracing/all-in-one:${JAEGER_IMG}
     restart: always
-#    environment:
-#      - COLLECTOR_OTLP_ENABLED=true
+    environment:
+      - COLLECTOR_OTLP_ENABLED=false
     ports:
       - "16685:16685"
       - "16686:16686"

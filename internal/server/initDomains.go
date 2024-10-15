@@ -1,6 +1,7 @@
 package server
 
 import (
+	"embed"
 	"io/fs"
 	"net/http"
 
@@ -42,6 +43,9 @@ func (s *Server) initHealth() {
 	newHealthUseCase := health.New(newHealthRepo)
 	health.RegisterHTTPEndPoints(s.router, newHealthUseCase)
 }
+
+//go:embed docs/*
+var swaggerDocsAssetPath embed.FS
 
 func (s *Server) initSwagger() {
 	if s.Config().Api.RunSwagger {

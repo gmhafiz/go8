@@ -9,10 +9,10 @@ RUN go mod download
 
 COPY . ./
 
+ENV CGO_ENABLED=0
+
 # Insert version using git tag and latest commit hash
-# Build Go Binary
-RUN set -ex; \
-    CGO_ENABLED=0 GOOS=linux go build -ldflags="-X main.Version=$(git describe --abbrev=0 --tags)-$(git rev-list -1 HEAD) -s" -o ./server ./cmd/go8/main.go;
+RUN go build -ldflags="-X main.Version=$(git describe --abbrev=0 --tags)-$(git rev-list -1 HEAD) -s" -o ./server ./cmd/go8/main.go
 
 FROM gcr.io/distroless/static-debian12:nonroot
 

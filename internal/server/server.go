@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"database/sql"
-	"embed"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -49,9 +48,6 @@ import (
 	redisLib "github.com/gmhafiz/go8/third_party/redis"
 	"github.com/gmhafiz/go8/third_party/validate"
 )
-
-//go:embed docs/*
-var swaggerDocsAssetPath embed.FS
 
 type Server struct {
 	Version string

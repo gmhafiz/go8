@@ -2,19 +2,24 @@ receivers:
   otlp:
     protocols:
       grpc:
+        endpoint: otel-collector:4317
       http:
+        endpoint: otel-collector:4318
 
 exporters:
   prometheus:
     endpoint: "otel-collector:8889"
 
-  debug:
-    verbosity: detailed
-
   otlp:
     endpoint: jaeger-all-in-one:4317
     tls:
       insecure: true
+
+  debug:
+    verbosity: detailed
+
+  otlphttp:
+    endpoint: http://loki:3100/otlp/v1/logs
 
 processors:
   # https://github.com/open-telemetry/opentelemetry-collector/tree/main/processor
@@ -49,4 +54,5 @@ service:
       exporters: [debug, prometheus]
     logs:
       receivers: [otlp]
-      exporters: [debug]
+      processors: [batch, memory_limiter]
+      exporters: [debug, otlphttp]

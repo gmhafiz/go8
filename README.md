@@ -178,7 +178,7 @@ go test -short ./...
 To run integration tests, if it does not exist yet, a test database needs to be created first.
 
 ```sh
-docker exec -it go8_postgres psql -U user go8_db
+docker exec -it go8_postgres psql -U postgres go8_e2e_db
 ```
 
 Then in the psql command prompt, create a test database

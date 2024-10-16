@@ -1,4 +1,4 @@
-FROM golang:1.22 AS src_migrate
+FROM golang:1.23 AS src_migrate
 
 # Copy dependencies first to take advantage of Docker caching
 WORKDIR /go/src/app/
@@ -9,11 +9,11 @@ RUN go mod download
 
 COPY . ./
 
-# Build Go Binary
-RUN set -ex; \
-    CGO_ENABLED=0 GOOS=linux go build -ldflags="-s" -o ./migrate ./cmd/migrate/main.go;
+ENV CGO_ENABLED=0
 
-FROM gcr.io/distroless/static-debian11
+RUN go build -ldflags="-s" -o ./migrate ./cmd/migrate/main.go;
+
+FROM gcr.io/distroless/static-debian11:nonroot
 
 LABEL com.gmhafiz.maintainers="User <author@example.com>"
 

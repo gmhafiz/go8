@@ -9,6 +9,7 @@ import (
 )
 
 const keyTraceID = "traceID"
+const keySpanID = "spanID"
 
 type WithTraceID struct {
 	h slog.Handler
@@ -29,13 +30,18 @@ func (t *WithTraceID) Enabled(context.Context, slog.Level) bool {
 }
 
 func (t *WithTraceID) Handle(ctx context.Context, r slog.Record) error {
-	span := trace.SpanFromContext(ctx)
-	if span.SpanContext().HasSpanID() {
-		traceID := span.SpanContext().TraceID()
-		r.AddAttrs(slog.Attr{
-			Key:   keyTraceID,
-			Value: slog.StringValue(traceID.String()),
-		})
+	span := trace.SpanFromContext(ctx).SpanContext()
+	if span.HasSpanID() {
+		r.AddAttrs(
+			slog.Attr{
+				Key:   keyTraceID,
+				Value: slog.StringValue(span.TraceID().String()),
+			},
+			slog.Attr{
+				Key:   keySpanID,
+				Value: slog.StringValue(span.SpanID().String()),
+			},
+		)
 	}
 
 	return t.h.Handle(ctx, r)

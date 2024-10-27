@@ -405,7 +405,7 @@ Various tooling are included within the `Task` runner. Configurations are done i
 List all registered routes, typically done by `register.go` files by
 
 ```sh
-go run cmd/route/route.go
+go run cmd/route/main.go
 ```
 
 or

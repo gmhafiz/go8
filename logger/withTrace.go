@@ -43,6 +43,9 @@ func (t *WithTraceID) Handle(ctx context.Context, r slog.Record) error {
 			},
 		)
 	}
+	if r.Message != "" {
+		trace.SpanFromContext(ctx).AddEvent(r.Message)
+	}
 
 	return t.h.Handle(ctx, r)
 }

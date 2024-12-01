@@ -10,19 +10,19 @@ import (
 
 // BookMock is a mock implementation of Book.
 type BookMock struct {
-	CreateFunc func(ctx context.Context, bookMiripParam *book.CreateRequest) (int, error)
-	DeleteFunc func(ctx context.Context, bookID int) error
+	CreateFunc func(ctx context.Context, bookMiripParam *book.CreateRequest) (uint64, error)
+	DeleteFunc func(ctx context.Context, bookID uint64) error
 	ListFunc   func(ctx context.Context, f *book.Filter) ([]*book.Schema, error)
-	ReadFunc   func(ctx context.Context, bookID int) (*book.Schema, error)
+	ReadFunc   func(ctx context.Context, bookID uint64) (*book.Schema, error)
 	SearchFunc func(ctx context.Context, req *book.Filter) ([]*book.Schema, error)
 	UpdateFunc func(ctx context.Context, bookMiripParam *book.UpdateRequest) error
 }
 
-func (m *BookMock) Create(ctx context.Context, bookMiripParam *book.CreateRequest) (int, error) {
+func (m *BookMock) Create(ctx context.Context, bookMiripParam *book.CreateRequest) (uint64, error) {
 	return m.CreateFunc(ctx, bookMiripParam)
 }
 
-func (m *BookMock) Delete(ctx context.Context, bookID int) error {
+func (m *BookMock) Delete(ctx context.Context, bookID uint64) error {
 	return m.DeleteFunc(ctx, bookID)
 }
 
@@ -30,7 +30,7 @@ func (m *BookMock) List(ctx context.Context, f *book.Filter) ([]*book.Schema, er
 	return m.ListFunc(ctx, f)
 }
 
-func (m *BookMock) Read(ctx context.Context, bookID int) (*book.Schema, error) {
+func (m *BookMock) Read(ctx context.Context, bookID uint64) (*book.Schema, error) {
 	return m.ReadFunc(ctx, bookID)
 }
 

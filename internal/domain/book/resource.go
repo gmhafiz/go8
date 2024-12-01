@@ -5,7 +5,7 @@ import (
 )
 
 type Res struct {
-	ID            int       `json:"id"`
+	ID            uint64    `json:"id"`
 	Title         string    `json:"title"`
 	PublishedDate time.Time `json:"published_date"`
 	ImageURL      string    `json:"image_url" swaggertype:"string"`

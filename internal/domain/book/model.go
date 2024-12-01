@@ -6,7 +6,7 @@ import (
 )
 
 type Schema struct {
-	ID            int          `db:"id"`
+	ID            uint64       `db:"id"`
 	Title         string       `db:"title"`
 	PublishedDate time.Time    `db:"published_date"`
 	ImageURL      string       `db:"image_url"`

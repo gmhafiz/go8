@@ -70,7 +70,7 @@ func testEmptyBook() {
 	log.Println("testEmptyBook passes")
 }
 
-func testAddOneBook() int {
+func testAddOneBook() uint64 {
 	want := &book.CreateRequest{
 		Title:         "test01",
 		PublishedDate: "2020-02-02",
@@ -114,7 +114,7 @@ func testAddOneBook() int {
 	return got.ID
 }
 
-func testGetOneBook(id int) int {
+func testGetOneBook(id uint64) uint64 {
 	client := &http.Client{}
 
 	url := fmt.Sprintf("%s/api/v1/book/%d", url, id)
@@ -149,7 +149,7 @@ func testGetOneBook(id int) int {
 	return got.ID
 }
 
-func testUpdateBook(bookID int) {
+func testUpdateBook(bookID uint64) {
 	newBook := book.CreateRequest{
 		Title:         "updated title",
 		PublishedDate: "2020-07-31T15:04:05.123499999Z",
@@ -201,7 +201,7 @@ func testUpdateBook(bookID int) {
 	log.Println("testUpdateBook passes")
 }
 
-func testDeleteOneBook(id int) {
+func testDeleteOneBook(id uint64) {
 	client := &http.Client{}
 
 	req, err := http.NewRequest(

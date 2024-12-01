@@ -150,7 +150,7 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {string} Internal Server Error
 // @router /api/v1/author/{id} [put]
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
-	id, err := param.Int(r, "id")
+	id, err := param.UInt64(r, "id")
 	if id == 0 || err != nil {
 		respond.Error(w, http.StatusBadRequest, errors.New("id is required"))
 		return

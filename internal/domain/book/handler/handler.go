@@ -79,7 +79,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {string} Internal Server Error
 // @router /api/v1/book/{bookID} [get]
 func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
-	bookID, err := param.Int(r, "bookID")
+	bookID, err := param.UInt64(r, "bookID")
 	if err != nil {
 		respond.Error(w, http.StatusBadRequest, message.ErrBadRequest)
 		return
@@ -87,7 +87,7 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 
 	b, err := h.useCase.Read(context.Background(), bookID)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			respond.Error(w, http.StatusBadRequest, errors.New("no book is found for this ID"))
 			return
 		}
@@ -162,7 +162,7 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {string} Internal Server Error
 // @router /api/v1/book/{bookID} [put]
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
-	bookID, err := param.Int(r, "bookID")
+	bookID, err := param.UInt64(r, "bookID")
 	if err != nil {
 		respond.Error(w, http.StatusBadRequest, message.ErrBadRequest)
 		return
@@ -203,7 +203,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {string} Internal Server Error
 // @router /api/v1/book/{bookID} [delete]
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
-	bookID, err := param.Int(r, "bookID")
+	bookID, err := param.UInt64(r, "bookID")
 	if err != nil {
 		respond.Error(w, http.StatusBadRequest, err)
 		return

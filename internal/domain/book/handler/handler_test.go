@@ -377,7 +377,7 @@ func TestHandler_Get(t *testing.T) {
 			rr = rr.WithContext(context.WithValue(rr.Context(), chi.RouteCtxKey, rctx))
 
 			uc := &usecase.BookMock{
-				ReadFunc: func(ctx context.Context, bookID int) (*book.Schema, error) {
+				ReadFunc: func(ctx context.Context, bookID uint64) (*book.Schema, error) {
 					return tt.want.usecase.book, tt.want.usecase.err
 				},
 			}
@@ -861,7 +861,7 @@ func TestHandler_Delete(t *testing.T) {
 			val := validator.New()
 
 			uc := &usecase.BookMock{
-				DeleteFunc: func(ctx context.Context, bookID int) error {
+				DeleteFunc: func(ctx context.Context, bookID uint64) error {
 					return tt.want.error
 				},
 			}

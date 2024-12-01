@@ -8,12 +8,12 @@ import (
 )
 
 func UInt64(r *http.Request, param string) (uint64, error) {
-	val, err := strconv.ParseInt(chi.URLParam(r, param), 10, 64)
+	val, err := strconv.ParseUint(chi.URLParam(r, param), 10, 64)
 	if err != nil {
 		return 0, err
 	}
 
-	return uint64(val), nil
+	return val, nil
 }
 
 func Int(r *http.Request, param string) (int, error) {

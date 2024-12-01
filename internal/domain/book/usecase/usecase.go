@@ -11,9 +11,9 @@ import (
 type Book interface {
 	Create(ctx context.Context, book *book.CreateRequest) (*book.Schema, error)
 	List(ctx context.Context, f *book.Filter) ([]*book.Schema, error)
-	Read(ctx context.Context, bookID int) (*book.Schema, error)
+	Read(ctx context.Context, bookID uint64) (*book.Schema, error)
 	Update(ctx context.Context, book *book.UpdateRequest) (*book.Schema, error)
-	Delete(ctx context.Context, bookID int) error
+	Delete(ctx context.Context, bookID uint64) error
 	Search(ctx context.Context, req *book.Filter) ([]*book.Schema, error)
 }
 
@@ -43,7 +43,7 @@ func (u *BookUseCase) List(ctx context.Context, f *book.Filter) ([]*book.Schema,
 	return u.bookRepo.List(ctx, f)
 }
 
-func (u *BookUseCase) Read(ctx context.Context, bookID int) (*book.Schema, error) {
+func (u *BookUseCase) Read(ctx context.Context, bookID uint64) (*book.Schema, error) {
 	return u.bookRepo.Read(ctx, bookID)
 }
 
@@ -55,7 +55,7 @@ func (u *BookUseCase) Update(ctx context.Context, book *book.UpdateRequest) (*bo
 	return u.bookRepo.Read(ctx, book.ID)
 }
 
-func (u *BookUseCase) Delete(ctx context.Context, bookID int) error {
+func (u *BookUseCase) Delete(ctx context.Context, bookID uint64) error {
 	return u.bookRepo.Delete(ctx, bookID)
 }
 

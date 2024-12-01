@@ -78,7 +78,7 @@ func (r *repository) Create(ctx context.Context, request *author.CreateRequest) 
 	for _, i := range books {
 
 		b = append(b, &book.Schema{
-			ID:            int(i.ID),
+			ID:            i.ID,
 			Title:         i.Title,
 			PublishedDate: i.PublishedDate,
 			ImageURL:      i.ImageURL,
@@ -149,7 +149,7 @@ func (r *repository) List(ctx context.Context, f *author.Filter) ([]*author.Sche
 		books := make([]*book.Schema, 0)
 		for _, b := range a.Edges.Books {
 			books = append(books, &book.Schema{
-				ID:            int(b.ID),
+				ID:            b.ID,
 				Title:         b.Title,
 				PublishedDate: b.PublishedDate,
 				ImageURL:      b.ImageURL,
@@ -188,7 +188,7 @@ func (r *repository) Read(ctx context.Context, id uint64) (*author.Schema, error
 
 	for _, b := range found.Edges.Books {
 		books = append(books, &book.Schema{
-			ID:            int(b.ID),
+			ID:            b.ID,
 			Title:         b.Title,
 			PublishedDate: b.PublishedDate,
 			ImageURL:      b.ImageURL,
@@ -211,7 +211,7 @@ func (r *repository) Read(ctx context.Context, id uint64) (*author.Schema, error
 }
 
 func (r *repository) Update(ctx context.Context, a *author.UpdateRequest) (*author.Schema, error) {
-	updated, err := r.ent.Author.UpdateOneID(uint64(a.ID)).
+	updated, err := r.ent.Author.UpdateOneID(a.ID).
 		SetFirstName(a.FirstName).
 		SetMiddleName(a.MiddleName).
 		SetLastName(a.LastName).
@@ -223,7 +223,7 @@ func (r *repository) Update(ctx context.Context, a *author.UpdateRequest) (*auth
 	books := make([]*book.Schema, 0)
 	for _, b := range updated.Edges.Books {
 		books = append(books, &book.Schema{
-			ID:            int(b.ID),
+			ID:            b.ID,
 			Title:         b.Title,
 			PublishedDate: b.PublishedDate,
 			ImageURL:      b.ImageURL,

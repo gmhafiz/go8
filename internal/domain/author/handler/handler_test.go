@@ -668,7 +668,7 @@ func TestHandler_Update(t *testing.T) {
 
 func TestHandler_Delete(t *testing.T) {
 	type args struct {
-		authorID uint
+		authorID int
 	}
 
 	type want struct {
@@ -732,7 +732,7 @@ func TestHandler_Delete(t *testing.T) {
 			ww := httptest.NewRecorder()
 
 			rctx := chi.NewRouteContext()
-			rctx.URLParams.Add("id", strconv.Itoa(int(test.args.authorID)))
+			rctx.URLParams.Add("id", strconv.Itoa(test.args.authorID))
 
 			rr = rr.WithContext(context.WithValue(rr.Context(), chi.RouteCtxKey, rctx))
 

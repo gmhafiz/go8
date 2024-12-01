@@ -57,10 +57,10 @@ func TestBookUseCase_Create(t *testing.T) {
 				err: nil,
 			},
 			BookMock: &repository.BookMock{
-				CreateFunc: func(ctx context.Context, bookMiripParam *book.CreateRequest) (int, error) {
+				CreateFunc: func(ctx context.Context, bookMiripParam *book.CreateRequest) (uint64, error) {
 					return 1, nil
 				},
-				ReadFunc: func(ctx context.Context, bookID int) (*book.Schema, error) {
+				ReadFunc: func(ctx context.Context, bookID uint64) (*book.Schema, error) {
 					return &book.Schema{
 						ID:            1,
 						Title:         "title",
@@ -165,7 +165,7 @@ func TestBookUseCase_Read(t *testing.T) {
 	}
 	type args struct {
 		ctx    context.Context
-		bookID int
+		bookID uint64
 	}
 
 	timeParsed, err := time.Parse(time.RFC3339, "2020-02-02T00:00:00Z")
@@ -182,7 +182,7 @@ func TestBookUseCase_Read(t *testing.T) {
 			name: "simple",
 			fields: fields{
 				bookRepo: &repository.BookMock{
-					ReadFunc: func(ctx context.Context, bookID int) (*book.Schema, error) {
+					ReadFunc: func(ctx context.Context, bookID uint64) (*book.Schema, error) {
 						return &book.Schema{
 							ID:            1,
 							Title:         "title",
@@ -245,7 +245,7 @@ func TestBookUseCase_Update(t *testing.T) {
 					UpdateFunc: func(ctx context.Context, book *book.UpdateRequest) error {
 						return nil
 					},
-					ReadFunc: func(ctx context.Context, bookID int) (*book.Schema, error) {
+					ReadFunc: func(ctx context.Context, bookID uint64) (*book.Schema, error) {
 						return &book.Schema{
 							ID:            1,
 							Title:         "title",
@@ -294,7 +294,7 @@ func TestBookUseCase_Delete(t *testing.T) {
 	}
 	type args struct {
 		ctx    context.Context
-		bookID int
+		bookID uint64
 	}
 	tests := []struct {
 		name    string
@@ -306,7 +306,7 @@ func TestBookUseCase_Delete(t *testing.T) {
 			name: "simple",
 			fields: fields{
 				bookRepo: &repository.BookMock{
-					DeleteFunc: func(ctx context.Context, bookID int) error {
+					DeleteFunc: func(ctx context.Context, bookID uint64) error {
 						return nil
 					},
 				},

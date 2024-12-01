@@ -115,7 +115,7 @@ func TestRepository_Create(t *testing.T) {
 		req *book.CreateRequest
 	}
 	type want struct {
-		lastInsertID int
+		lastInsertID uint64
 		err          error
 	}
 
@@ -361,7 +361,7 @@ func TestRepository_List(t *testing.T) {
 func TestRepository_Read(t *testing.T) {
 	type args struct {
 		context.Context
-		int
+		uint64
 	}
 	type want struct {
 		book *book.Schema
@@ -388,7 +388,7 @@ func TestRepository_Read(t *testing.T) {
 			name: "simple",
 			args: args{
 				Context: context.Background(),
-				int:     3,
+				uint64:  3,
 			},
 			want: want{
 				book: &book.Schema{
@@ -408,7 +408,7 @@ func TestRepository_Read(t *testing.T) {
 			name: "simulate error",
 			args: args{
 				Context: context.Background(),
-				int:     -0,
+				uint64:  -0,
 			},
 			want: want{
 				book: nil,
@@ -425,7 +425,7 @@ func TestRepository_Read(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			got, err := repo.Read(test.args.Context, test.args.int)
+			got, err := repo.Read(test.args.Context, test.args.uint64)
 			assert.Equal(t, test.want.err, err)
 			if err != nil {
 				assert.Nil(t, test.want.book)
@@ -490,23 +490,6 @@ func TestRepository_Update(t *testing.T) {
 				},
 			},
 		},
-		{
-			name: "invalid ID",
-			args: args{
-				Context: context.Background(),
-				UpdateRequest: &book.UpdateRequest{
-					ID:            -1,
-					Title:         "updated title",
-					PublishedDate: "2020-02-17T00:00:00Z",
-					ImageURL:      "https://example.com/image.png",
-					Description:   "description",
-				},
-			},
-			want: want{
-				book: &book.Schema{},
-				err:  sql.ErrNoRows,
-			},
-		},
 	}
 
 	for _, test := range tests {
@@ -539,7 +522,7 @@ func TestRepository_Update(t *testing.T) {
 func TestRepository_Delete(t *testing.T) {
 	type args struct {
 		context.Context
-		bookID int
+		bookID uint64
 	}
 	type want struct {
 		err error

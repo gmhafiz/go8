@@ -13,11 +13,11 @@ import (
 
 //go:generate mirip -rm -pkg repository -out repo_mock.go . Book
 type Book interface {
-	Create(ctx context.Context, book *book.CreateRequest) (int, error)
+	Create(ctx context.Context, book *book.CreateRequest) (uint64, error)
 	List(ctx context.Context, f *book.Filter) ([]*book.Schema, error)
-	Read(ctx context.Context, bookID int) (*book.Schema, error)
+	Read(ctx context.Context, bookID uint64) (*book.Schema, error)
 	Update(ctx context.Context, book *book.UpdateRequest) error
-	Delete(ctx context.Context, bookID int) error
+	Delete(ctx context.Context, bookID uint64) error
 	Search(ctx context.Context, req *book.Filter) ([]*book.Schema, error)
 }
 
@@ -40,7 +40,7 @@ func New(db *sqlx.DB) *bookRepository {
 	return &bookRepository{db: db}
 }
 
-func (r *bookRepository) Create(ctx context.Context, req *book.CreateRequest) (bookID int, err error) {
+func (r *bookRepository) Create(ctx context.Context, req *book.CreateRequest) (bookID uint64, err error) {
 	if err = r.db.QueryRowContext(ctx, InsertIntoBooks, req.Title, req.PublishedDate, req.ImageURL, req.Description).Scan(&bookID); err != nil {
 		return 0, errors.New("repository.Book.Create")
 	}
@@ -70,7 +70,7 @@ func (r *bookRepository) List(ctx context.Context, f *book.Filter) ([]*book.Sche
 	}
 }
 
-func (r *bookRepository) Read(ctx context.Context, bookID int) (*book.Schema, error) {
+func (r *bookRepository) Read(ctx context.Context, bookID uint64) (*book.Schema, error) {
 	var b book.Schema
 	err := r.db.GetContext(ctx, &b, SelectBookByID, bookID)
 	if err != nil {
@@ -100,7 +100,7 @@ func (r *bookRepository) Update(ctx context.Context, book *book.UpdateRequest) e
 	return nil
 }
 
-func (r *bookRepository) Delete(ctx context.Context, bookID int) error {
+func (r *bookRepository) Delete(ctx context.Context, bookID uint64) error {
 	var returnedID int
 	err := r.db.QueryRowContext(ctx, DeleteByID, bookID).Scan(&returnedID)
 	if err != nil {

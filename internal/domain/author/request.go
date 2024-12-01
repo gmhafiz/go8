@@ -8,14 +8,14 @@ type CreateRequest struct {
 }
 
 type Book struct {
-	BookID        int    `json:"id"`
+	BookID        uint64 `json:"id"`
 	Title         string `json:"title" validate:"required"`
 	PublishedDate string `json:"published_date" validate:"required"`
 	Description   string `json:"description" validate:"required"`
 }
 
 type UpdateRequest struct {
-	ID         int    `json:"id"`
+	ID         uint64 `json:"id"`
 	FirstName  string `json:"first_name"`
 	MiddleName string `json:"middle_name,omitempty"`
 	LastName   string `json:"last_name"`

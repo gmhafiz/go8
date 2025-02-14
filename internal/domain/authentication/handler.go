@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/alexedwards/argon2id"
 	"github.com/gmhafiz/scs/v2"
@@ -35,6 +36,8 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		respond.Error(w, http.StatusBadRequest, nil)
 		return
 	}
+	req.Email = strings.Trim(req.Email, " ")
+	req.Password = strings.Trim(req.Password, " ")
 
 	if req.Email == "" {
 		respond.Error(w, http.StatusBadRequest, ErrEmailRequired)

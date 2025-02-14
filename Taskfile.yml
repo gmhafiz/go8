@@ -212,8 +212,10 @@ tasks:
       GIT_COMMIT:
         sh: git rev-list -1 HEAD
     cmds:
-      - docker build . -t gmhafiz/go8:{{.GIT_TAG}}-{{.GIT_COMMIT}}
+      - docker build . -t gmhafiz/go8:{{.GIT_TAG}}-{{.GIT_COMMIT}} -f Dockerfile
+      - docker build . -t gmhafiz/migrate:{{.GIT_TAG}}-{{.GIT_COMMIT}} -f migrate.Dockerfile
       - docker push gmhafiz/go8:{{.GIT_TAG}}-{{.GIT_COMMIT}}
+      - docker push gmhafiz/migrate:{{.GIT_TAG}}-{{.GIT_COMMIT}}
 
   install:tools:
     desc: Install all optional cli tools

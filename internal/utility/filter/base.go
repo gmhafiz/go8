@@ -9,6 +9,7 @@ import (
 const (
 	paginationDefaultPage = 1
 	paginationDefaultSize = 30
+	paginationMaxSize     = 500
 
 	queryParamPage          = "page"
 	queryParamLimit         = "limit"
@@ -36,6 +37,9 @@ func New(queries url.Values) *Filter {
 	limit, err = strconv.Atoi(queries.Get(queryParamLimit))
 	if err != nil {
 		limit = paginationDefaultSize
+	}
+	if limit > paginationMaxSize {
+		limit = paginationMaxSize
 	}
 
 	offset, err = strconv.Atoi(queries.Get(queryParamOffset))

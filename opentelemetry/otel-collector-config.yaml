@@ -34,6 +34,29 @@ processors:
     spike_limit_mib: 1000
     check_interval: 5s
 
+  tail_sampling:
+    decision_wait: 10s
+    num_traces: 100
+    expected_new_traces_per_sec: 10
+    policies: [
+      {
+        # Rule 5: always sample if there is an error
+        name: sample-error,
+        type: and,
+        and:
+          {
+            and_sub_policy:
+              [
+                {
+                  name: trace-status-policy,
+                  type: status_code,
+                  status_code: { status_codes: [ ERROR ] },
+                },
+              ],
+          },
+      },
+    ]
+
 extensions:
   health_check:
   pprof:

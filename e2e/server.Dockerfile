@@ -12,7 +12,7 @@ COPY . ./
 
 ENV CGO_ENABLED=0
 
-RUN go build -ldflags="-s" -o ./migrate ./cmd/migrate/main.go;
+RUN go build -ldflags="-s" -o ./server ./cmd/go8/main.go;
 
 FROM gcr.io/distroless/static-debian11:nonroot
 

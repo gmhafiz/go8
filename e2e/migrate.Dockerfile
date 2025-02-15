@@ -13,7 +13,7 @@ ENV CGO_ENABLED=0
 
 RUN go build -ldflags="-s" -o ./migrate ./cmd/migrate/main.go;
 
-FROM gcr.io/distroless/static-debian11:nonroot
+FROM gcr.io/distroless/static-debian12:nonroot
 
 LABEL com.gmhafiz.maintainers="User <author@example.com>"
 

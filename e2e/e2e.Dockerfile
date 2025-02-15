@@ -15,7 +15,7 @@ ENV CGO_ENABLED=0
 
 RUN go build -ldflags="-s" -o ./end_to_end ./e2e/main.go;
 
-FROM gcr.io/distroless/static-debian11:nonroot
+FROM gcr.io/distroless/static-debian12:nonroot
 
 LABEL com.example.maintainers="User <author@example.com>"
 

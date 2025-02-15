@@ -3,15 +3,15 @@ version: '3.8'
 services:
 
   postgres:
-    image: "postgres:16.4"
+    image: "postgres:17"
     container_name: "go8_postgres_e2e"
     restart: "no"
     healthcheck:
-      test: pg_isready -U ${DB_USER}
+      test: pg_isready -U go8_e2e_user
     environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASS}
-      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: go8_e2e_user
+      POSTGRES_PASSWORD: go8_e2e_pass
+      POSTGRES_DB: go8_e2e_db
 
   server:
     image: "go8/server_test"
@@ -21,6 +21,11 @@ services:
       context: ../
       dockerfile: e2e/server.Dockerfile
     entrypoint: ["/usr/local/bin/server"]
+    environment:
+      - DB_USER=go8_e2e_user
+      - DB_PASS=go8_e2e_pass
+      - DB_NAME=go8_e2e_db
+      - REDIS_HOST=valkey
     depends_on:
       - postgres
       - migrate
@@ -41,6 +46,10 @@ services:
       context: ../
       dockerfile: e2e/migrate.Dockerfile
     entrypoint: ["/usr/local/bin/migrate"]
+    environment:
+      - DB_USER=go8_e2e_user
+      - DB_PASS=go8_e2e_pass
+      - DB_NAME=go8_e2e_db
     depends_on:
       - postgres
 
@@ -52,6 +61,10 @@ services:
       context: ../
       dockerfile: e2e/e2e.Dockerfile
     entrypoint: ["/usr/local/bin/end_to_end"]
+    environment:
+      - DB_USER=go8_e2e_user
+      - DB_PASS=go8_e2e_pass
+      - DB_NAME=go8_e2e_db
     depends_on:
       - postgres
       - migrate

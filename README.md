@@ -262,7 +262,7 @@ docker-compose -f e2e/docker-compose.yml down
     * [How It Works](#how-it-works)
     * [Expiry](#expiry)
     * [Logging Out](#logging-out)
-    * [Security](#security)
+    * [Security](#security-consideration)
     * [Performance](#performance)
     * [Integration testing](#integration-testing)
 - [Cache](#cache)

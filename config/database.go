@@ -7,7 +7,7 @@ import (
 )
 
 type Database struct {
-	Driver                 string        `required:"true"`
+	Driver                 string        `required:"true" default:"postgres"`
 	Host                   string        `default:"localhost"`
 	Port                   uint16        `default:"5432"`
 	Name                   string        `default:"postgres"`

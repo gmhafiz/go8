@@ -169,36 +169,7 @@ go run cmd/route/main.go
 
 ![go run cmd/routes/main.go](assets/routes.png)
 
-To run only unit tests,
-
-```sh
-go test -short ./...
-```
-
-To run integration tests, if it does not exist yet, a test database needs to be created first.
-
-```sh
-docker exec -it go8_postgres psql -U postgres go8_e2e_db
-```
-
-Then in the psql command prompt, create a test database
-```sql
-create database test;
-```
-
-To quit the psql prompt, type
-
-```postgresql
-\q
-```
-
-Once created, run the following command to run tests with `Integration` in the function name to only run integration tests
-
-```sh
-go test -run Integration ./...
-```
-
-Since the test database has been created, the following command will run both unit and integration tests
+To run both unit and integration tests,
 
 ```sh
 go test ./...
@@ -210,7 +181,7 @@ For end-to-end tests, run the following docker-compose command. It will run a da
 docker-compose -f e2e/docker-compose.yml up --build
 ```
 
-You will see a bunch of containers being built and then run. The e2e test ends with the following message
+You will see a bunch of containers being built before the tests are run. The e2e test ends with the following message
 
 ```
 go8_e2e_test | 2023/12/30 03:08:04 api is up

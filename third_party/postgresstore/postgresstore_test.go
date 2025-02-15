@@ -21,11 +21,10 @@ import (
 func TestMain(m *testing.M) {
 	getwd, err := os.Getwd()
 	if err != nil {
+		log.Println(err)
 		return
 	}
-	if err != nil {
-		log.Println(err)
-	}
+
 	if strings.Contains(getwd, "/third_party/postgresstore") {
 		err := os.Chdir("../../")
 		if err != nil {

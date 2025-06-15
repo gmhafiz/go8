@@ -19,8 +19,8 @@ func NewSqlx(cfg config.Database) *sqlx.DB {
 	var dsn string
 	switch cfg.Driver {
 	case "postgres", "pgx":
-		dsn = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-			cfg.Host, cfg.Port, cfg.User, cfg.Pass, cfg.Name)
+		dsn = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+			cfg.Host, cfg.Port, cfg.User, cfg.Pass, cfg.Name, cfg.SslMode)
 		cfg.Driver = "pgx"
 	case "mysql":
 		dsn = fmt.Sprintf("%s:%s@(%s:%d)/%s?parseTime=true",

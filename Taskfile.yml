@@ -61,7 +61,7 @@ tasks:
         sh: git rev-list -1 HEAD
     cmds:
       - task: check
-      - go build -ldflags="-X main.Version={{.GIT_TAG}}-{{.GIT_COMMIT}} -s"  -o go8 cmd/go8/main.go
+      - go build -ldflags="-X main.Version={{.GIT_TAG}}-{{.GIT_COMMIT}} -s" -o go8 cmd/go8/main.go
       - mkdir -p bin
       - mv go8 bin/
       - cp .env bin

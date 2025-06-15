@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/gmhafiz/go8/config"
 	"github.com/gmhafiz/go8/database"
@@ -18,6 +19,21 @@ func main() {
 	store := db.NewSqlx(cfg.Database)
 	migrator := database.Migrator(store.DB)
 
-	// todo: accept cli flag for other operations
-	migrator.Up()
+	cmd := "up"
+	if len(os.Args) > 1 {
+		cmd = os.Args[1]
+	}
+
+	switch cmd {
+	case "up":
+		log.Println("Running UP migrations")
+		migrator.Up()
+
+	case "down":
+		log.Println("Running DOWN migration")
+		migrator.Down()
+
+	default:
+		log.Fatalf("unknown migration command: %q", cmd)
+	}
 }

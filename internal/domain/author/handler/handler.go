@@ -68,7 +68,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respond.Json(w, http.StatusCreated, author.Resource(create))
+	respond.JSON(w, http.StatusCreated, author.Resource(create))
 }
 
 // List will fetch the authors based on given params
@@ -101,7 +101,7 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respond.Json(w, http.StatusOK, respond.Standard{
+	respond.JSON(w, http.StatusOK, respond.Standard{
 		Data: author.Resources(authors),
 		Meta: respond.Meta{
 			Size:  len(authors),
@@ -136,7 +136,7 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respond.Json(w, http.StatusOK, author.Resource(res))
+	respond.JSON(w, http.StatusOK, author.Resource(res))
 }
 
 // Update an author
@@ -173,7 +173,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respond.Json(w, http.StatusOK, author.Resource(updated))
+	respond.JSON(w, http.StatusOK, author.Resource(updated))
 }
 
 // Delete an author by its ID

@@ -62,9 +62,9 @@ func TestMain(m *testing.M) {
 		log.Fatalf("Could not start resource: %s", err)
 	}
 	hostAndPort := resource.GetHostPort("5432/tcp")
-	databaseUrl := fmt.Sprintf("postgres://user_name:secret@%s/dbname?sslmode=disable", hostAndPort)
+	databaseURL := fmt.Sprintf("postgres://user_name:secret@%s/dbname?sslmode=disable", hostAndPort)
 
-	log.Println("DSN: ", databaseUrl)
+	log.Println("DSN: ", databaseURL)
 
 	_ = resource.Expire(120) // Tell docker to hard kill the container in 120 seconds
 
@@ -73,7 +73,7 @@ func TestMain(m *testing.M) {
 	// exponential backoff-retry, because the application in the container might not be ready to accept connections yet
 	pool.MaxWait = 120 * time.Second
 	if err = pool.Retry(func() error {
-		db, err = sql.Open(DBDriver, databaseUrl)
+		db, err = sql.Open(DBDriver, databaseURL)
 		if err != nil {
 			log.Println(err)
 			return err
@@ -83,7 +83,7 @@ func TestMain(m *testing.M) {
 		log.Fatalf("Could not connect to docker: %s", err)
 	}
 
-	migrator = database.Migrator(db, database.WithDSN(databaseUrl))
+	migrator = database.Migrator(db, database.WithDSN(databaseURL))
 
 	// Performing a migration this way means all tests in this package shares
 	// the same db schema across all unit test.
@@ -91,7 +91,7 @@ func TestMain(m *testing.M) {
 	// migration for each test handler instead.
 	migrator.Up()
 
-	// We can access database with m.hostAndPort or m.databaseUrl
+	// We can access database with m.hostAndPort or m.databaseURL
 	// port changes everytime a new docker instance is run
 	code := m.Run()
 

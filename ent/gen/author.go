@@ -73,7 +73,7 @@ func (*Author) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Author fields.
-func (a *Author) assignValues(columns []string, values []any) error {
+func (_m *Author) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -84,46 +84,46 @@ func (a *Author) assignValues(columns []string, values []any) error {
 			if !ok {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
-			a.ID = uint64(value.Int64)
+			_m.ID = uint64(value.Int64)
 		case author.FieldFirstName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field first_name", values[i])
 			} else if value.Valid {
-				a.FirstName = value.String
+				_m.FirstName = value.String
 			}
 		case author.FieldMiddleName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field middle_name", values[i])
 			} else if value.Valid {
-				a.MiddleName = value.String
+				_m.MiddleName = value.String
 			}
 		case author.FieldLastName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field last_name", values[i])
 			} else if value.Valid {
-				a.LastName = value.String
+				_m.LastName = value.String
 			}
 		case author.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				a.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		case author.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
-				a.UpdatedAt = value.Time
+				_m.UpdatedAt = value.Time
 			}
 		case author.FieldDeletedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field deleted_at", values[i])
 			} else if value.Valid {
-				a.DeletedAt = new(time.Time)
-				*a.DeletedAt = value.Time
+				_m.DeletedAt = new(time.Time)
+				*_m.DeletedAt = value.Time
 			}
 		default:
-			a.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -131,54 +131,54 @@ func (a *Author) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the Author.
 // This includes values selected through modifiers, order, etc.
-func (a *Author) Value(name string) (ent.Value, error) {
-	return a.selectValues.Get(name)
+func (_m *Author) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryBooks queries the "books" edge of the Author entity.
-func (a *Author) QueryBooks() *BookQuery {
-	return NewAuthorClient(a.config).QueryBooks(a)
+func (_m *Author) QueryBooks() *BookQuery {
+	return NewAuthorClient(_m.config).QueryBooks(_m)
 }
 
 // Update returns a builder for updating this Author.
 // Note that you need to call Author.Unwrap() before calling this method if this Author
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (a *Author) Update() *AuthorUpdateOne {
-	return NewAuthorClient(a.config).UpdateOne(a)
+func (_m *Author) Update() *AuthorUpdateOne {
+	return NewAuthorClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the Author entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (a *Author) Unwrap() *Author {
-	_tx, ok := a.config.driver.(*txDriver)
+func (_m *Author) Unwrap() *Author {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("gen: Author is not a transactional entity")
 	}
-	a.config.driver = _tx.drv
-	return a
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (a *Author) String() string {
+func (_m *Author) String() string {
 	var builder strings.Builder
 	builder.WriteString("Author(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", a.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("first_name=")
-	builder.WriteString(a.FirstName)
+	builder.WriteString(_m.FirstName)
 	builder.WriteString(", ")
 	builder.WriteString("middle_name=")
-	builder.WriteString(a.MiddleName)
+	builder.WriteString(_m.MiddleName)
 	builder.WriteString(", ")
 	builder.WriteString("last_name=")
-	builder.WriteString(a.LastName)
+	builder.WriteString(_m.LastName)
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
-	builder.WriteString(a.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
-	builder.WriteString(a.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
-	if v := a.DeletedAt; v != nil {
+	if v := _m.DeletedAt; v != nil {
 		builder.WriteString("deleted_at=")
 		builder.WriteString(v.Format(time.ANSIC))
 	}

@@ -22,113 +22,113 @@ type BookCreate struct {
 }
 
 // SetTitle sets the "title" field.
-func (bc *BookCreate) SetTitle(s string) *BookCreate {
-	bc.mutation.SetTitle(s)
-	return bc
+func (_c *BookCreate) SetTitle(v string) *BookCreate {
+	_c.mutation.SetTitle(v)
+	return _c
 }
 
 // SetPublishedDate sets the "published_date" field.
-func (bc *BookCreate) SetPublishedDate(t time.Time) *BookCreate {
-	bc.mutation.SetPublishedDate(t)
-	return bc
+func (_c *BookCreate) SetPublishedDate(v time.Time) *BookCreate {
+	_c.mutation.SetPublishedDate(v)
+	return _c
 }
 
 // SetImageURL sets the "image_url" field.
-func (bc *BookCreate) SetImageURL(s string) *BookCreate {
-	bc.mutation.SetImageURL(s)
-	return bc
+func (_c *BookCreate) SetImageURL(v string) *BookCreate {
+	_c.mutation.SetImageURL(v)
+	return _c
 }
 
 // SetNillableImageURL sets the "image_url" field if the given value is not nil.
-func (bc *BookCreate) SetNillableImageURL(s *string) *BookCreate {
-	if s != nil {
-		bc.SetImageURL(*s)
+func (_c *BookCreate) SetNillableImageURL(v *string) *BookCreate {
+	if v != nil {
+		_c.SetImageURL(*v)
 	}
-	return bc
+	return _c
 }
 
 // SetDescription sets the "description" field.
-func (bc *BookCreate) SetDescription(s string) *BookCreate {
-	bc.mutation.SetDescription(s)
-	return bc
+func (_c *BookCreate) SetDescription(v string) *BookCreate {
+	_c.mutation.SetDescription(v)
+	return _c
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (bc *BookCreate) SetCreatedAt(t time.Time) *BookCreate {
-	bc.mutation.SetCreatedAt(t)
-	return bc
+func (_c *BookCreate) SetCreatedAt(v time.Time) *BookCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (bc *BookCreate) SetNillableCreatedAt(t *time.Time) *BookCreate {
-	if t != nil {
-		bc.SetCreatedAt(*t)
+func (_c *BookCreate) SetNillableCreatedAt(v *time.Time) *BookCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
 	}
-	return bc
+	return _c
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (bc *BookCreate) SetUpdatedAt(t time.Time) *BookCreate {
-	bc.mutation.SetUpdatedAt(t)
-	return bc
+func (_c *BookCreate) SetUpdatedAt(v time.Time) *BookCreate {
+	_c.mutation.SetUpdatedAt(v)
+	return _c
 }
 
 // SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (bc *BookCreate) SetNillableUpdatedAt(t *time.Time) *BookCreate {
-	if t != nil {
-		bc.SetUpdatedAt(*t)
+func (_c *BookCreate) SetNillableUpdatedAt(v *time.Time) *BookCreate {
+	if v != nil {
+		_c.SetUpdatedAt(*v)
 	}
-	return bc
+	return _c
 }
 
 // SetDeletedAt sets the "deleted_at" field.
-func (bc *BookCreate) SetDeletedAt(t time.Time) *BookCreate {
-	bc.mutation.SetDeletedAt(t)
-	return bc
+func (_c *BookCreate) SetDeletedAt(v time.Time) *BookCreate {
+	_c.mutation.SetDeletedAt(v)
+	return _c
 }
 
 // SetNillableDeletedAt sets the "deleted_at" field if the given value is not nil.
-func (bc *BookCreate) SetNillableDeletedAt(t *time.Time) *BookCreate {
-	if t != nil {
-		bc.SetDeletedAt(*t)
+func (_c *BookCreate) SetNillableDeletedAt(v *time.Time) *BookCreate {
+	if v != nil {
+		_c.SetDeletedAt(*v)
 	}
-	return bc
+	return _c
 }
 
 // SetID sets the "id" field.
-func (bc *BookCreate) SetID(u uint64) *BookCreate {
-	bc.mutation.SetID(u)
-	return bc
+func (_c *BookCreate) SetID(v uint64) *BookCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // AddAuthorIDs adds the "authors" edge to the Author entity by IDs.
-func (bc *BookCreate) AddAuthorIDs(ids ...uint64) *BookCreate {
-	bc.mutation.AddAuthorIDs(ids...)
-	return bc
+func (_c *BookCreate) AddAuthorIDs(ids ...uint64) *BookCreate {
+	_c.mutation.AddAuthorIDs(ids...)
+	return _c
 }
 
 // AddAuthors adds the "authors" edges to the Author entity.
-func (bc *BookCreate) AddAuthors(a ...*Author) *BookCreate {
-	ids := make([]uint64, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
+func (_c *BookCreate) AddAuthors(v ...*Author) *BookCreate {
+	ids := make([]uint64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return bc.AddAuthorIDs(ids...)
+	return _c.AddAuthorIDs(ids...)
 }
 
 // Mutation returns the BookMutation object of the builder.
-func (bc *BookCreate) Mutation() *BookMutation {
-	return bc.mutation
+func (_c *BookCreate) Mutation() *BookMutation {
+	return _c.mutation
 }
 
 // Save creates the Book in the database.
-func (bc *BookCreate) Save(ctx context.Context) (*Book, error) {
-	return withHooks(ctx, bc.sqlSave, bc.mutation, bc.hooks)
+func (_c *BookCreate) Save(ctx context.Context) (*Book, error) {
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (bc *BookCreate) SaveX(ctx context.Context) *Book {
-	v, err := bc.Save(ctx)
+func (_c *BookCreate) SaveX(ctx context.Context) *Book {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -136,38 +136,38 @@ func (bc *BookCreate) SaveX(ctx context.Context) *Book {
 }
 
 // Exec executes the query.
-func (bc *BookCreate) Exec(ctx context.Context) error {
-	_, err := bc.Save(ctx)
+func (_c *BookCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (bc *BookCreate) ExecX(ctx context.Context) {
-	if err := bc.Exec(ctx); err != nil {
+func (_c *BookCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (bc *BookCreate) check() error {
-	if _, ok := bc.mutation.Title(); !ok {
+func (_c *BookCreate) check() error {
+	if _, ok := _c.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New(`gen: missing required field "Book.title"`)}
 	}
-	if _, ok := bc.mutation.PublishedDate(); !ok {
+	if _, ok := _c.mutation.PublishedDate(); !ok {
 		return &ValidationError{Name: "published_date", err: errors.New(`gen: missing required field "Book.published_date"`)}
 	}
-	if _, ok := bc.mutation.Description(); !ok {
+	if _, ok := _c.mutation.Description(); !ok {
 		return &ValidationError{Name: "description", err: errors.New(`gen: missing required field "Book.description"`)}
 	}
 	return nil
 }
 
-func (bc *BookCreate) sqlSave(ctx context.Context) (*Book, error) {
-	if err := bc.check(); err != nil {
+func (_c *BookCreate) sqlSave(ctx context.Context) (*Book, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := bc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, bc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -177,49 +177,49 @@ func (bc *BookCreate) sqlSave(ctx context.Context) (*Book, error) {
 		id := _spec.ID.Value.(int64)
 		_node.ID = uint64(id)
 	}
-	bc.mutation.id = &_node.ID
-	bc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (bc *BookCreate) createSpec() (*Book, *sqlgraph.CreateSpec) {
+func (_c *BookCreate) createSpec() (*Book, *sqlgraph.CreateSpec) {
 	var (
-		_node = &Book{config: bc.config}
+		_node = &Book{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(book.Table, sqlgraph.NewFieldSpec(book.FieldID, field.TypeUint64))
 	)
-	if id, ok := bc.mutation.ID(); ok {
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
 	}
-	if value, ok := bc.mutation.Title(); ok {
+	if value, ok := _c.mutation.Title(); ok {
 		_spec.SetField(book.FieldTitle, field.TypeString, value)
 		_node.Title = value
 	}
-	if value, ok := bc.mutation.PublishedDate(); ok {
+	if value, ok := _c.mutation.PublishedDate(); ok {
 		_spec.SetField(book.FieldPublishedDate, field.TypeTime, value)
 		_node.PublishedDate = value
 	}
-	if value, ok := bc.mutation.ImageURL(); ok {
+	if value, ok := _c.mutation.ImageURL(); ok {
 		_spec.SetField(book.FieldImageURL, field.TypeString, value)
 		_node.ImageURL = value
 	}
-	if value, ok := bc.mutation.Description(); ok {
+	if value, ok := _c.mutation.Description(); ok {
 		_spec.SetField(book.FieldDescription, field.TypeString, value)
 		_node.Description = value
 	}
-	if value, ok := bc.mutation.CreatedAt(); ok {
+	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(book.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if value, ok := bc.mutation.UpdatedAt(); ok {
+	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(book.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := bc.mutation.DeletedAt(); ok {
+	if value, ok := _c.mutation.DeletedAt(); ok {
 		_spec.SetField(book.FieldDeletedAt, field.TypeTime, value)
 		_node.DeletedAt = &value
 	}
-	if nodes := bc.mutation.AuthorsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.AuthorsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -246,16 +246,16 @@ type BookCreateBulk struct {
 }
 
 // Save creates the Book entities in the database.
-func (bcb *BookCreateBulk) Save(ctx context.Context) ([]*Book, error) {
-	if bcb.err != nil {
-		return nil, bcb.err
+func (_c *BookCreateBulk) Save(ctx context.Context) ([]*Book, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(bcb.builders))
-	nodes := make([]*Book, len(bcb.builders))
-	mutators := make([]Mutator, len(bcb.builders))
-	for i := range bcb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*Book, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := bcb.builders[i]
+			builder := _c.builders[i]
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*BookMutation)
 				if !ok {
@@ -268,11 +268,11 @@ func (bcb *BookCreateBulk) Save(ctx context.Context) ([]*Book, error) {
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, bcb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, bcb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -296,7 +296,7 @@ func (bcb *BookCreateBulk) Save(ctx context.Context) ([]*Book, error) {
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, bcb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -304,8 +304,8 @@ func (bcb *BookCreateBulk) Save(ctx context.Context) ([]*Book, error) {
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (bcb *BookCreateBulk) SaveX(ctx context.Context) []*Book {
-	v, err := bcb.Save(ctx)
+func (_c *BookCreateBulk) SaveX(ctx context.Context) []*Book {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -313,14 +313,14 @@ func (bcb *BookCreateBulk) SaveX(ctx context.Context) []*Book {
 }
 
 // Exec executes the query.
-func (bcb *BookCreateBulk) Exec(ctx context.Context) error {
-	_, err := bcb.Save(ctx)
+func (_c *BookCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (bcb *BookCreateBulk) ExecX(ctx context.Context) {
-	if err := bcb.Exec(ctx); err != nil {
+func (_c *BookCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

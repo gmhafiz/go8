@@ -1,6 +1,6 @@
 # docker build -f e2e/e2e.Dockerfile -t go8/e2e .
 # docker run -it go8/e2e
-FROM golang:1.24 AS src_e2e
+FROM golang:1.25 AS src_e2e
 
 WORKDIR /go/src/app/
 

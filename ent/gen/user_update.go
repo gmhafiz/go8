@@ -23,132 +23,132 @@ type UserUpdate struct {
 }
 
 // Where appends a list predicates to the UserUpdate builder.
-func (uu *UserUpdate) Where(ps ...predicate.User) *UserUpdate {
-	uu.mutation.Where(ps...)
-	return uu
+func (_u *UserUpdate) Where(ps ...predicate.User) *UserUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetFirstName sets the "first_name" field.
-func (uu *UserUpdate) SetFirstName(s string) *UserUpdate {
-	uu.mutation.SetFirstName(s)
-	return uu
+func (_u *UserUpdate) SetFirstName(v string) *UserUpdate {
+	_u.mutation.SetFirstName(v)
+	return _u
 }
 
 // SetNillableFirstName sets the "first_name" field if the given value is not nil.
-func (uu *UserUpdate) SetNillableFirstName(s *string) *UserUpdate {
-	if s != nil {
-		uu.SetFirstName(*s)
+func (_u *UserUpdate) SetNillableFirstName(v *string) *UserUpdate {
+	if v != nil {
+		_u.SetFirstName(*v)
 	}
-	return uu
+	return _u
 }
 
 // ClearFirstName clears the value of the "first_name" field.
-func (uu *UserUpdate) ClearFirstName() *UserUpdate {
-	uu.mutation.ClearFirstName()
-	return uu
+func (_u *UserUpdate) ClearFirstName() *UserUpdate {
+	_u.mutation.ClearFirstName()
+	return _u
 }
 
 // SetMiddleName sets the "middle_name" field.
-func (uu *UserUpdate) SetMiddleName(s string) *UserUpdate {
-	uu.mutation.SetMiddleName(s)
-	return uu
+func (_u *UserUpdate) SetMiddleName(v string) *UserUpdate {
+	_u.mutation.SetMiddleName(v)
+	return _u
 }
 
 // SetNillableMiddleName sets the "middle_name" field if the given value is not nil.
-func (uu *UserUpdate) SetNillableMiddleName(s *string) *UserUpdate {
-	if s != nil {
-		uu.SetMiddleName(*s)
+func (_u *UserUpdate) SetNillableMiddleName(v *string) *UserUpdate {
+	if v != nil {
+		_u.SetMiddleName(*v)
 	}
-	return uu
+	return _u
 }
 
 // ClearMiddleName clears the value of the "middle_name" field.
-func (uu *UserUpdate) ClearMiddleName() *UserUpdate {
-	uu.mutation.ClearMiddleName()
-	return uu
+func (_u *UserUpdate) ClearMiddleName() *UserUpdate {
+	_u.mutation.ClearMiddleName()
+	return _u
 }
 
 // SetLastName sets the "last_name" field.
-func (uu *UserUpdate) SetLastName(s string) *UserUpdate {
-	uu.mutation.SetLastName(s)
-	return uu
+func (_u *UserUpdate) SetLastName(v string) *UserUpdate {
+	_u.mutation.SetLastName(v)
+	return _u
 }
 
 // SetNillableLastName sets the "last_name" field if the given value is not nil.
-func (uu *UserUpdate) SetNillableLastName(s *string) *UserUpdate {
-	if s != nil {
-		uu.SetLastName(*s)
+func (_u *UserUpdate) SetNillableLastName(v *string) *UserUpdate {
+	if v != nil {
+		_u.SetLastName(*v)
 	}
-	return uu
+	return _u
 }
 
 // ClearLastName clears the value of the "last_name" field.
-func (uu *UserUpdate) ClearLastName() *UserUpdate {
-	uu.mutation.ClearLastName()
-	return uu
+func (_u *UserUpdate) ClearLastName() *UserUpdate {
+	_u.mutation.ClearLastName()
+	return _u
 }
 
 // SetEmail sets the "email" field.
-func (uu *UserUpdate) SetEmail(s string) *UserUpdate {
-	uu.mutation.SetEmail(s)
-	return uu
+func (_u *UserUpdate) SetEmail(v string) *UserUpdate {
+	_u.mutation.SetEmail(v)
+	return _u
 }
 
 // SetNillableEmail sets the "email" field if the given value is not nil.
-func (uu *UserUpdate) SetNillableEmail(s *string) *UserUpdate {
-	if s != nil {
-		uu.SetEmail(*s)
+func (_u *UserUpdate) SetNillableEmail(v *string) *UserUpdate {
+	if v != nil {
+		_u.SetEmail(*v)
 	}
-	return uu
+	return _u
 }
 
 // SetPassword sets the "password" field.
-func (uu *UserUpdate) SetPassword(s string) *UserUpdate {
-	uu.mutation.SetPassword(s)
-	return uu
+func (_u *UserUpdate) SetPassword(v string) *UserUpdate {
+	_u.mutation.SetPassword(v)
+	return _u
 }
 
 // SetNillablePassword sets the "password" field if the given value is not nil.
-func (uu *UserUpdate) SetNillablePassword(s *string) *UserUpdate {
-	if s != nil {
-		uu.SetPassword(*s)
+func (_u *UserUpdate) SetNillablePassword(v *string) *UserUpdate {
+	if v != nil {
+		_u.SetPassword(*v)
 	}
-	return uu
+	return _u
 }
 
 // SetVerifiedAt sets the "verified_at" field.
-func (uu *UserUpdate) SetVerifiedAt(t time.Time) *UserUpdate {
-	uu.mutation.SetVerifiedAt(t)
-	return uu
+func (_u *UserUpdate) SetVerifiedAt(v time.Time) *UserUpdate {
+	_u.mutation.SetVerifiedAt(v)
+	return _u
 }
 
 // SetNillableVerifiedAt sets the "verified_at" field if the given value is not nil.
-func (uu *UserUpdate) SetNillableVerifiedAt(t *time.Time) *UserUpdate {
-	if t != nil {
-		uu.SetVerifiedAt(*t)
+func (_u *UserUpdate) SetNillableVerifiedAt(v *time.Time) *UserUpdate {
+	if v != nil {
+		_u.SetVerifiedAt(*v)
 	}
-	return uu
+	return _u
 }
 
 // ClearVerifiedAt clears the value of the "verified_at" field.
-func (uu *UserUpdate) ClearVerifiedAt() *UserUpdate {
-	uu.mutation.ClearVerifiedAt()
-	return uu
+func (_u *UserUpdate) ClearVerifiedAt() *UserUpdate {
+	_u.mutation.ClearVerifiedAt()
+	return _u
 }
 
 // Mutation returns the UserMutation object of the builder.
-func (uu *UserUpdate) Mutation() *UserMutation {
-	return uu.mutation
+func (_u *UserUpdate) Mutation() *UserMutation {
+	return _u.mutation
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (uu *UserUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, uu.sqlSave, uu.mutation, uu.hooks)
+func (_u *UserUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (uu *UserUpdate) SaveX(ctx context.Context) int {
-	affected, err := uu.Save(ctx)
+func (_u *UserUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -156,58 +156,58 @@ func (uu *UserUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (uu *UserUpdate) Exec(ctx context.Context) error {
-	_, err := uu.Save(ctx)
+func (_u *UserUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (uu *UserUpdate) ExecX(ctx context.Context) {
-	if err := uu.Exec(ctx); err != nil {
+func (_u *UserUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
-func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
+func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	_spec := sqlgraph.NewUpdateSpec(user.Table, user.Columns, sqlgraph.NewFieldSpec(user.FieldID, field.TypeUint64))
-	if ps := uu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := uu.mutation.FirstName(); ok {
+	if value, ok := _u.mutation.FirstName(); ok {
 		_spec.SetField(user.FieldFirstName, field.TypeString, value)
 	}
-	if uu.mutation.FirstNameCleared() {
+	if _u.mutation.FirstNameCleared() {
 		_spec.ClearField(user.FieldFirstName, field.TypeString)
 	}
-	if value, ok := uu.mutation.MiddleName(); ok {
+	if value, ok := _u.mutation.MiddleName(); ok {
 		_spec.SetField(user.FieldMiddleName, field.TypeString, value)
 	}
-	if uu.mutation.MiddleNameCleared() {
+	if _u.mutation.MiddleNameCleared() {
 		_spec.ClearField(user.FieldMiddleName, field.TypeString)
 	}
-	if value, ok := uu.mutation.LastName(); ok {
+	if value, ok := _u.mutation.LastName(); ok {
 		_spec.SetField(user.FieldLastName, field.TypeString, value)
 	}
-	if uu.mutation.LastNameCleared() {
+	if _u.mutation.LastNameCleared() {
 		_spec.ClearField(user.FieldLastName, field.TypeString)
 	}
-	if value, ok := uu.mutation.Email(); ok {
+	if value, ok := _u.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)
 	}
-	if value, ok := uu.mutation.Password(); ok {
+	if value, ok := _u.mutation.Password(); ok {
 		_spec.SetField(user.FieldPassword, field.TypeString, value)
 	}
-	if value, ok := uu.mutation.VerifiedAt(); ok {
+	if value, ok := _u.mutation.VerifiedAt(); ok {
 		_spec.SetField(user.FieldVerifiedAt, field.TypeTime, value)
 	}
-	if uu.mutation.VerifiedAtCleared() {
+	if _u.mutation.VerifiedAtCleared() {
 		_spec.ClearField(user.FieldVerifiedAt, field.TypeTime)
 	}
-	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -215,8 +215,8 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
-	uu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // UserUpdateOne is the builder for updating a single User entity.
@@ -228,139 +228,139 @@ type UserUpdateOne struct {
 }
 
 // SetFirstName sets the "first_name" field.
-func (uuo *UserUpdateOne) SetFirstName(s string) *UserUpdateOne {
-	uuo.mutation.SetFirstName(s)
-	return uuo
+func (_u *UserUpdateOne) SetFirstName(v string) *UserUpdateOne {
+	_u.mutation.SetFirstName(v)
+	return _u
 }
 
 // SetNillableFirstName sets the "first_name" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableFirstName(s *string) *UserUpdateOne {
-	if s != nil {
-		uuo.SetFirstName(*s)
+func (_u *UserUpdateOne) SetNillableFirstName(v *string) *UserUpdateOne {
+	if v != nil {
+		_u.SetFirstName(*v)
 	}
-	return uuo
+	return _u
 }
 
 // ClearFirstName clears the value of the "first_name" field.
-func (uuo *UserUpdateOne) ClearFirstName() *UserUpdateOne {
-	uuo.mutation.ClearFirstName()
-	return uuo
+func (_u *UserUpdateOne) ClearFirstName() *UserUpdateOne {
+	_u.mutation.ClearFirstName()
+	return _u
 }
 
 // SetMiddleName sets the "middle_name" field.
-func (uuo *UserUpdateOne) SetMiddleName(s string) *UserUpdateOne {
-	uuo.mutation.SetMiddleName(s)
-	return uuo
+func (_u *UserUpdateOne) SetMiddleName(v string) *UserUpdateOne {
+	_u.mutation.SetMiddleName(v)
+	return _u
 }
 
 // SetNillableMiddleName sets the "middle_name" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableMiddleName(s *string) *UserUpdateOne {
-	if s != nil {
-		uuo.SetMiddleName(*s)
+func (_u *UserUpdateOne) SetNillableMiddleName(v *string) *UserUpdateOne {
+	if v != nil {
+		_u.SetMiddleName(*v)
 	}
-	return uuo
+	return _u
 }
 
 // ClearMiddleName clears the value of the "middle_name" field.
-func (uuo *UserUpdateOne) ClearMiddleName() *UserUpdateOne {
-	uuo.mutation.ClearMiddleName()
-	return uuo
+func (_u *UserUpdateOne) ClearMiddleName() *UserUpdateOne {
+	_u.mutation.ClearMiddleName()
+	return _u
 }
 
 // SetLastName sets the "last_name" field.
-func (uuo *UserUpdateOne) SetLastName(s string) *UserUpdateOne {
-	uuo.mutation.SetLastName(s)
-	return uuo
+func (_u *UserUpdateOne) SetLastName(v string) *UserUpdateOne {
+	_u.mutation.SetLastName(v)
+	return _u
 }
 
 // SetNillableLastName sets the "last_name" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableLastName(s *string) *UserUpdateOne {
-	if s != nil {
-		uuo.SetLastName(*s)
+func (_u *UserUpdateOne) SetNillableLastName(v *string) *UserUpdateOne {
+	if v != nil {
+		_u.SetLastName(*v)
 	}
-	return uuo
+	return _u
 }
 
 // ClearLastName clears the value of the "last_name" field.
-func (uuo *UserUpdateOne) ClearLastName() *UserUpdateOne {
-	uuo.mutation.ClearLastName()
-	return uuo
+func (_u *UserUpdateOne) ClearLastName() *UserUpdateOne {
+	_u.mutation.ClearLastName()
+	return _u
 }
 
 // SetEmail sets the "email" field.
-func (uuo *UserUpdateOne) SetEmail(s string) *UserUpdateOne {
-	uuo.mutation.SetEmail(s)
-	return uuo
+func (_u *UserUpdateOne) SetEmail(v string) *UserUpdateOne {
+	_u.mutation.SetEmail(v)
+	return _u
 }
 
 // SetNillableEmail sets the "email" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableEmail(s *string) *UserUpdateOne {
-	if s != nil {
-		uuo.SetEmail(*s)
+func (_u *UserUpdateOne) SetNillableEmail(v *string) *UserUpdateOne {
+	if v != nil {
+		_u.SetEmail(*v)
 	}
-	return uuo
+	return _u
 }
 
 // SetPassword sets the "password" field.
-func (uuo *UserUpdateOne) SetPassword(s string) *UserUpdateOne {
-	uuo.mutation.SetPassword(s)
-	return uuo
+func (_u *UserUpdateOne) SetPassword(v string) *UserUpdateOne {
+	_u.mutation.SetPassword(v)
+	return _u
 }
 
 // SetNillablePassword sets the "password" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillablePassword(s *string) *UserUpdateOne {
-	if s != nil {
-		uuo.SetPassword(*s)
+func (_u *UserUpdateOne) SetNillablePassword(v *string) *UserUpdateOne {
+	if v != nil {
+		_u.SetPassword(*v)
 	}
-	return uuo
+	return _u
 }
 
 // SetVerifiedAt sets the "verified_at" field.
-func (uuo *UserUpdateOne) SetVerifiedAt(t time.Time) *UserUpdateOne {
-	uuo.mutation.SetVerifiedAt(t)
-	return uuo
+func (_u *UserUpdateOne) SetVerifiedAt(v time.Time) *UserUpdateOne {
+	_u.mutation.SetVerifiedAt(v)
+	return _u
 }
 
 // SetNillableVerifiedAt sets the "verified_at" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableVerifiedAt(t *time.Time) *UserUpdateOne {
-	if t != nil {
-		uuo.SetVerifiedAt(*t)
+func (_u *UserUpdateOne) SetNillableVerifiedAt(v *time.Time) *UserUpdateOne {
+	if v != nil {
+		_u.SetVerifiedAt(*v)
 	}
-	return uuo
+	return _u
 }
 
 // ClearVerifiedAt clears the value of the "verified_at" field.
-func (uuo *UserUpdateOne) ClearVerifiedAt() *UserUpdateOne {
-	uuo.mutation.ClearVerifiedAt()
-	return uuo
+func (_u *UserUpdateOne) ClearVerifiedAt() *UserUpdateOne {
+	_u.mutation.ClearVerifiedAt()
+	return _u
 }
 
 // Mutation returns the UserMutation object of the builder.
-func (uuo *UserUpdateOne) Mutation() *UserMutation {
-	return uuo.mutation
+func (_u *UserUpdateOne) Mutation() *UserMutation {
+	return _u.mutation
 }
 
 // Where appends a list predicates to the UserUpdate builder.
-func (uuo *UserUpdateOne) Where(ps ...predicate.User) *UserUpdateOne {
-	uuo.mutation.Where(ps...)
-	return uuo
+func (_u *UserUpdateOne) Where(ps ...predicate.User) *UserUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (uuo *UserUpdateOne) Select(field string, fields ...string) *UserUpdateOne {
-	uuo.fields = append([]string{field}, fields...)
-	return uuo
+func (_u *UserUpdateOne) Select(field string, fields ...string) *UserUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated User entity.
-func (uuo *UserUpdateOne) Save(ctx context.Context) (*User, error) {
-	return withHooks(ctx, uuo.sqlSave, uuo.mutation, uuo.hooks)
+func (_u *UserUpdateOne) Save(ctx context.Context) (*User, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (uuo *UserUpdateOne) SaveX(ctx context.Context) *User {
-	node, err := uuo.Save(ctx)
+func (_u *UserUpdateOne) SaveX(ctx context.Context) *User {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -368,26 +368,26 @@ func (uuo *UserUpdateOne) SaveX(ctx context.Context) *User {
 }
 
 // Exec executes the query on the entity.
-func (uuo *UserUpdateOne) Exec(ctx context.Context) error {
-	_, err := uuo.Save(ctx)
+func (_u *UserUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (uuo *UserUpdateOne) ExecX(ctx context.Context) {
-	if err := uuo.Exec(ctx); err != nil {
+func (_u *UserUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
-func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
+func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	_spec := sqlgraph.NewUpdateSpec(user.Table, user.Columns, sqlgraph.NewFieldSpec(user.FieldID, field.TypeUint64))
-	id, ok := uuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`gen: missing "User.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := uuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, user.FieldID)
 		for _, f := range fields {
@@ -399,47 +399,47 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			}
 		}
 	}
-	if ps := uuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := uuo.mutation.FirstName(); ok {
+	if value, ok := _u.mutation.FirstName(); ok {
 		_spec.SetField(user.FieldFirstName, field.TypeString, value)
 	}
-	if uuo.mutation.FirstNameCleared() {
+	if _u.mutation.FirstNameCleared() {
 		_spec.ClearField(user.FieldFirstName, field.TypeString)
 	}
-	if value, ok := uuo.mutation.MiddleName(); ok {
+	if value, ok := _u.mutation.MiddleName(); ok {
 		_spec.SetField(user.FieldMiddleName, field.TypeString, value)
 	}
-	if uuo.mutation.MiddleNameCleared() {
+	if _u.mutation.MiddleNameCleared() {
 		_spec.ClearField(user.FieldMiddleName, field.TypeString)
 	}
-	if value, ok := uuo.mutation.LastName(); ok {
+	if value, ok := _u.mutation.LastName(); ok {
 		_spec.SetField(user.FieldLastName, field.TypeString, value)
 	}
-	if uuo.mutation.LastNameCleared() {
+	if _u.mutation.LastNameCleared() {
 		_spec.ClearField(user.FieldLastName, field.TypeString)
 	}
-	if value, ok := uuo.mutation.Email(); ok {
+	if value, ok := _u.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)
 	}
-	if value, ok := uuo.mutation.Password(); ok {
+	if value, ok := _u.mutation.Password(); ok {
 		_spec.SetField(user.FieldPassword, field.TypeString, value)
 	}
-	if value, ok := uuo.mutation.VerifiedAt(); ok {
+	if value, ok := _u.mutation.VerifiedAt(); ok {
 		_spec.SetField(user.FieldVerifiedAt, field.TypeTime, value)
 	}
-	if uuo.mutation.VerifiedAtCleared() {
+	if _u.mutation.VerifiedAtCleared() {
 		_spec.ClearField(user.FieldVerifiedAt, field.TypeTime)
 	}
-	_node = &User{config: uuo.config}
+	_node = &User{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, uuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -447,6 +447,6 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 		}
 		return nil, err
 	}
-	uuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

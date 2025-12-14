@@ -75,7 +75,7 @@ func SetupOTLPExporter(ctx context.Context, cfg config.OpenTelemetry) func() {
 func dialGrpc(ctx context.Context, cfg config.OpenTelemetry) (*grpc.ClientConn, error) {
 	log.Printf("dialing %s\n", cfg.OtlpEndpoint)
 	for {
-		conn, err := grpc.DialContext(ctx, cfg.OtlpEndpoint,
+		conn, err := grpc.NewClient(cfg.OtlpEndpoint,
 			// Note the use of insecure transport here. TLS is recommended in production.
 			grpc.WithTransportCredentials(insecure.NewCredentials()),
 		)
@@ -89,11 +89,11 @@ func dialGrpc(ctx context.Context, cfg config.OpenTelemetry) (*grpc.ClientConn, 
 			if backoff > capacity {
 				backoff = capacity
 			}
-			jitter := rand.Int63n(int64(backoff * 3))
+			jitter := rand.Int63n(int64(backoff * 3)) //nolint
 			sleep := base + time.Duration(jitter)
 			time.Sleep(sleep)
 			log.Println("retrying to connect to gRPC...")
-			conn, err := grpc.DialContext(ctx, cfg.OtlpEndpoint,
+			conn, err := grpc.NewClient(cfg.OtlpEndpoint,
 				// Note the use of insecure transport here. TLS is recommended in production.
 				grpc.WithTransportCredentials(insecure.NewCredentials()),
 			)

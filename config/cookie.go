@@ -13,7 +13,7 @@ type Session struct {
 	Domain   string          `default:""`
 	Secret   string          `required:"false"`
 	Duration time.Duration   `default:"24h"`
-	HttpOnly bool            `split_words:"true" default:"true"`
+	HTTPOnly bool            `split_words:"true" default:"true"`
 	Secure   bool            `default:"true"`
 	SameSite SameSiteDecoder `split_words:"true" default:"lax"`
 }

@@ -24,168 +24,168 @@ type AuthorUpdate struct {
 }
 
 // Where appends a list predicates to the AuthorUpdate builder.
-func (au *AuthorUpdate) Where(ps ...predicate.Author) *AuthorUpdate {
-	au.mutation.Where(ps...)
-	return au
+func (_u *AuthorUpdate) Where(ps ...predicate.Author) *AuthorUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetFirstName sets the "first_name" field.
-func (au *AuthorUpdate) SetFirstName(s string) *AuthorUpdate {
-	au.mutation.SetFirstName(s)
-	return au
+func (_u *AuthorUpdate) SetFirstName(v string) *AuthorUpdate {
+	_u.mutation.SetFirstName(v)
+	return _u
 }
 
 // SetNillableFirstName sets the "first_name" field if the given value is not nil.
-func (au *AuthorUpdate) SetNillableFirstName(s *string) *AuthorUpdate {
-	if s != nil {
-		au.SetFirstName(*s)
+func (_u *AuthorUpdate) SetNillableFirstName(v *string) *AuthorUpdate {
+	if v != nil {
+		_u.SetFirstName(*v)
 	}
-	return au
+	return _u
 }
 
 // SetMiddleName sets the "middle_name" field.
-func (au *AuthorUpdate) SetMiddleName(s string) *AuthorUpdate {
-	au.mutation.SetMiddleName(s)
-	return au
+func (_u *AuthorUpdate) SetMiddleName(v string) *AuthorUpdate {
+	_u.mutation.SetMiddleName(v)
+	return _u
 }
 
 // SetNillableMiddleName sets the "middle_name" field if the given value is not nil.
-func (au *AuthorUpdate) SetNillableMiddleName(s *string) *AuthorUpdate {
-	if s != nil {
-		au.SetMiddleName(*s)
+func (_u *AuthorUpdate) SetNillableMiddleName(v *string) *AuthorUpdate {
+	if v != nil {
+		_u.SetMiddleName(*v)
 	}
-	return au
+	return _u
 }
 
 // ClearMiddleName clears the value of the "middle_name" field.
-func (au *AuthorUpdate) ClearMiddleName() *AuthorUpdate {
-	au.mutation.ClearMiddleName()
-	return au
+func (_u *AuthorUpdate) ClearMiddleName() *AuthorUpdate {
+	_u.mutation.ClearMiddleName()
+	return _u
 }
 
 // SetLastName sets the "last_name" field.
-func (au *AuthorUpdate) SetLastName(s string) *AuthorUpdate {
-	au.mutation.SetLastName(s)
-	return au
+func (_u *AuthorUpdate) SetLastName(v string) *AuthorUpdate {
+	_u.mutation.SetLastName(v)
+	return _u
 }
 
 // SetNillableLastName sets the "last_name" field if the given value is not nil.
-func (au *AuthorUpdate) SetNillableLastName(s *string) *AuthorUpdate {
-	if s != nil {
-		au.SetLastName(*s)
+func (_u *AuthorUpdate) SetNillableLastName(v *string) *AuthorUpdate {
+	if v != nil {
+		_u.SetLastName(*v)
 	}
-	return au
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (au *AuthorUpdate) SetCreatedAt(t time.Time) *AuthorUpdate {
-	au.mutation.SetCreatedAt(t)
-	return au
+func (_u *AuthorUpdate) SetCreatedAt(v time.Time) *AuthorUpdate {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (au *AuthorUpdate) SetNillableCreatedAt(t *time.Time) *AuthorUpdate {
-	if t != nil {
-		au.SetCreatedAt(*t)
+func (_u *AuthorUpdate) SetNillableCreatedAt(v *time.Time) *AuthorUpdate {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return au
+	return _u
 }
 
 // ClearCreatedAt clears the value of the "created_at" field.
-func (au *AuthorUpdate) ClearCreatedAt() *AuthorUpdate {
-	au.mutation.ClearCreatedAt()
-	return au
+func (_u *AuthorUpdate) ClearCreatedAt() *AuthorUpdate {
+	_u.mutation.ClearCreatedAt()
+	return _u
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (au *AuthorUpdate) SetUpdatedAt(t time.Time) *AuthorUpdate {
-	au.mutation.SetUpdatedAt(t)
-	return au
+func (_u *AuthorUpdate) SetUpdatedAt(v time.Time) *AuthorUpdate {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (au *AuthorUpdate) SetNillableUpdatedAt(t *time.Time) *AuthorUpdate {
-	if t != nil {
-		au.SetUpdatedAt(*t)
+func (_u *AuthorUpdate) SetNillableUpdatedAt(v *time.Time) *AuthorUpdate {
+	if v != nil {
+		_u.SetUpdatedAt(*v)
 	}
-	return au
+	return _u
 }
 
 // ClearUpdatedAt clears the value of the "updated_at" field.
-func (au *AuthorUpdate) ClearUpdatedAt() *AuthorUpdate {
-	au.mutation.ClearUpdatedAt()
-	return au
+func (_u *AuthorUpdate) ClearUpdatedAt() *AuthorUpdate {
+	_u.mutation.ClearUpdatedAt()
+	return _u
 }
 
 // SetDeletedAt sets the "deleted_at" field.
-func (au *AuthorUpdate) SetDeletedAt(t time.Time) *AuthorUpdate {
-	au.mutation.SetDeletedAt(t)
-	return au
+func (_u *AuthorUpdate) SetDeletedAt(v time.Time) *AuthorUpdate {
+	_u.mutation.SetDeletedAt(v)
+	return _u
 }
 
 // SetNillableDeletedAt sets the "deleted_at" field if the given value is not nil.
-func (au *AuthorUpdate) SetNillableDeletedAt(t *time.Time) *AuthorUpdate {
-	if t != nil {
-		au.SetDeletedAt(*t)
+func (_u *AuthorUpdate) SetNillableDeletedAt(v *time.Time) *AuthorUpdate {
+	if v != nil {
+		_u.SetDeletedAt(*v)
 	}
-	return au
+	return _u
 }
 
 // ClearDeletedAt clears the value of the "deleted_at" field.
-func (au *AuthorUpdate) ClearDeletedAt() *AuthorUpdate {
-	au.mutation.ClearDeletedAt()
-	return au
+func (_u *AuthorUpdate) ClearDeletedAt() *AuthorUpdate {
+	_u.mutation.ClearDeletedAt()
+	return _u
 }
 
 // AddBookIDs adds the "books" edge to the Book entity by IDs.
-func (au *AuthorUpdate) AddBookIDs(ids ...uint64) *AuthorUpdate {
-	au.mutation.AddBookIDs(ids...)
-	return au
+func (_u *AuthorUpdate) AddBookIDs(ids ...uint64) *AuthorUpdate {
+	_u.mutation.AddBookIDs(ids...)
+	return _u
 }
 
 // AddBooks adds the "books" edges to the Book entity.
-func (au *AuthorUpdate) AddBooks(b ...*Book) *AuthorUpdate {
-	ids := make([]uint64, len(b))
-	for i := range b {
-		ids[i] = b[i].ID
+func (_u *AuthorUpdate) AddBooks(v ...*Book) *AuthorUpdate {
+	ids := make([]uint64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return au.AddBookIDs(ids...)
+	return _u.AddBookIDs(ids...)
 }
 
 // Mutation returns the AuthorMutation object of the builder.
-func (au *AuthorUpdate) Mutation() *AuthorMutation {
-	return au.mutation
+func (_u *AuthorUpdate) Mutation() *AuthorMutation {
+	return _u.mutation
 }
 
 // ClearBooks clears all "books" edges to the Book entity.
-func (au *AuthorUpdate) ClearBooks() *AuthorUpdate {
-	au.mutation.ClearBooks()
-	return au
+func (_u *AuthorUpdate) ClearBooks() *AuthorUpdate {
+	_u.mutation.ClearBooks()
+	return _u
 }
 
 // RemoveBookIDs removes the "books" edge to Book entities by IDs.
-func (au *AuthorUpdate) RemoveBookIDs(ids ...uint64) *AuthorUpdate {
-	au.mutation.RemoveBookIDs(ids...)
-	return au
+func (_u *AuthorUpdate) RemoveBookIDs(ids ...uint64) *AuthorUpdate {
+	_u.mutation.RemoveBookIDs(ids...)
+	return _u
 }
 
 // RemoveBooks removes "books" edges to Book entities.
-func (au *AuthorUpdate) RemoveBooks(b ...*Book) *AuthorUpdate {
-	ids := make([]uint64, len(b))
-	for i := range b {
-		ids[i] = b[i].ID
+func (_u *AuthorUpdate) RemoveBooks(v ...*Book) *AuthorUpdate {
+	ids := make([]uint64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return au.RemoveBookIDs(ids...)
+	return _u.RemoveBookIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (au *AuthorUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, au.sqlSave, au.mutation, au.hooks)
+func (_u *AuthorUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (au *AuthorUpdate) SaveX(ctx context.Context) int {
-	affected, err := au.Save(ctx)
+func (_u *AuthorUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -193,58 +193,58 @@ func (au *AuthorUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (au *AuthorUpdate) Exec(ctx context.Context) error {
-	_, err := au.Save(ctx)
+func (_u *AuthorUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (au *AuthorUpdate) ExecX(ctx context.Context) {
-	if err := au.Exec(ctx); err != nil {
+func (_u *AuthorUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
-func (au *AuthorUpdate) sqlSave(ctx context.Context) (n int, err error) {
+func (_u *AuthorUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	_spec := sqlgraph.NewUpdateSpec(author.Table, author.Columns, sqlgraph.NewFieldSpec(author.FieldID, field.TypeUint64))
-	if ps := au.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := au.mutation.FirstName(); ok {
+	if value, ok := _u.mutation.FirstName(); ok {
 		_spec.SetField(author.FieldFirstName, field.TypeString, value)
 	}
-	if value, ok := au.mutation.MiddleName(); ok {
+	if value, ok := _u.mutation.MiddleName(); ok {
 		_spec.SetField(author.FieldMiddleName, field.TypeString, value)
 	}
-	if au.mutation.MiddleNameCleared() {
+	if _u.mutation.MiddleNameCleared() {
 		_spec.ClearField(author.FieldMiddleName, field.TypeString)
 	}
-	if value, ok := au.mutation.LastName(); ok {
+	if value, ok := _u.mutation.LastName(); ok {
 		_spec.SetField(author.FieldLastName, field.TypeString, value)
 	}
-	if value, ok := au.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(author.FieldCreatedAt, field.TypeTime, value)
 	}
-	if au.mutation.CreatedAtCleared() {
+	if _u.mutation.CreatedAtCleared() {
 		_spec.ClearField(author.FieldCreatedAt, field.TypeTime)
 	}
-	if value, ok := au.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(author.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if au.mutation.UpdatedAtCleared() {
+	if _u.mutation.UpdatedAtCleared() {
 		_spec.ClearField(author.FieldUpdatedAt, field.TypeTime)
 	}
-	if value, ok := au.mutation.DeletedAt(); ok {
+	if value, ok := _u.mutation.DeletedAt(); ok {
 		_spec.SetField(author.FieldDeletedAt, field.TypeTime, value)
 	}
-	if au.mutation.DeletedAtCleared() {
+	if _u.mutation.DeletedAtCleared() {
 		_spec.ClearField(author.FieldDeletedAt, field.TypeTime)
 	}
-	if au.mutation.BooksCleared() {
+	if _u.mutation.BooksCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -257,7 +257,7 @@ func (au *AuthorUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := au.mutation.RemovedBooksIDs(); len(nodes) > 0 && !au.mutation.BooksCleared() {
+	if nodes := _u.mutation.RemovedBooksIDs(); len(nodes) > 0 && !_u.mutation.BooksCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -273,7 +273,7 @@ func (au *AuthorUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := au.mutation.BooksIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.BooksIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -289,7 +289,7 @@ func (au *AuthorUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if n, err = sqlgraph.UpdateNodes(ctx, au.driver, _spec); err != nil {
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{author.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -297,8 +297,8 @@ func (au *AuthorUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
-	au.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // AuthorUpdateOne is the builder for updating a single Author entity.
@@ -310,175 +310,175 @@ type AuthorUpdateOne struct {
 }
 
 // SetFirstName sets the "first_name" field.
-func (auo *AuthorUpdateOne) SetFirstName(s string) *AuthorUpdateOne {
-	auo.mutation.SetFirstName(s)
-	return auo
+func (_u *AuthorUpdateOne) SetFirstName(v string) *AuthorUpdateOne {
+	_u.mutation.SetFirstName(v)
+	return _u
 }
 
 // SetNillableFirstName sets the "first_name" field if the given value is not nil.
-func (auo *AuthorUpdateOne) SetNillableFirstName(s *string) *AuthorUpdateOne {
-	if s != nil {
-		auo.SetFirstName(*s)
+func (_u *AuthorUpdateOne) SetNillableFirstName(v *string) *AuthorUpdateOne {
+	if v != nil {
+		_u.SetFirstName(*v)
 	}
-	return auo
+	return _u
 }
 
 // SetMiddleName sets the "middle_name" field.
-func (auo *AuthorUpdateOne) SetMiddleName(s string) *AuthorUpdateOne {
-	auo.mutation.SetMiddleName(s)
-	return auo
+func (_u *AuthorUpdateOne) SetMiddleName(v string) *AuthorUpdateOne {
+	_u.mutation.SetMiddleName(v)
+	return _u
 }
 
 // SetNillableMiddleName sets the "middle_name" field if the given value is not nil.
-func (auo *AuthorUpdateOne) SetNillableMiddleName(s *string) *AuthorUpdateOne {
-	if s != nil {
-		auo.SetMiddleName(*s)
+func (_u *AuthorUpdateOne) SetNillableMiddleName(v *string) *AuthorUpdateOne {
+	if v != nil {
+		_u.SetMiddleName(*v)
 	}
-	return auo
+	return _u
 }
 
 // ClearMiddleName clears the value of the "middle_name" field.
-func (auo *AuthorUpdateOne) ClearMiddleName() *AuthorUpdateOne {
-	auo.mutation.ClearMiddleName()
-	return auo
+func (_u *AuthorUpdateOne) ClearMiddleName() *AuthorUpdateOne {
+	_u.mutation.ClearMiddleName()
+	return _u
 }
 
 // SetLastName sets the "last_name" field.
-func (auo *AuthorUpdateOne) SetLastName(s string) *AuthorUpdateOne {
-	auo.mutation.SetLastName(s)
-	return auo
+func (_u *AuthorUpdateOne) SetLastName(v string) *AuthorUpdateOne {
+	_u.mutation.SetLastName(v)
+	return _u
 }
 
 // SetNillableLastName sets the "last_name" field if the given value is not nil.
-func (auo *AuthorUpdateOne) SetNillableLastName(s *string) *AuthorUpdateOne {
-	if s != nil {
-		auo.SetLastName(*s)
+func (_u *AuthorUpdateOne) SetNillableLastName(v *string) *AuthorUpdateOne {
+	if v != nil {
+		_u.SetLastName(*v)
 	}
-	return auo
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (auo *AuthorUpdateOne) SetCreatedAt(t time.Time) *AuthorUpdateOne {
-	auo.mutation.SetCreatedAt(t)
-	return auo
+func (_u *AuthorUpdateOne) SetCreatedAt(v time.Time) *AuthorUpdateOne {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (auo *AuthorUpdateOne) SetNillableCreatedAt(t *time.Time) *AuthorUpdateOne {
-	if t != nil {
-		auo.SetCreatedAt(*t)
+func (_u *AuthorUpdateOne) SetNillableCreatedAt(v *time.Time) *AuthorUpdateOne {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return auo
+	return _u
 }
 
 // ClearCreatedAt clears the value of the "created_at" field.
-func (auo *AuthorUpdateOne) ClearCreatedAt() *AuthorUpdateOne {
-	auo.mutation.ClearCreatedAt()
-	return auo
+func (_u *AuthorUpdateOne) ClearCreatedAt() *AuthorUpdateOne {
+	_u.mutation.ClearCreatedAt()
+	return _u
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (auo *AuthorUpdateOne) SetUpdatedAt(t time.Time) *AuthorUpdateOne {
-	auo.mutation.SetUpdatedAt(t)
-	return auo
+func (_u *AuthorUpdateOne) SetUpdatedAt(v time.Time) *AuthorUpdateOne {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (auo *AuthorUpdateOne) SetNillableUpdatedAt(t *time.Time) *AuthorUpdateOne {
-	if t != nil {
-		auo.SetUpdatedAt(*t)
+func (_u *AuthorUpdateOne) SetNillableUpdatedAt(v *time.Time) *AuthorUpdateOne {
+	if v != nil {
+		_u.SetUpdatedAt(*v)
 	}
-	return auo
+	return _u
 }
 
 // ClearUpdatedAt clears the value of the "updated_at" field.
-func (auo *AuthorUpdateOne) ClearUpdatedAt() *AuthorUpdateOne {
-	auo.mutation.ClearUpdatedAt()
-	return auo
+func (_u *AuthorUpdateOne) ClearUpdatedAt() *AuthorUpdateOne {
+	_u.mutation.ClearUpdatedAt()
+	return _u
 }
 
 // SetDeletedAt sets the "deleted_at" field.
-func (auo *AuthorUpdateOne) SetDeletedAt(t time.Time) *AuthorUpdateOne {
-	auo.mutation.SetDeletedAt(t)
-	return auo
+func (_u *AuthorUpdateOne) SetDeletedAt(v time.Time) *AuthorUpdateOne {
+	_u.mutation.SetDeletedAt(v)
+	return _u
 }
 
 // SetNillableDeletedAt sets the "deleted_at" field if the given value is not nil.
-func (auo *AuthorUpdateOne) SetNillableDeletedAt(t *time.Time) *AuthorUpdateOne {
-	if t != nil {
-		auo.SetDeletedAt(*t)
+func (_u *AuthorUpdateOne) SetNillableDeletedAt(v *time.Time) *AuthorUpdateOne {
+	if v != nil {
+		_u.SetDeletedAt(*v)
 	}
-	return auo
+	return _u
 }
 
 // ClearDeletedAt clears the value of the "deleted_at" field.
-func (auo *AuthorUpdateOne) ClearDeletedAt() *AuthorUpdateOne {
-	auo.mutation.ClearDeletedAt()
-	return auo
+func (_u *AuthorUpdateOne) ClearDeletedAt() *AuthorUpdateOne {
+	_u.mutation.ClearDeletedAt()
+	return _u
 }
 
 // AddBookIDs adds the "books" edge to the Book entity by IDs.
-func (auo *AuthorUpdateOne) AddBookIDs(ids ...uint64) *AuthorUpdateOne {
-	auo.mutation.AddBookIDs(ids...)
-	return auo
+func (_u *AuthorUpdateOne) AddBookIDs(ids ...uint64) *AuthorUpdateOne {
+	_u.mutation.AddBookIDs(ids...)
+	return _u
 }
 
 // AddBooks adds the "books" edges to the Book entity.
-func (auo *AuthorUpdateOne) AddBooks(b ...*Book) *AuthorUpdateOne {
-	ids := make([]uint64, len(b))
-	for i := range b {
-		ids[i] = b[i].ID
+func (_u *AuthorUpdateOne) AddBooks(v ...*Book) *AuthorUpdateOne {
+	ids := make([]uint64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return auo.AddBookIDs(ids...)
+	return _u.AddBookIDs(ids...)
 }
 
 // Mutation returns the AuthorMutation object of the builder.
-func (auo *AuthorUpdateOne) Mutation() *AuthorMutation {
-	return auo.mutation
+func (_u *AuthorUpdateOne) Mutation() *AuthorMutation {
+	return _u.mutation
 }
 
 // ClearBooks clears all "books" edges to the Book entity.
-func (auo *AuthorUpdateOne) ClearBooks() *AuthorUpdateOne {
-	auo.mutation.ClearBooks()
-	return auo
+func (_u *AuthorUpdateOne) ClearBooks() *AuthorUpdateOne {
+	_u.mutation.ClearBooks()
+	return _u
 }
 
 // RemoveBookIDs removes the "books" edge to Book entities by IDs.
-func (auo *AuthorUpdateOne) RemoveBookIDs(ids ...uint64) *AuthorUpdateOne {
-	auo.mutation.RemoveBookIDs(ids...)
-	return auo
+func (_u *AuthorUpdateOne) RemoveBookIDs(ids ...uint64) *AuthorUpdateOne {
+	_u.mutation.RemoveBookIDs(ids...)
+	return _u
 }
 
 // RemoveBooks removes "books" edges to Book entities.
-func (auo *AuthorUpdateOne) RemoveBooks(b ...*Book) *AuthorUpdateOne {
-	ids := make([]uint64, len(b))
-	for i := range b {
-		ids[i] = b[i].ID
+func (_u *AuthorUpdateOne) RemoveBooks(v ...*Book) *AuthorUpdateOne {
+	ids := make([]uint64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return auo.RemoveBookIDs(ids...)
+	return _u.RemoveBookIDs(ids...)
 }
 
 // Where appends a list predicates to the AuthorUpdate builder.
-func (auo *AuthorUpdateOne) Where(ps ...predicate.Author) *AuthorUpdateOne {
-	auo.mutation.Where(ps...)
-	return auo
+func (_u *AuthorUpdateOne) Where(ps ...predicate.Author) *AuthorUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (auo *AuthorUpdateOne) Select(field string, fields ...string) *AuthorUpdateOne {
-	auo.fields = append([]string{field}, fields...)
-	return auo
+func (_u *AuthorUpdateOne) Select(field string, fields ...string) *AuthorUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated Author entity.
-func (auo *AuthorUpdateOne) Save(ctx context.Context) (*Author, error) {
-	return withHooks(ctx, auo.sqlSave, auo.mutation, auo.hooks)
+func (_u *AuthorUpdateOne) Save(ctx context.Context) (*Author, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (auo *AuthorUpdateOne) SaveX(ctx context.Context) *Author {
-	node, err := auo.Save(ctx)
+func (_u *AuthorUpdateOne) SaveX(ctx context.Context) *Author {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -486,26 +486,26 @@ func (auo *AuthorUpdateOne) SaveX(ctx context.Context) *Author {
 }
 
 // Exec executes the query on the entity.
-func (auo *AuthorUpdateOne) Exec(ctx context.Context) error {
-	_, err := auo.Save(ctx)
+func (_u *AuthorUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (auo *AuthorUpdateOne) ExecX(ctx context.Context) {
-	if err := auo.Exec(ctx); err != nil {
+func (_u *AuthorUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
-func (auo *AuthorUpdateOne) sqlSave(ctx context.Context) (_node *Author, err error) {
+func (_u *AuthorUpdateOne) sqlSave(ctx context.Context) (_node *Author, err error) {
 	_spec := sqlgraph.NewUpdateSpec(author.Table, author.Columns, sqlgraph.NewFieldSpec(author.FieldID, field.TypeUint64))
-	id, ok := auo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`gen: missing "Author.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := auo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, author.FieldID)
 		for _, f := range fields {
@@ -517,44 +517,44 @@ func (auo *AuthorUpdateOne) sqlSave(ctx context.Context) (_node *Author, err err
 			}
 		}
 	}
-	if ps := auo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := auo.mutation.FirstName(); ok {
+	if value, ok := _u.mutation.FirstName(); ok {
 		_spec.SetField(author.FieldFirstName, field.TypeString, value)
 	}
-	if value, ok := auo.mutation.MiddleName(); ok {
+	if value, ok := _u.mutation.MiddleName(); ok {
 		_spec.SetField(author.FieldMiddleName, field.TypeString, value)
 	}
-	if auo.mutation.MiddleNameCleared() {
+	if _u.mutation.MiddleNameCleared() {
 		_spec.ClearField(author.FieldMiddleName, field.TypeString)
 	}
-	if value, ok := auo.mutation.LastName(); ok {
+	if value, ok := _u.mutation.LastName(); ok {
 		_spec.SetField(author.FieldLastName, field.TypeString, value)
 	}
-	if value, ok := auo.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(author.FieldCreatedAt, field.TypeTime, value)
 	}
-	if auo.mutation.CreatedAtCleared() {
+	if _u.mutation.CreatedAtCleared() {
 		_spec.ClearField(author.FieldCreatedAt, field.TypeTime)
 	}
-	if value, ok := auo.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(author.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if auo.mutation.UpdatedAtCleared() {
+	if _u.mutation.UpdatedAtCleared() {
 		_spec.ClearField(author.FieldUpdatedAt, field.TypeTime)
 	}
-	if value, ok := auo.mutation.DeletedAt(); ok {
+	if value, ok := _u.mutation.DeletedAt(); ok {
 		_spec.SetField(author.FieldDeletedAt, field.TypeTime, value)
 	}
-	if auo.mutation.DeletedAtCleared() {
+	if _u.mutation.DeletedAtCleared() {
 		_spec.ClearField(author.FieldDeletedAt, field.TypeTime)
 	}
-	if auo.mutation.BooksCleared() {
+	if _u.mutation.BooksCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -567,7 +567,7 @@ func (auo *AuthorUpdateOne) sqlSave(ctx context.Context) (_node *Author, err err
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := auo.mutation.RemovedBooksIDs(); len(nodes) > 0 && !auo.mutation.BooksCleared() {
+	if nodes := _u.mutation.RemovedBooksIDs(); len(nodes) > 0 && !_u.mutation.BooksCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -583,7 +583,7 @@ func (auo *AuthorUpdateOne) sqlSave(ctx context.Context) (_node *Author, err err
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := auo.mutation.BooksIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.BooksIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -599,10 +599,10 @@ func (auo *AuthorUpdateOne) sqlSave(ctx context.Context) (_node *Author, err err
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_node = &Author{config: auo.config}
+	_node = &Author{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, auo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{author.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -610,6 +610,6 @@ func (auo *AuthorUpdateOne) sqlSave(ctx context.Context) (_node *Author, err err
 		}
 		return nil, err
 	}
-	auo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

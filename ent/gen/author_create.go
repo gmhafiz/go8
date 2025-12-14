@@ -22,107 +22,107 @@ type AuthorCreate struct {
 }
 
 // SetFirstName sets the "first_name" field.
-func (ac *AuthorCreate) SetFirstName(s string) *AuthorCreate {
-	ac.mutation.SetFirstName(s)
-	return ac
+func (_c *AuthorCreate) SetFirstName(v string) *AuthorCreate {
+	_c.mutation.SetFirstName(v)
+	return _c
 }
 
 // SetMiddleName sets the "middle_name" field.
-func (ac *AuthorCreate) SetMiddleName(s string) *AuthorCreate {
-	ac.mutation.SetMiddleName(s)
-	return ac
+func (_c *AuthorCreate) SetMiddleName(v string) *AuthorCreate {
+	_c.mutation.SetMiddleName(v)
+	return _c
 }
 
 // SetNillableMiddleName sets the "middle_name" field if the given value is not nil.
-func (ac *AuthorCreate) SetNillableMiddleName(s *string) *AuthorCreate {
-	if s != nil {
-		ac.SetMiddleName(*s)
+func (_c *AuthorCreate) SetNillableMiddleName(v *string) *AuthorCreate {
+	if v != nil {
+		_c.SetMiddleName(*v)
 	}
-	return ac
+	return _c
 }
 
 // SetLastName sets the "last_name" field.
-func (ac *AuthorCreate) SetLastName(s string) *AuthorCreate {
-	ac.mutation.SetLastName(s)
-	return ac
+func (_c *AuthorCreate) SetLastName(v string) *AuthorCreate {
+	_c.mutation.SetLastName(v)
+	return _c
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (ac *AuthorCreate) SetCreatedAt(t time.Time) *AuthorCreate {
-	ac.mutation.SetCreatedAt(t)
-	return ac
+func (_c *AuthorCreate) SetCreatedAt(v time.Time) *AuthorCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (ac *AuthorCreate) SetNillableCreatedAt(t *time.Time) *AuthorCreate {
-	if t != nil {
-		ac.SetCreatedAt(*t)
+func (_c *AuthorCreate) SetNillableCreatedAt(v *time.Time) *AuthorCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
 	}
-	return ac
+	return _c
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (ac *AuthorCreate) SetUpdatedAt(t time.Time) *AuthorCreate {
-	ac.mutation.SetUpdatedAt(t)
-	return ac
+func (_c *AuthorCreate) SetUpdatedAt(v time.Time) *AuthorCreate {
+	_c.mutation.SetUpdatedAt(v)
+	return _c
 }
 
 // SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (ac *AuthorCreate) SetNillableUpdatedAt(t *time.Time) *AuthorCreate {
-	if t != nil {
-		ac.SetUpdatedAt(*t)
+func (_c *AuthorCreate) SetNillableUpdatedAt(v *time.Time) *AuthorCreate {
+	if v != nil {
+		_c.SetUpdatedAt(*v)
 	}
-	return ac
+	return _c
 }
 
 // SetDeletedAt sets the "deleted_at" field.
-func (ac *AuthorCreate) SetDeletedAt(t time.Time) *AuthorCreate {
-	ac.mutation.SetDeletedAt(t)
-	return ac
+func (_c *AuthorCreate) SetDeletedAt(v time.Time) *AuthorCreate {
+	_c.mutation.SetDeletedAt(v)
+	return _c
 }
 
 // SetNillableDeletedAt sets the "deleted_at" field if the given value is not nil.
-func (ac *AuthorCreate) SetNillableDeletedAt(t *time.Time) *AuthorCreate {
-	if t != nil {
-		ac.SetDeletedAt(*t)
+func (_c *AuthorCreate) SetNillableDeletedAt(v *time.Time) *AuthorCreate {
+	if v != nil {
+		_c.SetDeletedAt(*v)
 	}
-	return ac
+	return _c
 }
 
 // SetID sets the "id" field.
-func (ac *AuthorCreate) SetID(u uint64) *AuthorCreate {
-	ac.mutation.SetID(u)
-	return ac
+func (_c *AuthorCreate) SetID(v uint64) *AuthorCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // AddBookIDs adds the "books" edge to the Book entity by IDs.
-func (ac *AuthorCreate) AddBookIDs(ids ...uint64) *AuthorCreate {
-	ac.mutation.AddBookIDs(ids...)
-	return ac
+func (_c *AuthorCreate) AddBookIDs(ids ...uint64) *AuthorCreate {
+	_c.mutation.AddBookIDs(ids...)
+	return _c
 }
 
 // AddBooks adds the "books" edges to the Book entity.
-func (ac *AuthorCreate) AddBooks(b ...*Book) *AuthorCreate {
-	ids := make([]uint64, len(b))
-	for i := range b {
-		ids[i] = b[i].ID
+func (_c *AuthorCreate) AddBooks(v ...*Book) *AuthorCreate {
+	ids := make([]uint64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ac.AddBookIDs(ids...)
+	return _c.AddBookIDs(ids...)
 }
 
 // Mutation returns the AuthorMutation object of the builder.
-func (ac *AuthorCreate) Mutation() *AuthorMutation {
-	return ac.mutation
+func (_c *AuthorCreate) Mutation() *AuthorMutation {
+	return _c.mutation
 }
 
 // Save creates the Author in the database.
-func (ac *AuthorCreate) Save(ctx context.Context) (*Author, error) {
-	return withHooks(ctx, ac.sqlSave, ac.mutation, ac.hooks)
+func (_c *AuthorCreate) Save(ctx context.Context) (*Author, error) {
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (ac *AuthorCreate) SaveX(ctx context.Context) *Author {
-	v, err := ac.Save(ctx)
+func (_c *AuthorCreate) SaveX(ctx context.Context) *Author {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -130,35 +130,35 @@ func (ac *AuthorCreate) SaveX(ctx context.Context) *Author {
 }
 
 // Exec executes the query.
-func (ac *AuthorCreate) Exec(ctx context.Context) error {
-	_, err := ac.Save(ctx)
+func (_c *AuthorCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ac *AuthorCreate) ExecX(ctx context.Context) {
-	if err := ac.Exec(ctx); err != nil {
+func (_c *AuthorCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (ac *AuthorCreate) check() error {
-	if _, ok := ac.mutation.FirstName(); !ok {
+func (_c *AuthorCreate) check() error {
+	if _, ok := _c.mutation.FirstName(); !ok {
 		return &ValidationError{Name: "first_name", err: errors.New(`gen: missing required field "Author.first_name"`)}
 	}
-	if _, ok := ac.mutation.LastName(); !ok {
+	if _, ok := _c.mutation.LastName(); !ok {
 		return &ValidationError{Name: "last_name", err: errors.New(`gen: missing required field "Author.last_name"`)}
 	}
 	return nil
 }
 
-func (ac *AuthorCreate) sqlSave(ctx context.Context) (*Author, error) {
-	if err := ac.check(); err != nil {
+func (_c *AuthorCreate) sqlSave(ctx context.Context) (*Author, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := ac.createSpec()
-	if err := sqlgraph.CreateNode(ctx, ac.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -168,45 +168,45 @@ func (ac *AuthorCreate) sqlSave(ctx context.Context) (*Author, error) {
 		id := _spec.ID.Value.(int64)
 		_node.ID = uint64(id)
 	}
-	ac.mutation.id = &_node.ID
-	ac.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (ac *AuthorCreate) createSpec() (*Author, *sqlgraph.CreateSpec) {
+func (_c *AuthorCreate) createSpec() (*Author, *sqlgraph.CreateSpec) {
 	var (
-		_node = &Author{config: ac.config}
+		_node = &Author{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(author.Table, sqlgraph.NewFieldSpec(author.FieldID, field.TypeUint64))
 	)
-	if id, ok := ac.mutation.ID(); ok {
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
 	}
-	if value, ok := ac.mutation.FirstName(); ok {
+	if value, ok := _c.mutation.FirstName(); ok {
 		_spec.SetField(author.FieldFirstName, field.TypeString, value)
 		_node.FirstName = value
 	}
-	if value, ok := ac.mutation.MiddleName(); ok {
+	if value, ok := _c.mutation.MiddleName(); ok {
 		_spec.SetField(author.FieldMiddleName, field.TypeString, value)
 		_node.MiddleName = value
 	}
-	if value, ok := ac.mutation.LastName(); ok {
+	if value, ok := _c.mutation.LastName(); ok {
 		_spec.SetField(author.FieldLastName, field.TypeString, value)
 		_node.LastName = value
 	}
-	if value, ok := ac.mutation.CreatedAt(); ok {
+	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(author.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if value, ok := ac.mutation.UpdatedAt(); ok {
+	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(author.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := ac.mutation.DeletedAt(); ok {
+	if value, ok := _c.mutation.DeletedAt(); ok {
 		_spec.SetField(author.FieldDeletedAt, field.TypeTime, value)
 		_node.DeletedAt = &value
 	}
-	if nodes := ac.mutation.BooksIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.BooksIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -233,16 +233,16 @@ type AuthorCreateBulk struct {
 }
 
 // Save creates the Author entities in the database.
-func (acb *AuthorCreateBulk) Save(ctx context.Context) ([]*Author, error) {
-	if acb.err != nil {
-		return nil, acb.err
+func (_c *AuthorCreateBulk) Save(ctx context.Context) ([]*Author, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(acb.builders))
-	nodes := make([]*Author, len(acb.builders))
-	mutators := make([]Mutator, len(acb.builders))
-	for i := range acb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*Author, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := acb.builders[i]
+			builder := _c.builders[i]
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*AuthorMutation)
 				if !ok {
@@ -255,11 +255,11 @@ func (acb *AuthorCreateBulk) Save(ctx context.Context) ([]*Author, error) {
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, acb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, acb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -283,7 +283,7 @@ func (acb *AuthorCreateBulk) Save(ctx context.Context) ([]*Author, error) {
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, acb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -291,8 +291,8 @@ func (acb *AuthorCreateBulk) Save(ctx context.Context) ([]*Author, error) {
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (acb *AuthorCreateBulk) SaveX(ctx context.Context) []*Author {
-	v, err := acb.Save(ctx)
+func (_c *AuthorCreateBulk) SaveX(ctx context.Context) []*Author {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -300,14 +300,14 @@ func (acb *AuthorCreateBulk) SaveX(ctx context.Context) []*Author {
 }
 
 // Exec executes the query.
-func (acb *AuthorCreateBulk) Exec(ctx context.Context) error {
-	_, err := acb.Save(ctx)
+func (_c *AuthorCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (acb *AuthorCreateBulk) ExecX(ctx context.Context) {
-	if err := acb.Exec(ctx); err != nil {
+func (_c *AuthorCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

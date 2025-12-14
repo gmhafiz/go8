@@ -52,7 +52,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the User fields.
-func (u *User) assignValues(columns []string, values []any) error {
+func (_m *User) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -63,46 +63,46 @@ func (u *User) assignValues(columns []string, values []any) error {
 			if !ok {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
-			u.ID = uint64(value.Int64)
+			_m.ID = uint64(value.Int64)
 		case user.FieldFirstName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field first_name", values[i])
 			} else if value.Valid {
-				u.FirstName = value.String
+				_m.FirstName = value.String
 			}
 		case user.FieldMiddleName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field middle_name", values[i])
 			} else if value.Valid {
-				u.MiddleName = value.String
+				_m.MiddleName = value.String
 			}
 		case user.FieldLastName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field last_name", values[i])
 			} else if value.Valid {
-				u.LastName = value.String
+				_m.LastName = value.String
 			}
 		case user.FieldEmail:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field email", values[i])
 			} else if value.Valid {
-				u.Email = value.String
+				_m.Email = value.String
 			}
 		case user.FieldPassword:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field password", values[i])
 			} else if value.Valid {
-				u.Password = value.String
+				_m.Password = value.String
 			}
 		case user.FieldVerifiedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field verified_at", values[i])
 			} else if value.Valid {
-				u.VerifiedAt = new(time.Time)
-				*u.VerifiedAt = value.Time
+				_m.VerifiedAt = new(time.Time)
+				*_m.VerifiedAt = value.Time
 			}
 		default:
-			u.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -110,49 +110,49 @@ func (u *User) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the User.
 // This includes values selected through modifiers, order, etc.
-func (u *User) Value(name string) (ent.Value, error) {
-	return u.selectValues.Get(name)
+func (_m *User) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // Update returns a builder for updating this User.
 // Note that you need to call User.Unwrap() before calling this method if this User
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (u *User) Update() *UserUpdateOne {
-	return NewUserClient(u.config).UpdateOne(u)
+func (_m *User) Update() *UserUpdateOne {
+	return NewUserClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the User entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (u *User) Unwrap() *User {
-	_tx, ok := u.config.driver.(*txDriver)
+func (_m *User) Unwrap() *User {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("gen: User is not a transactional entity")
 	}
-	u.config.driver = _tx.drv
-	return u
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (u *User) String() string {
+func (_m *User) String() string {
 	var builder strings.Builder
 	builder.WriteString("User(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", u.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("first_name=")
-	builder.WriteString(u.FirstName)
+	builder.WriteString(_m.FirstName)
 	builder.WriteString(", ")
 	builder.WriteString("middle_name=")
-	builder.WriteString(u.MiddleName)
+	builder.WriteString(_m.MiddleName)
 	builder.WriteString(", ")
 	builder.WriteString("last_name=")
-	builder.WriteString(u.LastName)
+	builder.WriteString(_m.LastName)
 	builder.WriteString(", ")
 	builder.WriteString("email=")
-	builder.WriteString(u.Email)
+	builder.WriteString(_m.Email)
 	builder.WriteString(", ")
 	builder.WriteString("password=")
-	builder.WriteString(u.Password)
+	builder.WriteString(_m.Password)
 	builder.WriteString(", ")
-	if v := u.VerifiedAt; v != nil {
+	if v := _m.VerifiedAt; v != nil {
 		builder.WriteString("verified_at=")
 		builder.WriteString(v.Format(time.ANSIC))
 	}

@@ -209,7 +209,7 @@ func (s *Server) newAuthentication() {
 	manager.Lifetime = s.cfg.Session.Duration
 	manager.Cookie.Name = s.cfg.Session.Name
 	manager.Cookie.Domain = s.cfg.Session.Domain
-	manager.Cookie.HttpOnly = s.cfg.Session.HttpOnly
+	manager.Cookie.HttpOnly = s.cfg.Session.HTTPOnly
 	manager.Cookie.Path = s.cfg.Session.Path
 	manager.Cookie.Persist = true
 	manager.Cookie.SameSite = http.SameSite(s.cfg.Session.SameSite)
@@ -232,10 +232,10 @@ func (s *Server) setGlobalMiddleware() {
 	})
 	s.router.Use(s.cors.Handler)
 	s.router.Use(middleware.Otlp(s.cfg.OpenTelemetry.Enable))
-	s.router.Use(middleware.Json)
+	s.router.Use(middleware.JSON)
 	s.router.Use(middleware.LoadAndSave(s.session))
 	s.router.Use(middleware.Audit)
-	if s.cfg.Api.RequestLog {
+	if s.cfg.API.RequestLog {
 		s.router.Use(chiMiddleware.Logger)
 	}
 	s.router.Use(middleware.Recovery)
@@ -244,10 +244,10 @@ func (s *Server) setGlobalMiddleware() {
 func (s *Server) Migrate() {
 	log.Println("migrating...")
 
-	var databaseUrl string
+	var databaseURL string
 	switch s.cfg.Database.Driver {
 	case "postgres":
-		databaseUrl = fmt.Sprintf("%s://%s:%s@%s:%d/%s?sslmode=%s",
+		databaseURL = fmt.Sprintf("%s://%s:%s@%s:%d/%s?sslmode=%s",
 			s.cfg.Database.Driver,
 			s.cfg.Database.User,
 			s.cfg.Database.Pass,
@@ -257,7 +257,7 @@ func (s *Server) Migrate() {
 			s.cfg.Database.SslMode,
 		)
 	case "mysql":
-		databaseUrl = fmt.Sprintf("%s:%s@(%s:%d)/%s?parseTime=true",
+		databaseURL = fmt.Sprintf("%s:%s@(%s:%d)/%s?parseTime=true",
 			s.cfg.Database.User,
 			s.cfg.Database.Pass,
 			s.cfg.Database.Host,
@@ -266,7 +266,7 @@ func (s *Server) Migrate() {
 		)
 	}
 
-	migrator := database.Migrator(s.db, database.WithDSN(databaseUrl))
+	migrator := database.Migrator(s.db, database.WithDSN(databaseURL))
 	migrator.Up()
 
 	log.Println("done migration.")
@@ -274,9 +274,9 @@ func (s *Server) Migrate() {
 
 func (s *Server) Run() {
 	s.httpServer = &http.Server{
-		Addr:              s.cfg.Api.Host + ":" + s.cfg.Api.Port,
+		Addr:              s.cfg.API.Host + ":" + s.cfg.API.Port,
 		Handler:           s.router,
-		ReadHeaderTimeout: s.cfg.Api.ReadHeaderTimeout,
+		ReadHeaderTimeout: s.cfg.API.ReadHeaderTimeout,
 	}
 
 	fmt.Println(`            .,*/(#####(/*,.                               .,*((###(/*.
@@ -336,7 +336,7 @@ func (s *Server) PrintAllRegisteredRoutes(exceptions ...string) {
 		fmt.Print(err)
 	}
 
-	if s.cfg.Api.RunSwagger {
+	if s.cfg.API.RunSwagger {
 		fmt.Printf("%s", gchalk.Green(fmt.Sprintf("%-8s", "GET")))
 		fmt.Printf("/swagger\n")
 	}
@@ -455,7 +455,7 @@ func getModName() string {
 }
 
 func start(s *Server) {
-	log.Printf("Serving at %s:%s\n", s.cfg.Api.Host, s.cfg.Api.Port)
+	log.Printf("Serving at %s:%s\n", s.cfg.API.Host, s.cfg.API.Port)
 	err := s.httpServer.ListenAndServe()
 	if err != nil {
 		log.Fatal(err)
@@ -470,7 +470,7 @@ func gracefulShutdown(ctx context.Context, s *Server) error {
 
 	log.Println("Shutting down...")
 
-	ctx, shutdown := context.WithTimeout(ctx, s.Config().Api.GracefulTimeout*time.Second)
+	ctx, shutdown := context.WithTimeout(ctx, s.Config().API.GracefulTimeout*time.Second)
 	defer shutdown()
 
 	err := s.httpServer.Shutdown(ctx)

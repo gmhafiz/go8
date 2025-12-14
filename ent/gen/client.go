@@ -282,8 +282,8 @@ func (c *AuthorClient) Update() *AuthorUpdate {
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *AuthorClient) UpdateOne(a *Author) *AuthorUpdateOne {
-	mutation := newAuthorMutation(c.config, OpUpdateOne, withAuthor(a))
+func (c *AuthorClient) UpdateOne(_m *Author) *AuthorUpdateOne {
+	mutation := newAuthorMutation(c.config, OpUpdateOne, withAuthor(_m))
 	return &AuthorUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
@@ -300,8 +300,8 @@ func (c *AuthorClient) Delete() *AuthorDelete {
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *AuthorClient) DeleteOne(a *Author) *AuthorDeleteOne {
-	return c.DeleteOneID(a.ID)
+func (c *AuthorClient) DeleteOne(_m *Author) *AuthorDeleteOne {
+	return c.DeleteOneID(_m.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
@@ -336,16 +336,16 @@ func (c *AuthorClient) GetX(ctx context.Context, id uint64) *Author {
 }
 
 // QueryBooks queries the books edge of a Author.
-func (c *AuthorClient) QueryBooks(a *Author) *BookQuery {
+func (c *AuthorClient) QueryBooks(_m *Author) *BookQuery {
 	query := (&BookClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := a.ID
+		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(author.Table, author.FieldID, id),
 			sqlgraph.To(book.Table, book.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, author.BooksTable, author.BooksPrimaryKey...),
 		)
-		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
@@ -431,8 +431,8 @@ func (c *BookClient) Update() *BookUpdate {
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *BookClient) UpdateOne(b *Book) *BookUpdateOne {
-	mutation := newBookMutation(c.config, OpUpdateOne, withBook(b))
+func (c *BookClient) UpdateOne(_m *Book) *BookUpdateOne {
+	mutation := newBookMutation(c.config, OpUpdateOne, withBook(_m))
 	return &BookUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
@@ -449,8 +449,8 @@ func (c *BookClient) Delete() *BookDelete {
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *BookClient) DeleteOne(b *Book) *BookDeleteOne {
-	return c.DeleteOneID(b.ID)
+func (c *BookClient) DeleteOne(_m *Book) *BookDeleteOne {
+	return c.DeleteOneID(_m.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
@@ -485,16 +485,16 @@ func (c *BookClient) GetX(ctx context.Context, id uint64) *Book {
 }
 
 // QueryAuthors queries the authors edge of a Book.
-func (c *BookClient) QueryAuthors(b *Book) *AuthorQuery {
+func (c *BookClient) QueryAuthors(_m *Book) *AuthorQuery {
 	query := (&AuthorClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := b.ID
+		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(book.Table, book.FieldID, id),
 			sqlgraph.To(author.Table, author.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, book.AuthorsTable, book.AuthorsPrimaryKey...),
 		)
-		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
@@ -580,8 +580,8 @@ func (c *SessionClient) Update() *SessionUpdate {
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *SessionClient) UpdateOne(s *Session) *SessionUpdateOne {
-	mutation := newSessionMutation(c.config, OpUpdateOne, withSession(s))
+func (c *SessionClient) UpdateOne(_m *Session) *SessionUpdateOne {
+	mutation := newSessionMutation(c.config, OpUpdateOne, withSession(_m))
 	return &SessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
@@ -598,8 +598,8 @@ func (c *SessionClient) Delete() *SessionDelete {
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *SessionClient) DeleteOne(s *Session) *SessionDeleteOne {
-	return c.DeleteOneID(s.ID)
+func (c *SessionClient) DeleteOne(_m *Session) *SessionDeleteOne {
+	return c.DeleteOneID(_m.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
@@ -713,8 +713,8 @@ func (c *UserClient) Update() *UserUpdate {
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *UserClient) UpdateOne(u *User) *UserUpdateOne {
-	mutation := newUserMutation(c.config, OpUpdateOne, withUser(u))
+func (c *UserClient) UpdateOne(_m *User) *UserUpdateOne {
+	mutation := newUserMutation(c.config, OpUpdateOne, withUser(_m))
 	return &UserUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
@@ -731,8 +731,8 @@ func (c *UserClient) Delete() *UserDelete {
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *UserClient) DeleteOne(u *User) *UserDeleteOne {
-	return c.DeleteOneID(u.ID)
+func (c *UserClient) DeleteOne(_m *User) *UserDeleteOne {
+	return c.DeleteOneID(_m.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.

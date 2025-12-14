@@ -1,8 +1,36 @@
+version: "2"
 linters:
+  settings:
+    staticcheck:
+      checks:
+        - all
+        - '-QF1008'
   enable:
     - gosec
-issues:
-  exclude:
-    - "Error return value of .((os\\.)?std(out|err)\\..*|.*Close|.*Flush|os\\.Remove(All)?|.*printf?|os\\.(Un)?Setenv). is not checked"
-    - "Error return value of `tx.Rollback` is not checked"
-    - "Error return value of `tx.Commit` is not checked"
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - path: (.+)\.go$
+        text: Error return value of .((os\.)?std(out|err)\..*|.*Close|.*Flush|os\.Remove(All)?|.*printf?|os\.(Un)?Setenv). is not checked
+      - path: (.+)\.go$
+        text: Error return value of `tx.Rollback` is not checked
+      - path: (.+)\.go$
+        text: Error return value of `tx.Commit` is not checked
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+
+
+formatters:
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

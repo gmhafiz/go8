@@ -7,7 +7,7 @@ import (
 )
 
 type Config struct {
-	Api
+	API
 	Cors
 
 	Database
@@ -25,7 +25,7 @@ func New() *Config {
 	}
 
 	return &Config{
-		Api:           API(),
+		API:           NewAPI(),
 		Cors:          NewCors(),
 		Database:      DataStore(),
 		Cache:         NewCache(),

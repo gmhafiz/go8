@@ -23,7 +23,7 @@ func NewHandler(useCase UseCase) *Handler {
 // @Failure 500
 // @router /api/health [get]
 func (h *Handler) Health(w http.ResponseWriter, _ *http.Request) {
-	respond.Json(w, http.StatusOK, map[string]int{"status": 200})
+	respond.JSON(w, http.StatusOK, map[string]int{"status": 200})
 }
 
 // Readiness checks if database is alive
@@ -38,5 +38,5 @@ func (h *Handler) Readiness(w http.ResponseWriter, _ *http.Request) {
 		respond.Error(w, http.StatusInternalServerError, err)
 		return
 	}
-	respond.Json(w, http.StatusOK, map[string]int{"status": 200})
+	respond.JSON(w, http.StatusOK, map[string]int{"status": 200})
 }

@@ -1,5 +1,5 @@
 # docker build -f e2e/server.Dockerfile .
-FROM golang:1.24 AS src_server
+FROM golang:1.25 AS src_server
 
 # Copy dependencies first to take advantage of Docker caching
 WORKDIR /go/src/app/

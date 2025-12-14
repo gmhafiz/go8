@@ -23,9 +23,9 @@ func main() {
 	log.Printf("Starting e2e API version: %s\n", Version)
 	cfg := config.New()
 
-	url = fmt.Sprintf("http://%s:%s", cfg.Api.Host, cfg.Api.Port)
+	url = fmt.Sprintf("http://%s:%s", cfg.API.Host, cfg.API.Port)
 
-	waitForApi(fmt.Sprintf("%s/api/health/readiness", url))
+	waitForAPI(fmt.Sprintf("%s/api/health/readiness", url))
 
 	run()
 }
@@ -229,7 +229,7 @@ func testDeleteOneBook(id uint64) {
 	log.Println("testDeleteOneBook passes")
 }
 
-func waitForApi(readinessURL string) {
+func waitForAPI(readinessURL string) {
 	log.Println("Connecting to api with exponential backoff... ")
 	for {
 		//nolint:gosec

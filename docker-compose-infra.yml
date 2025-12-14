@@ -3,7 +3,7 @@ version: '3.8'
 services:
 
   postgres:
-    image: postgres:17
+    image: postgres:18
     restart: always
     container_name: "go8_postgres"
     healthcheck:

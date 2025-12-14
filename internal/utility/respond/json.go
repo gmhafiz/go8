@@ -18,7 +18,7 @@ type Meta struct {
 	Total int `json:"total"`
 }
 
-func Json(w http.ResponseWriter, statusCode int, payload interface{}) {
+func JSON(w http.ResponseWriter, statusCode int, payload interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 

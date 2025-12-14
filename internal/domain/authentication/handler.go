@@ -90,13 +90,13 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Protected(w http.ResponseWriter, _ *http.Request) {
-	respond.Json(w, http.StatusOK, map[string]string{"success": "yup!"})
+	respond.JSON(w, http.StatusOK, map[string]string{"success": "yup!"})
 }
 
 func (h *Handler) Me(w http.ResponseWriter, r *http.Request) {
 	userID := h.session.Get(r.Context(), string(middleware.KeyID))
 
-	respond.Json(w, http.StatusOK, map[string]any{"user_id": userID})
+	respond.JSON(w, http.StatusOK, map[string]any{"user_id": userID})
 }
 
 func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
@@ -130,7 +130,7 @@ func (h *Handler) ForceLogout(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !ok {
-		respond.Json(w, http.StatusInternalServerError, map[string]string{"message": "unable to log out"})
+		respond.JSON(w, http.StatusInternalServerError, map[string]string{"message": "unable to log out"})
 	}
 }
 
@@ -151,7 +151,7 @@ func (h *Handler) Csrf(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respond.Json(w, http.StatusOK, &RespondCsrf{CsrfToken: token})
+	respond.JSON(w, http.StatusOK, &RespondCsrf{CsrfToken: token})
 }
 
 func NewHandler(session *scs.SessionManager, repo Repo) *Handler {

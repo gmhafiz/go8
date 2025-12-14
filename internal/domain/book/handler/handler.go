@@ -65,7 +65,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 
 	b := book.Resource(bk)
 
-	respond.Json(w, http.StatusCreated, b)
+	respond.JSON(w, http.StatusCreated, b)
 }
 
 // Get a book by its ID
@@ -96,7 +96,7 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 	list := book.Resource(b)
 
-	respond.Json(w, http.StatusOK, list)
+	respond.JSON(w, http.StatusOK, list)
 }
 
 // List will fetch the article based on given params
@@ -148,7 +148,7 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respond.Json(w, http.StatusOK, list)
+	respond.JSON(w, http.StatusOK, list)
 }
 
 // Update a book
@@ -190,7 +190,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 
 	res := book.Resource(resp)
 
-	respond.Json(w, http.StatusOK, res)
+	respond.JSON(w, http.StatusOK, res)
 }
 
 // Delete a book by its ID
@@ -215,5 +215,5 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respond.Json(w, http.StatusOK, nil)
+	respond.JSON(w, http.StatusOK, nil)
 }

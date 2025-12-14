@@ -6,7 +6,7 @@ import (
 	"github.com/kelseyhightower/envconfig"
 )
 
-type Api struct {
+type API struct {
 	Name              string        `default:"go8_api"`
 	Host              string        `default:"0.0.0.0"`
 	Port              string        `default:"3080"`
@@ -17,9 +17,9 @@ type Api struct {
 	RunSwagger bool `split_words:"true" default:"true"`
 }
 
-func API() Api {
-	var api Api
-	envconfig.MustProcess("API", &api)
+func NewAPI() API {
+	var api API
+	envconfig.MustProcess("NewAPI", &api)
 
 	return api
 }

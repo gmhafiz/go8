@@ -30,10 +30,10 @@ func (s *Server) InitDomains() {
 
 func (s *Server) initVersion() {
 	s.router.Route("/version", func(router chi.Router) {
-		router.Use(middleware.Json)
+		router.Use(middleware.JSON)
 
 		router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-			respond.Json(w, http.StatusOK, map[string]string{"version": s.Version})
+			respond.JSON(w, http.StatusOK, map[string]string{"version": s.Version})
 		})
 	})
 }
@@ -48,7 +48,7 @@ func (s *Server) initHealth() {
 var swaggerDocsAssetPath embed.FS
 
 func (s *Server) initSwagger() {
-	if s.Config().Api.RunSwagger {
+	if s.Config().API.RunSwagger {
 		docsPath, err := fs.Sub(swaggerDocsAssetPath, "docs")
 		if err != nil {
 			panic(err)

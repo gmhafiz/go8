@@ -14,7 +14,7 @@ ENV CGO_ENABLED=0
 # Insert version using git tag and latest commit hash
 RUN go build -ldflags="-X main.Version=$(git describe --abbrev=0 --tags)-$(git rev-list -1 HEAD) -s" -o ./migrate ./cmd/migrate/main.go
 
-FROM gcr.io/distroless/static-debian12:nonroot
+FROM gcr.io/distroless/static-debian13:nonroot
 
 LABEL com.example.maintainers="User <author@example.com>"
 

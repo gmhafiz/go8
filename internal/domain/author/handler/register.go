@@ -4,8 +4,8 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
 
-	"github.com/gmhafiz/go8/internal/domain/author/usecase"
-	"github.com/gmhafiz/go8/internal/middleware"
+	"codeberg.org/gmhafiz/go8/internal/domain/author/usecase"
+	"codeberg.org/gmhafiz/go8/internal/middleware"
 )
 
 func RegisterHTTPEndPoints(router *chi.Mux, validate *validator.Validate, useCase usecase.Author) *Handler {

@@ -9,10 +9,10 @@ import (
 	"github.com/alexedwards/argon2id"
 	"github.com/gmhafiz/scs/v2"
 
-	"github.com/gmhafiz/go8/internal/middleware"
-	"github.com/gmhafiz/go8/internal/utility/param"
-	"github.com/gmhafiz/go8/internal/utility/request"
-	"github.com/gmhafiz/go8/internal/utility/respond"
+	"codeberg.org/gmhafiz/go8/internal/middleware"
+	"codeberg.org/gmhafiz/go8/internal/utility/param"
+	"codeberg.org/gmhafiz/go8/internal/utility/request"
+	"codeberg.org/gmhafiz/go8/internal/utility/respond"
 )
 
 const (

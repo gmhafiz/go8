@@ -3,7 +3,7 @@ package book
 import (
 	"net/url"
 
-	"github.com/gmhafiz/go8/internal/utility/filter"
+	"codeberg.org/gmhafiz/go8/internal/utility/filter"
 )
 
 type Filter struct {

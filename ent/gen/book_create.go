@@ -8,10 +8,10 @@ import (
 	"fmt"
 	"time"
 
+	"codeberg.org/gmhafiz/go8/ent/gen/author"
+	"codeberg.org/gmhafiz/go8/ent/gen/book"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/gmhafiz/go8/ent/gen/author"
-	"github.com/gmhafiz/go8/ent/gen/book"
 )
 
 // BookCreate is the builder for creating a Book entity.

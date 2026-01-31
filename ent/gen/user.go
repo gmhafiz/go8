@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
+	"codeberg.org/gmhafiz/go8/ent/gen/user"
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/gmhafiz/go8/ent/gen/user"
 )
 
 // User is the model entity for the User schema.

@@ -28,7 +28,7 @@ import (
 
 	"github.com/cespare/xxhash/v2"
 
-	"github.com/gmhafiz/go8/internal/middleware"
+	"codeberg.org/gmhafiz/go8/internal/middleware"
 )
 
 // PostgresStore represents the session store.

@@ -3,16 +3,16 @@ package usecase
 import (
 	"context"
 	"errors"
-	"github.com/gmhafiz/go8/internal/domain/book"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/gmhafiz/go8/config"
-	"github.com/gmhafiz/go8/internal/domain/author"
-	"github.com/gmhafiz/go8/internal/domain/author/repository"
-	"github.com/gmhafiz/go8/internal/utility/filter"
+	"codeberg.org/gmhafiz/go8/config"
+	"codeberg.org/gmhafiz/go8/internal/domain/author"
+	"codeberg.org/gmhafiz/go8/internal/domain/author/repository"
+	"codeberg.org/gmhafiz/go8/internal/domain/book"
+	"codeberg.org/gmhafiz/go8/internal/utility/filter"
 )
 
 var c config.Cache

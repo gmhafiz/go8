@@ -4,9 +4,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/gmhafiz/go8/config"
-	"github.com/gmhafiz/go8/database"
-	db "github.com/gmhafiz/go8/third_party/database"
+	"codeberg.org/gmhafiz/go8/config"
+	"codeberg.org/gmhafiz/go8/database"
+	db "codeberg.org/gmhafiz/go8/third_party/database"
 )
 
 // Version is injected using ldflags during build time

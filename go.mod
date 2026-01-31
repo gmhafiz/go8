@@ -1,4 +1,4 @@
-module github.com/gmhafiz/go8
+module codeberg.org/gmhafiz/go8
 
 go 1.25.6
 

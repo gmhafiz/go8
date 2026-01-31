@@ -9,13 +9,13 @@ import (
 	"reflect"
 	"sync"
 
+	"codeberg.org/gmhafiz/go8/ent/gen/author"
+	"codeberg.org/gmhafiz/go8/ent/gen/book"
+	"codeberg.org/gmhafiz/go8/ent/gen/session"
+	"codeberg.org/gmhafiz/go8/ent/gen/user"
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"github.com/gmhafiz/go8/ent/gen/author"
-	"github.com/gmhafiz/go8/ent/gen/book"
-	"github.com/gmhafiz/go8/ent/gen/session"
-	"github.com/gmhafiz/go8/ent/gen/user"
 )
 
 // ent aliases to avoid import conflicts in user's code.

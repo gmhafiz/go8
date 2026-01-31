@@ -9,12 +9,12 @@ import (
 
 	"github.com/go-playground/validator/v10"
 
-	"github.com/gmhafiz/go8/internal/domain/book"
-	"github.com/gmhafiz/go8/internal/domain/book/usecase"
-	"github.com/gmhafiz/go8/internal/utility/message"
-	"github.com/gmhafiz/go8/internal/utility/param"
-	"github.com/gmhafiz/go8/internal/utility/respond"
-	"github.com/gmhafiz/go8/internal/utility/validate"
+	"codeberg.org/gmhafiz/go8/internal/domain/book"
+	"codeberg.org/gmhafiz/go8/internal/domain/book/usecase"
+	"codeberg.org/gmhafiz/go8/internal/utility/message"
+	"codeberg.org/gmhafiz/go8/internal/utility/param"
+	"codeberg.org/gmhafiz/go8/internal/utility/respond"
+	"codeberg.org/gmhafiz/go8/internal/utility/validate"
 )
 
 type Handler struct {

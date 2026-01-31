@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"time"
 
+	"codeberg.org/gmhafiz/go8/ent/gen/user"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/gmhafiz/go8/ent/gen/user"
 )
 
 // UserCreate is the builder for creating a User entity.

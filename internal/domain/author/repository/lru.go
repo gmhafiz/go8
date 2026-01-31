@@ -6,8 +6,8 @@ import (
 
 	"github.com/hashicorp/golang-lru/v2"
 
-	"github.com/gmhafiz/go8/internal/domain/author"
-	"github.com/gmhafiz/go8/internal/middleware"
+	"codeberg.org/gmhafiz/go8/internal/domain/author"
+	"codeberg.org/gmhafiz/go8/internal/middleware"
 )
 
 type AuthorLRU struct {

@@ -55,7 +55,7 @@ It is advisable to use the latest supported [Go version](https://go.dev/dl/go1.2
 Get it
 
 ```shell
-git clone https://github.com/gmhafiz/go8
+git clone https://codeberg.com/gmhafiz/go8
 cd go8
 ```
 
@@ -1570,7 +1570,7 @@ cd internal/domain/author/handler
 go test -run="TestHandler_Create/simple"
 
 PASS
-ok      github.com/gmhafiz/go8/internal/domain/author/handler   0.010s
+ok      codeberg.org/gmhafiz/go8/internal/domain/author/handler   0.010s
 ```
 
 There are a lot of things going on in this unit test. It is very verbose, but it
@@ -1730,7 +1730,7 @@ cd internal/domain/author/usecase
 go test -run="TestAuthorUseCase_Create/simple"
 
 PASS
-ok      github.com/gmhafiz/go8/internal/domain/author/usecase   0.004s
+ok      codeberg.org/gmhafiz/go8/internal/domain/author/usecase   0.004s
 ```
 
 ### Repository
@@ -1895,7 +1895,7 @@ cd internal/domain/author/repository/database
 go test -run="TestAuthorRepository_Create/normal"
 
 PASS
-ok      github.com/gmhafiz/go8/internal/domain/author/repository/database       2.320s
+ok      codeberg.org/gmhafiz/go8/internal/domain/author/repository/database       2.320s
 
 ```
 

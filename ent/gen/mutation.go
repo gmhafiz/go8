@@ -9,13 +9,13 @@ import (
 	"sync"
 	"time"
 
+	"codeberg.org/gmhafiz/go8/ent/gen/author"
+	"codeberg.org/gmhafiz/go8/ent/gen/book"
+	"codeberg.org/gmhafiz/go8/ent/gen/predicate"
+	"codeberg.org/gmhafiz/go8/ent/gen/session"
+	"codeberg.org/gmhafiz/go8/ent/gen/user"
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/gmhafiz/go8/ent/gen/author"
-	"github.com/gmhafiz/go8/ent/gen/book"
-	"github.com/gmhafiz/go8/ent/gen/predicate"
-	"github.com/gmhafiz/go8/ent/gen/session"
-	"github.com/gmhafiz/go8/ent/gen/user"
 )
 
 const (

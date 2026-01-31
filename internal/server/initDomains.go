@@ -7,16 +7,16 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/gmhafiz/go8/internal/domain/authentication"
-	authorHandler "github.com/gmhafiz/go8/internal/domain/author/handler"
-	authorRepo "github.com/gmhafiz/go8/internal/domain/author/repository"
-	authorUseCase "github.com/gmhafiz/go8/internal/domain/author/usecase"
-	bookHandler "github.com/gmhafiz/go8/internal/domain/book/handler"
-	bookRepo "github.com/gmhafiz/go8/internal/domain/book/repository"
-	bookUseCase "github.com/gmhafiz/go8/internal/domain/book/usecase"
-	"github.com/gmhafiz/go8/internal/domain/health"
-	"github.com/gmhafiz/go8/internal/middleware"
-	"github.com/gmhafiz/go8/internal/utility/respond"
+	"codeberg.org/gmhafiz/go8/internal/domain/authentication"
+	authorHandler "codeberg.org/gmhafiz/go8/internal/domain/author/handler"
+	authorRepo "codeberg.org/gmhafiz/go8/internal/domain/author/repository"
+	authorUseCase "codeberg.org/gmhafiz/go8/internal/domain/author/usecase"
+	bookHandler "codeberg.org/gmhafiz/go8/internal/domain/book/handler"
+	bookRepo "codeberg.org/gmhafiz/go8/internal/domain/book/repository"
+	bookUseCase "codeberg.org/gmhafiz/go8/internal/domain/book/usecase"
+	"codeberg.org/gmhafiz/go8/internal/domain/health"
+	"codeberg.org/gmhafiz/go8/internal/middleware"
+	"codeberg.org/gmhafiz/go8/internal/utility/respond"
 )
 
 func (s *Server) InitDomains() {

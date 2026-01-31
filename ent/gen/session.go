@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
+	"codeberg.org/gmhafiz/go8/ent/gen/session"
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/gmhafiz/go8/ent/gen/session"
 )
 
 // Session is the model entity for the Session schema.

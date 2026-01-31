@@ -11,17 +11,17 @@ import (
 	"testing"
 	"time"
 
-	_ "github.com/gmhafiz/go8/ent/gen/runtime"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/gmhafiz/go8/database"
-	"github.com/gmhafiz/go8/internal/domain/book"
-	"github.com/gmhafiz/go8/internal/utility/filter"
-	"github.com/gmhafiz/go8/internal/utility/message"
+	"codeberg.org/gmhafiz/go8/database"
+	_ "codeberg.org/gmhafiz/go8/ent/gen/runtime"
+	"codeberg.org/gmhafiz/go8/internal/domain/book"
+	"codeberg.org/gmhafiz/go8/internal/utility/filter"
+	"codeberg.org/gmhafiz/go8/internal/utility/message"
 )
 
 const (

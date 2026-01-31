@@ -5,7 +5,7 @@ import (
 
 	"github.com/redis/go-redis/v9"
 
-	"github.com/gmhafiz/go8/config"
+	"codeberg.org/gmhafiz/go8/config"
 )
 
 func New(cfg config.Cache) *redis.Client {

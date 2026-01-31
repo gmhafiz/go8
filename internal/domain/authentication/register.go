@@ -4,7 +4,7 @@ import (
 	"github.com/gmhafiz/scs/v2"
 	"github.com/go-chi/chi/v5"
 
-	"github.com/gmhafiz/go8/internal/middleware"
+	"codeberg.org/gmhafiz/go8/internal/middleware"
 )
 
 func RegisterHTTPEndPoints(router *chi.Mux, session *scs.SessionManager, repo Repo) {

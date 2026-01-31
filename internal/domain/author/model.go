@@ -3,7 +3,7 @@ package author
 import (
 	"time"
 
-	"github.com/gmhafiz/go8/internal/domain/book"
+	"codeberg.org/gmhafiz/go8/internal/domain/book"
 )
 
 type Schema struct {

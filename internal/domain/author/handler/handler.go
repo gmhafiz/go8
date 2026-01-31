@@ -12,13 +12,13 @@ import (
 	"github.com/go-playground/validator/v10"
 	"go.opentelemetry.io/otel"
 
-	"github.com/gmhafiz/go8/internal/domain/author"
-	"github.com/gmhafiz/go8/internal/domain/author/usecase"
-	"github.com/gmhafiz/go8/internal/middleware"
-	"github.com/gmhafiz/go8/internal/utility/message"
-	"github.com/gmhafiz/go8/internal/utility/param"
-	"github.com/gmhafiz/go8/internal/utility/respond"
-	"github.com/gmhafiz/go8/internal/utility/validate"
+	"codeberg.org/gmhafiz/go8/internal/domain/author"
+	"codeberg.org/gmhafiz/go8/internal/domain/author/usecase"
+	"codeberg.org/gmhafiz/go8/internal/middleware"
+	"codeberg.org/gmhafiz/go8/internal/utility/message"
+	"codeberg.org/gmhafiz/go8/internal/utility/param"
+	"codeberg.org/gmhafiz/go8/internal/utility/respond"
+	"codeberg.org/gmhafiz/go8/internal/utility/validate"
 )
 
 type Handler struct {

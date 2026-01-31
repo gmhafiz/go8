@@ -10,18 +10,18 @@ import (
 	"time"
 
 	entsql "entgo.io/ent/dialect/sql"
-	_ "github.com/gmhafiz/go8/ent/gen/runtime"
 	_ "github.com/lib/pq"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/gmhafiz/go8/database"
-	"github.com/gmhafiz/go8/ent/gen"
-	"github.com/gmhafiz/go8/internal/domain/author"
-	"github.com/gmhafiz/go8/internal/domain/book"
-	"github.com/gmhafiz/go8/internal/utility/filter"
-	parseTime "github.com/gmhafiz/go8/internal/utility/time"
+	"codeberg.org/gmhafiz/go8/database"
+	"codeberg.org/gmhafiz/go8/ent/gen"
+	_ "codeberg.org/gmhafiz/go8/ent/gen/runtime"
+	"codeberg.org/gmhafiz/go8/internal/domain/author"
+	"codeberg.org/gmhafiz/go8/internal/domain/book"
+	"codeberg.org/gmhafiz/go8/internal/utility/filter"
+	parseTime "codeberg.org/gmhafiz/go8/internal/utility/time"
 )
 
 const (

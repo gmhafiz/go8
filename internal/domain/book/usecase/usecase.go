@@ -3,8 +3,8 @@ package usecase
 import (
 	"context"
 
-	"github.com/gmhafiz/go8/internal/domain/book"
-	"github.com/gmhafiz/go8/internal/domain/book/repository"
+	"codeberg.org/gmhafiz/go8/internal/domain/book"
+	"codeberg.org/gmhafiz/go8/internal/domain/book/repository"
 )
 
 //go:generate mirip -rm -pkg usecase -out usecase_mock.go . Book

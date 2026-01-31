@@ -5,8 +5,8 @@ package session
 import (
 	"time"
 
+	"codeberg.org/gmhafiz/go8/ent/gen/predicate"
 	"entgo.io/ent/dialect/sql"
-	"github.com/gmhafiz/go8/ent/gen/predicate"
 )
 
 // ID filters vertices based on their ID field.

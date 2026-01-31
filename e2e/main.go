@@ -10,8 +10,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gmhafiz/go8/config"
-	"github.com/gmhafiz/go8/internal/domain/book"
+	"codeberg.org/gmhafiz/go8/config"
+	"codeberg.org/gmhafiz/go8/internal/domain/book"
 )
 
 // Version is injected using ldflags during build time

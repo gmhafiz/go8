@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/gmhafiz/go8/internal/server"
+	"codeberg.org/gmhafiz/go8/internal/server"
 )
 
 // Version is injected using ldflags during build time

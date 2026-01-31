@@ -3,7 +3,7 @@ package health
 import (
 	"net/http"
 
-	"github.com/gmhafiz/go8/internal/utility/respond"
+	"codeberg.org/gmhafiz/go8/internal/utility/respond"
 )
 
 type Handler struct {

@@ -19,7 +19,7 @@ type Cache struct {
 	cache   *redis.Client
 }
 
-//go:generate mirip -rm -out redis_mock.go . AuthorRedisService
+//go:generate go run -mod=mod codeberg.org/gmhafiz/mirip/cmd/mirip@latest -rm -out redis_mock.go . AuthorRedisService
 type AuthorRedisService interface {
 	List(ctx context.Context, f *author.Filter) ([]*author.Schema, int, error)
 	Update(ctx context.Context, toAuthor *author.UpdateRequest) (*author.Schema, error)

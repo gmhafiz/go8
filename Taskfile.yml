@@ -233,7 +233,7 @@ tasks:
   install:golangci:
     desc: Install golangci linter
     cmds:
-      - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin
+      - curl -sSfL https://golangci-lint.run/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.12.2
 
   install:swagger:
     desc: Install swagger cli

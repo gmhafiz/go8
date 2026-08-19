@@ -21,7 +21,7 @@ type AuthorUseCase struct {
 	cfg        config.Cache
 }
 
-//go:generate mirip -rm -out usecase_mock.go . Author
+//go:generate go run -mod=mod codeberg.org/gmhafiz/mirip/cmd/mirip@latest -rm -out usecase_mock.go . Author
 type Author interface {
 	Create(ctx context.Context, a *author.CreateRequest) (*author.Schema, error)
 	List(ctx context.Context, f *author.Filter) ([]*author.Schema, int, error)

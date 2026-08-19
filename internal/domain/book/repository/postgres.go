@@ -12,7 +12,7 @@ import (
 	"codeberg.org/gmhafiz/go8/internal/utility/message"
 )
 
-//go:generate mirip -rm -pkg repository -out repo_mock.go . Book
+//go:generate go run -mod=mod codeberg.org/gmhafiz/mirip/cmd/mirip@latest -rm -pkg repository -out repo_mock.go . Book
 type Book interface {
 	Create(ctx context.Context, book *book.CreateRequest) (uint64, error)
 	List(ctx context.Context, f *book.Filter) ([]*book.Schema, error)

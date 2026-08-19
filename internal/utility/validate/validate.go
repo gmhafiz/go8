@@ -13,8 +13,7 @@ func Validate(v *validator.Validate, generic any) []string {
 		// this check is only needed when your code could produce
 		// an invalid value for validation such as interface with nil
 		// value most including myself do not usually have code like this.
-		var invalidValidationError *validator.InvalidValidationError
-		if errors.As(err, &invalidValidationError) {
+		if _, ok := errors.AsType[*validator.InvalidValidationError](err); ok {
 			fmt.Println(err)
 			return nil
 		}

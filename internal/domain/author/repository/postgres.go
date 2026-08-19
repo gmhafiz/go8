@@ -21,7 +21,7 @@ type repository struct {
 	ent *gen.Client
 }
 
-//go:generate mirip -rm -out postgres_mock.go . Author Searcher
+//go:generate go run -mod=mod codeberg.org/gmhafiz/mirip/cmd/mirip@latest -rm -out postgres_mock.go . Author Searcher
 type Author interface {
 	Create(ctx context.Context, a *author.CreateRequest) (*author.Schema, error)
 	List(ctx context.Context, f *author.Filter) ([]*author.Schema, int, error)

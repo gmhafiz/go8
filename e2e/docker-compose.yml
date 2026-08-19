@@ -7,7 +7,7 @@ services:
     container_name: "go8_postgres_e2e"
     restart: "no"
     healthcheck:
-      test: pg_isready -U go8_e2e_user
+      test: pg_isready -U go8_e2e_user -d go8_e2e_db
     environment:
       POSTGRES_USER: go8_e2e_user
       POSTGRES_PASSWORD: go8_e2e_pass

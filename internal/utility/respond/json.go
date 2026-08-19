@@ -9,8 +9,8 @@ import (
 )
 
 type Standard struct {
-	Data interface{} `json:"data"`
-	Meta Meta        `json:"meta,omitempty"`
+	Data any  `json:"data"`
+	Meta Meta `json:"meta,omitzero"`
 }
 
 type Meta struct {
@@ -18,7 +18,7 @@ type Meta struct {
 	Total int `json:"total"`
 }
 
-func JSON(w http.ResponseWriter, statusCode int, payload interface{}) {
+func JSON(w http.ResponseWriter, statusCode int, payload any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 

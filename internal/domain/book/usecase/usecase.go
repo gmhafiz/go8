@@ -7,7 +7,7 @@ import (
 	"codeberg.org/gmhafiz/go8/internal/domain/book/repository"
 )
 
-//go:generate mirip -rm -pkg usecase -out usecase_mock.go . Book
+//go:generate go run -mod=mod codeberg.org/gmhafiz/mirip/cmd/mirip@latest -rm -pkg usecase -out usecase_mock.go . Book
 type Book interface {
 	Create(ctx context.Context, book *book.CreateRequest) (*book.Schema, error)
 	List(ctx context.Context, f *book.Filter) ([]*book.Schema, error)

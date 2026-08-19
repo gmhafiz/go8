@@ -78,7 +78,7 @@ func randomAndWrite(n int) string {
 	ll := len(chars)
 	b := make([]byte, n)
 	_, _ = rand.Read(b)
-	for i := 0; i < n; i++ {
+	for i := range n {
 		b[i] = chars[int(b[i])%ll]
 	}
 

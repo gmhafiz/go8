@@ -1,0 +1,4 @@
+stages:
+  - { duration: 1m, target: 2 }
+  - { duration: 1m, target: 4 }
+  - { duration: 1m, target: 1 }

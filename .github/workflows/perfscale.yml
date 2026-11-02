@@ -1,0 +1,101 @@
+name: perfscale
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  loadtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - name: Setup Go
+        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version: '1.27.0'
+          cache-dependency-path: go.sum
+
+      - name: Create .env from example
+        run: cp env.example .env
+
+      - name: Start dependencies
+        run: docker compose -f docker-compose-infra.yml up -d postgres valkey
+
+      - name: Wait for PostgreSQL
+        run: |
+          for _ in $(seq 1 30); do
+            if docker exec go8_postgres pg_isready -U postgres -d go8_db; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "PostgreSQL did not become ready in time" >&2
+          docker logs go8_postgres || true
+          exit 1
+
+      - name: Run migrations
+        run: go run cmd/migrate/main.go
+
+      - name: Seed database
+        run: go run cmd/seed/main.go > "${RUNNER_TEMP}/go8-seed.log" 2>&1
+
+      - name: Start go8 app
+        run: |
+          nohup go run cmd/go8/main.go > "${RUNNER_TEMP}/go8-app.log" 2>&1 &
+          for _ in $(seq 1 60); do
+            if curl -fs http://127.0.0.1:3080/api/v1/author > /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "go8 app did not become ready in time" >&2
+          docker compose -f docker-compose-infra.yml logs || true
+          cat "${RUNNER_TEMP}/go8-app.log" || true
+          exit 1
+
+      - name: Run Perfscale
+        uses: Perfscale/github-action@v1
+        id: loadtest
+        with:
+          version: v0.28.0
+          file: scripts/perfscale.test.yaml
+          config: scripts/perfscale.config.yaml
+          summary-export: perfscale-summary.json
+          output: perfscale-output.zip
+
+      - name: Upload perfscale report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: perfscale-report
+          path: ${{ steps.loadtest.outputs.output-file }}
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Validate loadtest results
+        if: always()
+        env:
+          EXIT_CODE: ${{ steps.loadtest.outputs.exit-code }}
+          SUMMARY_JSON: ${{ steps.loadtest.outputs.summary-json }}
+        run: |
+          if [ "${EXIT_CODE}" != "0" ]; then
+            echo "Perfscale exited with code ${EXIT_CODE}" >&2
+            exit 1
+          fi
+          if [ -z "${SUMMARY_JSON}" ] || [ ! -s "${SUMMARY_JSON}" ]; then
+            echo "Summary file is missing or empty: ${SUMMARY_JSON}" >&2
+            exit 1
+          fi
+          jq -e '.meta.engine == "native" and .summary.total_requests > 0 and .summary.error_rate == 0' "${SUMMARY_JSON}"
+
+      - name: Cleanup dependencies
+        if: always()
+        run: docker compose -f docker-compose-infra.yml down
